@@ -41,8 +41,7 @@ public class ArticleController extends BaseController {
 	 * @return 文章
 	 */
 	@RequestMapping("/{id}")
-	public Article getArticle(@PathVariable long id, HttpServletRequest req) throws InterruptedException {
-		Thread.sleep(1000);
+	public Article getArticle(@PathVariable long id, HttpServletRequest req) {
 		Article article = service.findById(id);
 		service.read(req.getRemoteAddr(), article);
 		return article;

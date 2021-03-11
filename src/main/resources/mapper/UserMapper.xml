@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="net.imyeyu.blog.mapper.UserMapper">
+    <select id="findAll" resultMap="findAllResult">
+        SELECT * FROM users
+    </select>
+	<resultMap id="findAllResult" type="net.imyeyu.blog.entity.User">
+		<id property="id" column="id"/>
+		<result property="email" column="email"/>
+		<result property="userName" column="user_name"/>
+		<result property="password" column="password"/>
+		<result property="createdAt" column="created_at"/>
+		<result property="canceledAt" column="canceled_at"/>
+		<result property="deletedAt" column="deleted_at"/>
+	</resultMap>
+	<insert id="create" parameterType="net.imyeyu.blog.entity.User" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO `users` (`user_name`, `password`, `created_at`) VALUES (#{user.userName}, #{user.password}, #{user.createdAt});
+	</insert>
+</mapper>

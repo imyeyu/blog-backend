@@ -1,0 +1,55 @@
+# SpringBoot 开发环境配置示例，删除文件名后缀 .examples 以生效
+
+server:
+  port: 8081
+multiple:
+  environment:
+    configure: dev environment
+
+spring:
+  # 数据库配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/blog_test?serverTimezone=UTC&characterEncoding=UTF-8
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 连接池
+    hikari:
+      # 连接池最大连接数，默认是 10
+      maximum-pool-size: 60
+      # 链接超时时间，默认 30000(30 秒)
+      connection-timeout: 60000
+      # 空闲连接存活最大时间，默认 600000(10 分钟)
+      idle-timeout: 60000
+      # 连接将被测试活动的最大时间量
+      validation-timeout: 3000
+      # 此属性控制池中连接的最长生命周期，值 0 表示无限生命周期，默认 1800000(30 分钟)
+      max-lifetime: 60000
+      # 连接到数据库时等待的最长时间(秒)
+      login-timeout: 5
+      # 池中维护的最小空闲连接数
+      minimum-idle: 10
+
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    timeout: 8000
+    database:
+      article-hot: 0
+      article-read: 1
+    lettuce:
+      pool:
+        max-wait: -1
+        max-idle: 8
+        min-idle: 0
+        max-active: 8
+
+mybatis:
+  # XML 位置
+  mapper-locations: classpath:mapper/*.xml
+  # 实体类位置
+  type-aliases-package: net.imyeyu.blog.entity
+  configuration:
+    # 映射驼峰转下划线
+    map-underscore-to-camel-case: true

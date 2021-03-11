@@ -1,0 +1,231 @@
+package net.imyeyu.blog.util;
+
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+
+/**
+ * RedisTemplate 功能封装
+ * 夜雨 创建于 2021/3/2 17:46
+ */
+public class RedisUtil<T> {
+
+	private final RedisTemplate<String, T> redisTemplate;
+
+	public RedisUtil(RedisTemplate<String, T> redisTemplate) {
+		this.redisTemplate = redisTemplate;
+	}
+
+	/**
+	 * 设置存活时间
+	 *
+	 * @param key     键
+	 * @param timeout 存活时长
+	 */
+	public void expire(String key, Duration timeout) {
+		redisTemplate.expire(key, timeout);
+	}
+
+	/**
+	 * 设置存活时间
+	 *
+	 * @param key 键
+	 * @param s   存活秒数
+	 */
+	public void expire(String key, long s) {
+		expire(key, Duration.ofSeconds(s));
+	}
+
+	/**
+	 * 设置存活时间
+	 *
+	 * @param key 键
+	 * @param h   存活小时
+	 */
+	public void expire(String key, int h) {
+		expire(key, Duration.ofHours(h));
+	}
+
+	/**
+	 * 设置数据
+	 * 生存时间为永久
+	 *
+	 * @param key 键
+	 * @param v   值
+	 */
+	public void set(String key, T v) {
+		redisTemplate.opsForValue().set(key, v);
+	}
+
+	/**
+	 * 设置数据
+	 *
+	 * @param key 键
+	 * @param v   值
+	 * @param keepTimeout 是否保持剩余生存时间
+	 */
+	public void set(String key, T v, boolean keepTimeout) {
+		if (keepTimeout) {
+			set(key, v, null);
+		} else {
+			set(key, v);
+		}
+	}
+
+	/**
+	 * 设置数据
+	 * 会重置生存时间
+	 *
+	 * @param key 键
+	 * @param v   值
+	 * @param s   存活秒数
+	 */
+	public void set(String key, T v, long s) {
+		set(key, v, Duration.ofSeconds(s));
+	}
+
+	/**
+	 * 设置数据
+	 * 会重置生存时间
+	 *
+	 * @param key 键
+	 * @param v   值
+	 * @param h   存活小时
+	 */
+	public void set(String key, T v, int h) {
+		set(key, v, Duration.ofHours(h));
+	}
+
+	/**
+	 * 设置数据
+	 *
+	 * @param key     键
+	 * @param v       值
+	 * @param timeout 存活时间（为 null 时保持剩余生存时间）
+	 */
+	public void set(String key, T v, Duration timeout) {
+		if (timeout == null) {
+			Long expire = redisTemplate.getExpire(key, TimeUnit.SECONDS);
+			if (expire != null && 0 < expire) {
+				timeout = Duration.ofSeconds(expire);
+				redisTemplate.opsForValue().set(key, v, timeout);
+			} else {
+				redisTemplate.opsForValue().set(key, v);
+			}
+		} else {
+			redisTemplate.opsForValue().set(key, v, timeout);
+		}
+	}
+
+	/**
+	 * 获取值
+	 *
+	 * @param key 键
+	 *
+	 * @return 值
+	 */
+	public T get(String key) {
+		return redisTemplate.opsForValue().get(key);
+	}
+
+	/**
+	 * 对列表添加值
+	 *
+	 * @param key 键
+	 * @param t   值
+	 */
+	public void add(String key, T t) {
+		redisTemplate.opsForList().leftPush(key, t);
+	}
+
+	/**
+	 * 对列表批量添加值
+	 *
+	 * @param key 键
+	 * @param t   值
+	 */
+	@SafeVarargs
+	public final void addAll(String key, T... t) {
+		redisTemplate.opsForList().leftPushAll(key, t);
+	}
+
+	/**
+	 * 获取为列表
+	 *
+	 * @param key 键
+	 * @return 列表
+	 */
+	public List<T> getList(String key) {
+		return redisTemplate.opsForList().range(key, 0, -1);
+	}
+
+	/**
+	 * 为列表时查找是否存在某值
+	 *
+	 * @param key 键
+	 * @param t   值
+	 * @return 为 true 时表示存在
+	 */
+	public boolean contains(String key, T t) {
+		return getList(key).contains(t);
+	}
+
+	/** @return 所有值 */
+	public List<T> values() {
+		List<T> r = new ArrayList<>();
+		List<String> keys = keys("*");
+		for (String key : keys) {
+			r.add(get(key));
+		}
+		return r;
+	}
+
+	/**
+	 * scan 实现
+	 *
+	 * @param pattern  表达式
+	 * @param consumer 对迭代到的key进行操作
+	 */
+	public void scan(String pattern, Consumer<byte[]> consumer) {
+		this.redisTemplate.execute((RedisConnection connection) -> {
+			try (Cursor<byte[]> cursor = connection.scan(ScanOptions.scanOptions().count(Long.MAX_VALUE).match(pattern).build())) {
+				cursor.forEachRemaining(consumer);
+				return null;
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e);
+			}
+		});
+	}
+
+	/**
+	 * 获取符合条件的 key
+	 *
+	 * @param pattern 表达式
+	 *
+	 * @return keys
+	 */
+	public List<String> keys(String pattern) {
+		List<String> keys = new ArrayList<>();
+		this.scan(pattern, item -> {
+			String key = new String(item, StandardCharsets.UTF_8);
+			keys.add(key);
+		});
+		return keys;
+	}
+
+	/** 删库 */
+	public void flushAll() {
+		Objects.requireNonNull(redisTemplate.getConnectionFactory()).getConnection().flushAll();
+	}
+}

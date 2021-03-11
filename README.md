@@ -1,2 +1,5 @@
-# blog-backend
-初始化
+## 夜雨博客（后端）
+
+SpringBoot MySQL MyBatis Redis BetterJava
+
+`BetterJava` 未开源

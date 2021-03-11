@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="net.imyeyu.blog.mapper.CommentMapper">
+	<!-- 获取文章评论（附带子评论） -->
+    <select id="findByArticleId" parameterType="map" resultMap="findByArticleIdResult">
+		SELECT
+			c.id,
+			c.article_id,
+			c.user_id,
+			uc.user_name AS user_name,
+			c.nick,
+			c.data,
+			c.created_at,
+			cr.id AS cr_id,
+			cr.comment_id,
+			crc.cr_length,
+			cr.sender_id,
+			cr.receiver_id,
+			us.user_name AS sender_name,
+			ur.user_name AS receiver_name,
+			cr.sender_nick,
+			cr.receiver_nick,
+			cr.data AS cr_data,
+			cr.created_at AS cr_created_at
+		FROM (
+			SELECT
+				*
+			FROM
+				comments AS c
+			WHERE
+				c.article_id = #{articleId}
+				AND deleted_at IS NULL
+			ORDER BY
+				created_at DESC
+			LIMIT
+				#{offset}, 10
+		) AS c
+		LEFT JOIN
+			users AS uc
+		ON
+			uc.id = c.user_id
+		LEFT JOIN (
+			SELECT
+				*
+			FROM (
+				SELECT
+					*,
+					ROW_NUMBER() OVER (PARTITION BY comment_id) AS seq
+				FROM
+					comment_reply
+				WHERE
+					deleted_at IS NULL
+			) AS cr
+			WHERE
+				cr.seq &lt; 7
+		) AS cr
+		ON
+			cr.comment_id = c.id
+			AND cr.deleted_at IS NULL
+		LEFT JOIN
+			users AS us
+		ON
+			us.id = cr.sender_id
+		LEFT JOIN
+			users AS ur
+		ON
+			ur.id = cr.receiver_id
+		LEFT JOIN(
+			SELECT
+				ANY_VALUE(comment_id) AS crc_id,
+				COUNT(comment_id) AS cr_length
+			FROM
+				comment_reply
+			GROUP BY
+				comment_id
+		) AS crc
+		ON
+			crc.crc_id = c.id
+    </select>
+	<resultMap id="findByArticleIdResult" type="net.imyeyu.blog.entity.Comment">
+		<id property="id" column="id"/>
+		<result property="nick" column="nick"/>
+		<result property="data" column="data"/>
+        <result property="repliesLength" column="cr_length" />
+		<result property="createdAt" column="created_at"/>
+		<!-- 发布者 -->
+		<association property="user" javaType="net.imyeyu.blog.entity.User">
+            <id property="id" column="user_id"/>
+            <result property="userName" column="user_name"/>
+        </association>
+        <!-- 关联回复 -->
+        <collection property="replies" ofType="net.imyeyu.blog.entity.CommentReply">
+        	<id property="id" column="cr_id" />
+        	<result property="commentId" column="comment_id" />
+        	<result property="senderNick" column="sender_nick" />
+        	<result property="receiverNick" column="receiver_nick" />
+        	<result property="data" column="cr_data" />
+			<result property="createdAt" column="cr_created_at"/>
+        	<!-- 回复者 -->
+			<association property="sender" javaType="net.imyeyu.blog.entity.User">
+	            <id property="id" column="sender_id"/>
+	            <result property="userName" column="sender_name"/>
+	        </association>
+	        <!-- 被回复者 -->
+			<association property="receiver" javaType="net.imyeyu.blog.entity.User">
+	            <id property="id" column="receiver_id"/>
+	            <result property="userName" column="receiver_name"/>
+	        </association>
+        </collection>
+	</resultMap>
+	<!-- 新增评论 -->
+	<insert id="create" parameterType="net.imyeyu.blog.entity.Comment" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO `comments` (
+			`article_id`,
+			`user_id`,
+			`nick`,
+			`data`,
+			`created_at`
+		) VALUES (
+			#{comment.articleId},
+			#{comment.userId},
+			#{comment.nick},
+			#{comment.data},
+			#{comment.createdAt}
+		);
+	</insert>
+	<!-- 新增子评论 -->
+	<insert id="createReply" parameterType="net.imyeyu.blog.entity.CommentReply" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO `comment_reply` (
+			`comment_id`,
+			`sender_id`,
+			`receiver_id`,
+			`sender_nick`,
+			`receiver_nick`,
+			`data`,
+			`created_at`
+		) VALUES (
+			#{commentReply.commentId},
+			#{commentReply.senderId},
+			#{commentReply.receiverId},
+			#{commentReply.senderNick},
+			#{commentReply.receiverNick},
+			#{commentReply.data},
+			#{commentReply.createdAt}
+		);
+	</insert>
+	<!-- 获取文章子评论 -->
+    <select id="findRepliesByCommentId" parameterType="map" resultMap="findRepliesByCommentIdResult">
+	    SELECT
+			c.id,
+			sender_id,
+			us.user_name AS sender_name,
+			receiver_id,
+			ur.user_name AS receiver_name,
+			sender_nick,
+			receiver_nick,
+			data,
+			c.created_at
+		FROM (
+			SELECT
+				id,
+				sender_id,
+				receiver_id,
+				sender_nick,
+				receiver_nick,
+				data,
+				created_at
+			FROM
+				comment_reply AS c
+			WHERE
+				comment_id = #{commentId}
+				AND deleted_at IS NULL
+			LIMIT #{offset}, 6
+		) AS c
+		LEFT JOIN
+			users AS us
+		ON
+			us.id = c.sender_id
+		LEFT JOIN
+			users AS ur
+		ON
+			ur.id = c.receiver_id
+    </select>
+	<resultMap id="findRepliesByCommentIdResult" type="net.imyeyu.blog.entity.CommentReply">
+		<id property="id" column="id"/>
+		<result property="data" column="data"/>
+		<result property="senderId" column="sender_id"/>
+		<result property="senderNick" column="sender_nick"/>
+		<result property="receiverId" column="receiver_id"/>
+		<result property="receiverNick" column="receiver_nick"/>
+		<result property="createdAt" column="created_at"/>
+		<!-- 回复者 -->
+		<association property="sender" javaType="net.imyeyu.blog.entity.User">
+            <id property="id" column="sender_id"/>
+            <result property="userName" column="sender_name"/>
+        </association>
+		<!-- 被回复者 -->
+		<association property="receiver" javaType="net.imyeyu.blog.entity.User">
+            <id property="id" column="receiver_id"/>
+            <result property="userName" column="receiver_name"/>
+        </association>
+	</resultMap>
+</mapper>

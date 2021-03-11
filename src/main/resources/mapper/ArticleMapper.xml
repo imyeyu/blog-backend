@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="net.imyeyu.blog.mapper.ArticleMapper">
+	<!-- 获取 -->
+	<select id="findById" resultType="net.imyeyu.blog.entity.Article" parameterType="long">
+		SELECT * FROM `article` WHERE `id` = #{id}
+	</select>
+	<!-- 获取列表（摘要） -->
+	<select id="find" resultMap="findResult">
+		SELECT
+			a.id,
+			a.title,
+			a.digest,
+			a.likes,
+			a.reads,
+			a.comments,
+			a.is_hide,
+			a.created_at,
+			a.updated_at
+		FROM
+			article AS a
+		WHERE
+			a.deleted_at IS NULL
+		ORDER BY
+			IF(ISNULL(a.updated_at), 1, 0),
+			a.created_at
+			DESC
+		LIMIT
+			#{offset}, #{limit}
+	</select>
+	<resultMap id="findResult" type="net.imyeyu.blog.entity.Article">
+		<id property="id" column="id"/>
+		<result property="title" column="title"/>
+		<result property="type" column="type"/>
+		<result property="digest" column="digest"/>
+		<result property="reads" column="reads"/>
+		<result property="likes" column="likes"/>
+		<result property="comments" column="comments"/>
+		<result property="isHide" column="is_hide"/>
+		<result property="createdAt" column="created_at"/>
+		<result property="updatedAt" column="updated_at"/>
+	</resultMap>
+	<!-- 更新 -->
+	<update id="update" parameterType="net.imyeyu.blog.entity.Article">
+		<if test="id != null">
+			UPDATE article
+			<set>
+				title = #{title},
+				type = #{type},
+				clazz = #{clazz},
+				label = #{label},
+				digest = #{digest},
+				data = #{data},
+
+				`reads` = #{reads},
+				likes = #{likes},
+				comments = #{comments},
+
+				is_hide = #{isHide},
+
+				created_at = #{createdAt},
+				updated_at = #{updatedAt},
+				deleted_at = #{deletedAt}
+			</set>
+			WHERE id = #{id}
+		</if>
+	</update>
+</mapper>

@@ -1,3 +1,10 @@
+.gitignore
+.mvn/**
+.idea/**
+/src/main/resources/application-dev.yml
+/src/main/resources/application-prod.yml
+
+
 target/
 pom.xml.tag
 pom.xml.releaseBackup

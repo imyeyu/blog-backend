@@ -9,6 +9,7 @@
 	<select id="find" resultMap="findResult">
 		SELECT
 			a.id,
+			a.type,
 			a.title,
 			a.digest,
 			a.likes,

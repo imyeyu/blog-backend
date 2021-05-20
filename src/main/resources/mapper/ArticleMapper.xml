@@ -23,9 +23,8 @@
 		WHERE
 			a.deleted_at IS NULL
 		ORDER BY
-			IF(ISNULL(a.updated_at), 1, 0),
-			a.created_at
-			DESC
+			a.updated_at DESC,
+			a.created_at DESC
 		LIMIT
 			#{offset}, #{limit}
 	</select>

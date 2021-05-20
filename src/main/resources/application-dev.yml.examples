@@ -1,55 +1,48 @@
-# SpringBoot 开发环境配置示例，删除文件名后缀 .examples 以生效
-
 server:
-  port: 8081
+    port: 8081
 multiple:
-  environment:
-    configure: dev environment
+    environment:
+        configure: dev environment
 
+# Spring
 spring:
-  # 数据库配置
-  datasource:
-    url: jdbc:mysql://localhost:3306/blog_test?serverTimezone=UTC&characterEncoding=UTF-8
-    username: root
-    password: root
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    # 连接池
-    hikari:
-      # 连接池最大连接数，默认是 10
-      maximum-pool-size: 60
-      # 链接超时时间，默认 30000(30 秒)
-      connection-timeout: 60000
-      # 空闲连接存活最大时间，默认 600000(10 分钟)
-      idle-timeout: 60000
-      # 连接将被测试活动的最大时间量
-      validation-timeout: 3000
-      # 此属性控制池中连接的最长生命周期，值 0 表示无限生命周期，默认 1800000(30 分钟)
-      max-lifetime: 60000
-      # 连接到数据库时等待的最长时间(秒)
-      login-timeout: 5
-      # 池中维护的最小空闲连接数
-      minimum-idle: 10
-
-  redis:
-    host: localhost
-    port: 6379
-    password:
-    timeout: 8000
-    database:
-      article-hot: 0
-      article-read: 1
-    lettuce:
-      pool:
-        max-wait: -1
-        max-idle: 8
-        min-idle: 0
-        max-active: 8
-
+    datasource: # 数据库配置
+        url: jdbc:mysql://localhost:3306/blog_test?serverTimezone=UTC&characterEncoding=UTF-8
+        username: root
+        password: root
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        hikari: # 连接池
+            maximum-pool-size: 60     # 连接池最大连接数，默认是 10
+            connection-timeout: 60000 # 链接超时时间，默认 30000(30 秒)
+            idle-timeout: 60000       # 空闲连接存活最大时间，默认 600000(10 分钟)
+            validation-timeout: 3000  # 连接将被测试活动的最大时间量
+            max-lifetime: 60000       # 此属性控制池中连接的最长生命周期，值 0 表示无限生命周期，默认 1800000(30 分钟)
+            login-timeout: 5          # 连接到数据库时等待的最长时间(秒)
+            minimum-idle: 10          # 池中维护的最小空闲连接数
+    redis:      # Redis 数据库
+        host: localhost
+        port: 6379
+        password:
+        timeout: 8000
+        database:
+            article-hot: 0  # 热门文章缓存
+            article-read: 1 # IP 阅读记录缓存
+        lettuce: # 连接池配置
+            pool:
+                max-wait: -1
+                max-idle: 8
+                min-idle: 0
+                max-active: 8
+# MyBatis
 mybatis:
-  # XML 位置
-  mapper-locations: classpath:mapper/*.xml
-  # 实体类位置
-  type-aliases-package: net.imyeyu.blog.entity
-  configuration:
-    # 映射驼峰转下划线
-    map-underscore-to-camel-case: true
+    mapper-locations: classpath:mapper/*.xml     # XML 位置
+    type-aliases-package: net.imyeyu.blog.entity # 实体类位置
+    configuration:
+        map-underscore-to-camel-case: true       # 映射驼峰转下划线
+
+# CORS 跨域
+cors:
+    allow-origin: '*'       # 允许访问的客户端域名，如：http://web.xxx.com，多个域名逗号分割，* 表示不做任何限制。
+    allow-methods: '*'      # 允许请求的方法名，多个方法名逗号分割，如：GET, POST, PUT, DELETE, OPTIONS。
+    allow-credentials: true # 是否允许请求带有验证信息，若要获取客户端域下的 Cookie 时，设置为 true。
+    allow-headers: '*'      # 允许服务端访问的客户端请求头，多个请求头逗号分割，如：Content-Type。

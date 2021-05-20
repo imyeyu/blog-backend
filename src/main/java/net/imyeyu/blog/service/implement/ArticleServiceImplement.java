@@ -37,6 +37,11 @@ public class ArticleServiceImplement implements ArticleService {
 	}
 
 	@Override
+	public Article find(Long id) {
+		return mapper.findById(id);
+	}
+
+	@Override
 	public List<Article> find(long offset, int limit) {
 		return mapper.find(offset, limit);
 	}
@@ -44,11 +49,6 @@ public class ArticleServiceImplement implements ArticleService {
 	@Override
 	public List<Article> findByList(long offset, int limit) {
 		return find(offset, limit).stream().filter(article -> !article.isHide()).collect(Collectors.toList());
-	}
-
-	@Override
-	public Article findById(Long id) {
-		return mapper.findById(id);
 	}
 
 	@Override

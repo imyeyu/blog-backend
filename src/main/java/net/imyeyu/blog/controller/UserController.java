@@ -1,8 +1,10 @@
 package net.imyeyu.blog.controller;
 
 import com.google.gson.Gson;
+import net.imyeyu.blog.bean.Response;
 import net.imyeyu.blog.entity.User;
 import net.imyeyu.blog.service.UserService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,8 +25,14 @@ public class UserController extends BaseController {
 	private UserService service;
 	
 	@PostMapping("/login")
-	public String doLogin(@RequestParam("user") String user, @RequestParam("password") String password) {
-		return "";
+	public Response<?> doLogin(@RequestParam("user") String user, @RequestParam("password") String password) {
+		if (StringUtils.isEmpty(user)) {
+			return new Response<>(Code.MISS_PARAMS, "缺少参数 user");
+		}
+		if (StringUtils.isEmpty(password)) {
+			return new Response<>(Code.MISS_PARAMS, "缺少参数 password");
+		}
+		return ;
 	}
 	
 	@PostMapping("/create")

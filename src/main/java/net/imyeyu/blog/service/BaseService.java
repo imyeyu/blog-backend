@@ -3,7 +3,7 @@ package net.imyeyu.blog.service;
 import java.util.List;
 
 /**
- * 基础数据库交互接口
+ * 基本数据库交互接口
  * 
  * @param <T> 交互实体
  *
@@ -15,6 +15,14 @@ public interface BaseService<T> {
 	void create(T t);
 
 	/**
+	 * 根据 ID 获取对象
+	 *
+	 * @param id 索引
+	 * @return   原型对象
+	 */
+	T find(Long id);
+
+	/**
 	 * 查询部分
 	 * 
 	 * @param offset 偏移
@@ -22,14 +30,6 @@ public interface BaseService<T> {
 	 * @return 原型类型 List 对象
 	 */
 	List<T> find(long offset, int limit);
-
-	/**
-	 * 根据 ID 获取对象
-	 * 
-	 * @param id 索引
-	 * @return   原型对象
-	 */
-	T findById(Long id);
 	
 	/** @param t  修改数据 */
 	void update(T t);

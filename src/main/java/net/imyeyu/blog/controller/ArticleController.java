@@ -47,7 +47,7 @@ public class ArticleController extends BaseController {
 	 */
 	@RequestMapping("/{id}")
 	public Response<?> getArticle(@PathVariable long id, HttpServletRequest req) {
-		Article article = service.findById(id);
+		Article article = service.find(id);
 		service.read(req.getRemoteAddr(), article);
 		return new Response<>(Code.SUCCESS, article);
 	}

@@ -26,7 +26,7 @@ public class Token {
 	@Autowired
 	private UserService service;
 	
-	private String token;
+	private final String token;
 	
 	public Token(String token) {
 		this.token = token;
@@ -68,7 +68,7 @@ public class Token {
 		}
 		// 数据库验证
 		if (!isValid) {
-			if (token.equals(generate(service.findById(uid)))) {
+			if (token.equals(generate(service.find(uid)))) {
 				isValid = true; // 数据库通过
 				session.setAttribute("user." + uid, token);
 				redis.opsForValue().set("user." + uid, token, 2, TimeUnit.MINUTES);
@@ -81,7 +81,7 @@ public class Token {
 	 * 生成 Token
 	 * 
 	 * @param user 用户
-	 * @return    Token
+	 * @return Token
 	 */
 	public static String generate(User user) {
 		return user.getId() + "#" + Encode.md5(user.getUserName() + "3.012+" + user.getPassword());

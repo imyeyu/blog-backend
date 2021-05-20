@@ -27,12 +27,12 @@ public class CommentServiceImplement implements CommentService {
 	}
 
 	@Override
-	public List<Comment> find(long offset, int limit) {
+	public Comment find(Long id) {
 		return null;
 	}
 
 	@Override
-	public Comment findById(Long id) {
+	public List<Comment> find(long offset, int limit) {
 		return null;
 	}
 

@@ -22,9 +22,15 @@ public class UserServiceImplement implements UserService {
 
 	@Override
 	public void create(User user) {
-		user.setPassword(Encode.md5(user.getCreatedAt() + "Nagiasu" + user.getPassword()));
 		user.setCreatedAt(System.currentTimeMillis());
+		// 加盐摘要
+		user.setPassword(Encode.md5(user.getCreatedAt() + "Nagiasu" + user.getPassword()));
 		mapper.create(user);
+	}
+
+	@Override
+	public User find(Long id) {
+		return null;
 	}
 
 	@Override
@@ -33,12 +39,8 @@ public class UserServiceImplement implements UserService {
 	}
 
 	@Override
-	public User findById(Long id) {
-		return null;
-	}
-
-	@Override
 	public void update(User user) {
+		// 更新密码
 		user.setPassword(Encode.md5(user.getCreatedAt() + "Nagiasu" + user.getPassword()));
 	}
 

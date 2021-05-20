@@ -53,7 +53,7 @@ public class CommentController extends BaseController {
 	@PostMapping("")
 	public Response<?> create(@RequestBody CaptchaData<Comment> cd) {
 		try {
-			articleService.comment(articleService.findById(cd.getData().getArticleId()));
+			articleService.comment(articleService.find(cd.getData().getArticleId()));
 			commentService.create(cd.getData());
 			return new Response<>(Code.SUCCESS, cd.getData());
 		} catch (Exception e) {
@@ -71,8 +71,8 @@ public class CommentController extends BaseController {
 	@PostMapping("/reply")
 	public Response<?> createReply(@RequestBody CommentReply commentReply) {
 		try {
-			long aid = commentService.findById(commentReply.getCommentId()).getArticleId();
-			articleService.comment(articleService.findById(aid));
+			long aid = commentService.find(commentReply.getCommentId()).getArticleId();
+			articleService.comment(articleService.find(aid));
 			commentService.createReply(commentReply);
 			return new Response<>(Code.SUCCESS, commentReply);
 		} catch (Exception e) {

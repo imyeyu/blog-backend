@@ -1,5 +1,7 @@
 package net.imyeyu.blog.entity;
 
+import lombok.Data;
+
 import java.io.Serializable;
 
 /**
@@ -8,6 +10,7 @@ import java.io.Serializable;
  *
  * 夜雨 创建于 2021/3/1 17:10
  */
+@Data
 public class ArticleHot implements Serializable {
 
 	private long id;
@@ -22,37 +25,5 @@ public class ArticleHot implements Serializable {
 
 	public void increment() {
 		count++;
-	}
-
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public int getCount() {
-		return count;
-	}
-
-	public void setCount(int count) {
-		this.count = count;
-	}
-
-	public Long getRecentAt() {
-		return recentAt;
-	}
-
-	public void setRecentAt(Long recentAt) {
-		this.recentAt = recentAt;
 	}
 }

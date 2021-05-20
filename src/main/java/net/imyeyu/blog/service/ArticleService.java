@@ -12,6 +12,15 @@ import java.util.List;
  */
 public interface ArticleService extends BaseService<Article> {
 
+	/**
+	 * 查询文章（主页列表，过滤隐藏的文章）
+	 *
+	 * @param offset 偏移
+	 * @param limit  数量
+	 * @return 文章列表
+	 */
+	List<Article> findByList(long offset, int limit);
+
 	/** @return 每周阅读排行 */
 	List<ArticleHot> getArticleHot();
 

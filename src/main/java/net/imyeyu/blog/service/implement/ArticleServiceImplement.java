@@ -13,6 +13,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 文章操作
@@ -38,6 +39,11 @@ public class ArticleServiceImplement implements ArticleService {
 	@Override
 	public List<Article> find(long offset, int limit) {
 		return mapper.find(offset, limit);
+	}
+
+	@Override
+	public List<Article> findByList(long offset, int limit) {
+		return find(offset, limit).stream().filter(article -> !article.isHide()).collect(Collectors.toList());
 	}
 
 	@Override

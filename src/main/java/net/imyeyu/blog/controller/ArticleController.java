@@ -1,15 +1,17 @@
 package net.imyeyu.blog.controller;
 
+import net.imyeyu.blog.bean.Response;
 import net.imyeyu.blog.entity.Article;
-import net.imyeyu.blog.entity.ArticleHot;
 import net.imyeyu.blog.service.ArticleService;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 /**
  * 文章接口
@@ -30,8 +32,11 @@ public class ArticleController extends BaseController {
 	 * @return 文章列表
 	 */
 	@RequestMapping("")
-	public List<Article> getArticles(long offset) {
-		return service.find(offset, 16);
+	public Response<?> getArticles(@RequestParam Long offset) {
+		if (ObjectUtils.isEmpty(offset)) {
+			return new Response<>(Code.MISS_PARAMS, "缺少参数 offset");
+		}
+		return new Response<>(Code.SUCCESS, service.findByList(offset, 16));
 	}
 
 	/**
@@ -41,15 +46,15 @@ public class ArticleController extends BaseController {
 	 * @return 文章
 	 */
 	@RequestMapping("/{id}")
-	public Article getArticle(@PathVariable long id, HttpServletRequest req) {
+	public Response<?> getArticle(@PathVariable long id, HttpServletRequest req) {
 		Article article = service.findById(id);
 		service.read(req.getRemoteAddr(), article);
-		return article;
+		return new Response<>(Code.SUCCESS, article);
 	}
 
 	/** @return 每周访问排行榜 */
 	@RequestMapping("/hot")
-	public List<ArticleHot> getArticleHot() {
-		return service.getArticleHot();
+	public Response<?> getArticleHot() {
+		return new Response<>(Code.SUCCESS, service.getArticleHot());
 	}
 }

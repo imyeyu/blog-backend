@@ -1,18 +1,16 @@
 package net.imyeyu.blog.controller;
 
-import net.imyeyu.blog.entity.CaptchaData;
+import net.imyeyu.blog.bean.CaptchaData;
+import net.imyeyu.blog.bean.Response;
 import net.imyeyu.blog.entity.Comment;
 import net.imyeyu.blog.entity.CommentReply;
 import net.imyeyu.blog.service.ArticleService;
 import net.imyeyu.blog.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 /**
  * 评论操作接口
@@ -37,18 +35,13 @@ public class CommentController extends BaseController {
 	 * @return 文章评论
 	 */
 	@RequestMapping("")
-	public List<Comment> findByArticleId(Long articleId, long offset) {
-		try {
-			return commentService.findByArticleId(articleId, offset);
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-			return null;
-		}
+	public Response<?> findByArticleId(Long articleId, long offset) {
+		return new Response<>(Code.SUCCESS, commentService.findByArticleId(articleId, offset));
 	}
 
 	@RequestMapping("/reply")
-	public List<CommentReply> findRepliesByCommentId(Long commentId, Long offset) {
-		return commentService.findRepliesByCommentId(commentId, offset);
+	public Response<?> findRepliesByCommentId(Long commentId, Long offset) {
+		return new Response<>(Code.SUCCESS, commentService.findRepliesByCommentId(commentId, offset));
 	}
 
 	/**
@@ -58,14 +51,14 @@ public class CommentController extends BaseController {
 	 * @return 评论结果
 	 */
 	@PostMapping("")
-	public ResponseEntity<?> create(@RequestBody CaptchaData<Comment> cd) {
+	public Response<?> create(@RequestBody CaptchaData<Comment> cd) {
 		try {
-			articleService.comment(articleService.findById(cd.getT().getArticleId()));
-			commentService.create(cd.getT());
-			return ResponseEntity.status(200).body(cd.getT());
+			articleService.comment(articleService.findById(cd.getData().getArticleId()));
+			commentService.create(cd.getData());
+			return new Response<>(Code.SUCCESS, cd.getData());
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.status(500).body(e.getMessage());
+			return new Response<>(Code.ERROR, "服务端异常：" + e.getMessage());
 		}
 	}
 
@@ -76,15 +69,15 @@ public class CommentController extends BaseController {
 	 * @return 回复结果
 	 */
 	@PostMapping("/reply")
-	public ResponseEntity<?> createReply(@RequestBody CommentReply commentReply) {
+	public Response<?> createReply(@RequestBody CommentReply commentReply) {
 		try {
 			long aid = commentService.findById(commentReply.getCommentId()).getArticleId();
 			articleService.comment(articleService.findById(aid));
 			commentService.createReply(commentReply);
-			return ResponseEntity.status(200).body(commentReply);
+			return new Response<>(Code.SUCCESS, commentReply);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.status(500).body(e.getMessage());
+			return new Response<>(Code.ERROR, "服务端异常：" + e.getMessage());
 		}
 	}
 }

@@ -17,7 +17,7 @@ public interface UserService extends BaseService<User> {
 	 * @param password 密码
 	 * @return true 为登录成功
 	 */
-	boolean doLogin(String user, String password) throws ServiceException;
+	boolean doSignin(String user, String password) throws ServiceException;
 
 	User findByName(String name);
 

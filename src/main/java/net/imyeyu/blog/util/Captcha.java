@@ -2,7 +2,11 @@ package net.imyeyu.blog.util;
 
 import lombok.Getter;
 import net.imyeyu.blog.controller.BaseController;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -37,11 +41,13 @@ public class Captcha {
 		g.setFont(new Font("Fixedsys", Font.BOLD, 20));
 		for (int i = 0; i < 4; i++) {
 			g.setColor(new Color(RANDOM.nextInt(155), RANDOM.nextInt(155), RANDOM.nextInt(155)));
+			// 随机角度
 			int degree = RANDOM.nextInt() % 20;
+			// 随机字符
 			int n = RANDOM.nextInt(c.length);
 			// 倾斜
 			g.rotate(degree * Math.PI / 180, 5 + 16 * i, 18);
-			// 绘制
+			// 绘制字符
 			g.drawString(c[n] + "", 8 + 16 * i, 16);
 			// 回正
 			g.rotate(-degree * Math.PI / 180, 5 + 16 * i, 18);
@@ -50,11 +56,7 @@ public class Captcha {
 		// 绘制干扰线
 		for (int i = 0; i < 10; i++) {
 			g.setColor(new Color(RANDOM.nextInt(155), RANDOM.nextInt(155), RANDOM.nextInt(155)));
-			int x1 = RANDOM.nextInt(width);
-			int y1 = RANDOM.nextInt(height);
-			int x2 = RANDOM.nextInt(width);
-			int y2 = RANDOM.nextInt(height);
-			g.drawLine(x1, y1, x2, y2);
+			g.drawLine(RANDOM.nextInt(width), RANDOM.nextInt(height), RANDOM.nextInt(width), RANDOM.nextInt(height));
 		}
 	}
 
@@ -69,5 +71,28 @@ public class Captcha {
 		g.drawString("ERR." + code.getCode(), 2, 18);
 		g.setColor(Color.DARK_GRAY);
 		return img;
+	}
+
+	/**
+	 * 验证
+	 *
+	 * @param from    Session 验证码标记
+	 * @return true 为正确
+	 */
+	public static boolean isValid(HttpSession session, String captcha, String from) {
+		if (!StringUtils.isEmpty(captcha)) {
+			Object sessionObject = session.getAttribute(from + "_CAPTCHA");
+			if (!ObjectUtils.isEmpty(sessionObject)) {
+				boolean isValid = captcha.equalsIgnoreCase(sessionObject.toString());
+				if (isValid) {
+					// 通过
+					return true;
+				} else {
+					// 不通过，清除缓存
+					session.removeAttribute(from + "_CAPTCHA");
+				}
+			}
+		}
+		return false;
 	}
 }

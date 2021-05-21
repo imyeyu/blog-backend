@@ -30,7 +30,7 @@ public class MainController extends BaseController {
 	}
 
 	/**
-	 * 获取验证码图像（返回 jpeg 图像流）
+	 * 获取验证码图像（返回 jpeg 图像流，缓存于 Session）
 	 *
 	 * @param params 需要 width 宽度，height 高度，from 来自模块
 	 * @param request  请求体
@@ -71,7 +71,7 @@ public class MainController extends BaseController {
 			// 生成验证码
 			Captcha captcha = new Captcha(Integer.parseInt(width), Integer.parseInt(height));
 			// 缓存校验码
-			request.getSession().setAttribute(from + "_CAPTCHA", captcha.getCode());
+			request.getSession().setAttribute(from + "_CAPTCHA", captcha.getCode().toString());
 			// 输出图像流
 			ImageIO.write(captcha.getImage(), "jpg", response.getOutputStream());
 		} catch (IOException e) {

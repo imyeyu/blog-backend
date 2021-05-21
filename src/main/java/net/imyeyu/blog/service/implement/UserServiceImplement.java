@@ -24,7 +24,7 @@ public class UserServiceImplement implements UserService {
     private UserMapper mapper;
 
 	@Override
-	public boolean doLogin(String user, String password) throws ServiceException {
+	public boolean doSignin(String user, String password) throws ServiceException {
 		User result;
 		if (Encode.isNumber(user)) {
 			// UID 登录
@@ -61,7 +61,7 @@ public class UserServiceImplement implements UserService {
 
 	@Override
 	public User find(Long id) {
-		return mapper.find(id);
+		return mapper.findById(id);
 	}
 
 	@Override

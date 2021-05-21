@@ -16,15 +16,9 @@ import java.util.function.Consumer;
 
 /**
  * RedisTemplate 功能封装
- * 夜雨 创建于 2021/3/2 17:46
+ * 夜雨 创建于 2021-03-02 17:46
  */
-public class RedisUtil<T> {
-
-	private final RedisTemplate<String, T> redisTemplate;
-
-	public RedisUtil(RedisTemplate<String, T> redisTemplate) {
-		this.redisTemplate = redisTemplate;
-	}
+public record RedisUtil<T>(RedisTemplate<String, T> redisTemplate) {
 
 	/**
 	 * 设置存活时间
@@ -70,8 +64,8 @@ public class RedisUtil<T> {
 	/**
 	 * 设置数据
 	 *
-	 * @param key 键
-	 * @param v   值
+	 * @param key         键
+	 * @param v           值
 	 * @param keepTimeout 是否保持剩余生存时间
 	 */
 	public void set(String key, T v, boolean keepTimeout) {
@@ -163,6 +157,7 @@ public class RedisUtil<T> {
 	 * 获取为列表
 	 *
 	 * @param key 键
+	 *
 	 * @return 列表
 	 */
 	public List<T> getList(String key) {
@@ -174,6 +169,7 @@ public class RedisUtil<T> {
 	 *
 	 * @param key 键
 	 * @param t   值
+	 *
 	 * @return 为 true 时表示存在
 	 */
 	public boolean contains(String key, T t) {

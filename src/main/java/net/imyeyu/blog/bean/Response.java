@@ -19,6 +19,10 @@ public class Response<T> {
 	private String msg;
 	private T data;
 
+	public Response(BaseController.Code code) {
+		this(code.getCode(), "", null);
+	}
+
 	public Response(BaseController.Code code, String msg) {
 		this(code.getCode(), msg, null);
 	}

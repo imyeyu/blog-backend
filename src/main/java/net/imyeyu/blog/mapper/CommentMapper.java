@@ -19,5 +19,5 @@ public interface CommentMapper {
 
 	Long create(@Param("comment") Comment comment);
 	
-	Long createReply(@Param("commentReply") CommentReply commentReply);
+	void createReply(@Param("commentReply") CommentReply commentReply);
 }

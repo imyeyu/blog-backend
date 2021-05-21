@@ -3,9 +3,12 @@ package net.imyeyu.blog.service.implement;
 import java.util.List;
 
 import net.imyeyu.betterjava.Encode;
+import net.imyeyu.blog.bean.ServiceException;
 import net.imyeyu.blog.entity.User;
 import net.imyeyu.blog.mapper.UserMapper;
 import net.imyeyu.blog.service.UserService;
+import net.imyeyu.blog.util.Token;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +24,34 @@ public class UserServiceImplement implements UserService {
     private UserMapper mapper;
 
 	@Override
+	public boolean doLogin(String user, String password) throws ServiceException {
+		User result;
+		if (Encode.isNumber(user)) {
+			// UID 登录
+			result = find(Long.parseLong(user));
+		} else if (user.contains("@")) {
+			// 邮箱登录
+			result = findByEmail(user);
+		} else {
+			// 用户名登陆
+			result = findByName(user);
+		}
+		if (!ObjectUtils.isEmpty(result)) {
+			String token = Token.generate(result);
+			// 令牌校验
+			boolean isValid = new Token(token).isValid(result.getId());
+			if (isValid) {
+				// 登录成功
+				return true;
+			} else {
+				throw new ServiceException("密码错误");
+			}
+		} else {
+			throw new ServiceException("用户不存在");
+		}
+	}
+
+	@Override
 	public void create(User user) {
 		user.setCreatedAt(System.currentTimeMillis());
 		// 加盐摘要
@@ -30,7 +61,17 @@ public class UserServiceImplement implements UserService {
 
 	@Override
 	public User find(Long id) {
-		return null;
+		return mapper.find(id);
+	}
+
+	@Override
+	public User findByName(String name) {
+		return mapper.findByName(name);
+	}
+
+	@Override
+	public User findByEmail(String email) {
+		return mapper.findByEmail(email);
 	}
 
 	@Override

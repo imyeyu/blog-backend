@@ -7,7 +7,7 @@ import java.util.List;
  * 
  * @param <T> 交互实体
  *
- * 夜雨 创建于 2021/2/23 21:32
+ * 夜雨 创建于 2021-02-23 21:32
  */
 public interface BaseService<T> {
 

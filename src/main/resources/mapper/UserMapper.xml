@@ -3,15 +3,15 @@
 <mapper namespace="net.imyeyu.blog.mapper.UserMapper">
 	<!-- 根据 ID 获取 -->
 	<select id="findById" resultType="net.imyeyu.blog.entity.User" parameterType="long">
-		SELECT * FROM `user` WHERE `id` = #{id}
+		SELECT * FROM `users` WHERE `id` = #{id}
 	</select>
 	<!-- 根据用户名获取 -->
 	<select id="findByName" resultType="net.imyeyu.blog.entity.User" parameterType="String">
-		SELECT * FROM `user` WHERE `name` = #{name}
+		SELECT * FROM `users` WHERE `name` = #{name}
 	</select>
 	<!-- 根据邮箱获取 -->
 	<select id="findByEmail" resultType="net.imyeyu.blog.entity.User" parameterType="String">
-		SELECT * FROM `user` WHERE `id` = #{email}
+		SELECT * FROM `users` WHERE `id` = #{email}
 	</select>
 	<!-- 获取列表 -->
     <select id="findAll" resultMap="findAllResult">

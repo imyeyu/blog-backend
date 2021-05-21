@@ -32,6 +32,6 @@ class ArticleTest {
 
 	@Test // 正常
 	public void testFindById() {
-		System.out.println(service.findById(2L));
+		System.out.println(service.find(2L));
 	}
 }

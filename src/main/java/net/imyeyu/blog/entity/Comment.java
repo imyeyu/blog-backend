@@ -1,6 +1,7 @@
 package net.imyeyu.blog.entity;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.util.List;
@@ -11,18 +12,13 @@ import java.util.List;
  * 夜雨 创建于 2021-02-25 14:46
  */
 @Data
-public class Comment implements Serializable {
-
-	private Long id;
+@EqualsAndHashCode(callSuper = true)
+public class Comment extends BaseEntity implements Serializable {
 
 	private Long articleId;
 	private Long userId;
 	private String nick;
 	private String data;
-
-	private Long createdAt;
-	private Long updatedAt;
-	private Long deletedAt;
 
 	private int repliesLength;
 	private User user;

@@ -1,6 +1,7 @@
 package net.imyeyu.blog.entity;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
@@ -10,13 +11,11 @@ import java.io.Serializable;
  * 夜雨 创建于 2021/3/1 17:11
  */
 @Data
-public class User implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+public class User extends BaseEntity implements Serializable {
 
-	private Long id;
 	private String email;
-	private String userName;
+	private String name;
 	private String password;
-	private Long createdAt;
 	private Long canceledAt;
-	private Long deletedAt;
 }

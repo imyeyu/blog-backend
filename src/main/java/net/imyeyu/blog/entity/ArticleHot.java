@@ -1,6 +1,7 @@
 package net.imyeyu.blog.entity;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
@@ -11,15 +12,15 @@ import java.io.Serializable;
  * 夜雨 创建于 2021/3/1 17:10
  */
 @Data
-public class ArticleHot implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+public class ArticleHot extends BaseEntity implements Serializable {
 
-	private long id;
 	private String title;
 	private int count = 1;
 	private Long recentAt; // 最近访问
 
-	public ArticleHot(long id, String title) {
-		this.id = id;
+	public ArticleHot(Long id, String title) {
+		setId(id);
 		this.title = title;
 	}
 

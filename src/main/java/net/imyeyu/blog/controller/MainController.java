@@ -1,12 +1,19 @@
 package net.imyeyu.blog.controller;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import net.imyeyu.betterjava.Encode;
+import net.imyeyu.blog.bean.Response;
+import net.imyeyu.blog.util.Captcha;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * 主接口
@@ -14,29 +21,66 @@ import org.springframework.web.bind.annotation.RestController;
  * 夜雨 创建于 2021/2/23 21:38
  */
 @RestController
-public class MainController {
-	
-	@Autowired
-	private RedisTemplate<String, String> redis;
-	
-	@RequestMapping("/")
-	public String say() {
-		return "It working";
+@RequestMapping("/")
+public class MainController extends BaseController {
+
+	@RequestMapping("")
+	public String root() {
+		return "It is working!";
 	}
-	
-	@RequestMapping("set")
-	public String set() {
-		redis.opsForValue().set("redis", "Redis 缓存测试 + " + new SimpleDateFormat("H:mm:ss").format(new Date()));
-		return "设置成功";
-	}
-	
-	@RequestMapping("get")
-	public String get() {
-		return "缓存值" + redis.opsForValue().get("redis");
-	}
-	
-	@RequestMapping("test")
-	public String test() {
-		return "ajax test";
+
+	/**
+	 * 获取验证码图像（返回 jpeg 图像流）
+	 *
+	 * @param params 需要 width 宽度，height 高度，from 来自模块
+	 * @param request  请求体
+	 * @param response 响应体
+	 */
+	@GetMapping("/captcha")
+	public void getCaptcha(@RequestParam Map<String, String> params, HttpServletRequest request, HttpServletResponse response) {
+		// 返回图像流
+		response.setContentType("image/png");
+		response.setDateHeader("expries", -1);
+		response.setHeader("Cache-Control", "no-cache"); // 禁止缓存
+		response.setHeader("Pragma", "no-cache");
+		try {
+			// 宽度
+			String width = params.get("width");
+			if (ObjectUtils.isEmpty(width)) {
+				ImageIO.write(Captcha.error(Code.MISS_PARAMS), "jpg", response.getOutputStream());
+				return;
+			} else if (!Encode.isNumber(width) || Integer.parseInt(width) < 64) {
+				ImageIO.write(Captcha.error(Code.BAD_PARAMS), "jpg", response.getOutputStream());
+				return;
+			}
+			// 高度
+			String height = params.get("height");
+			if (ObjectUtils.isEmpty(height)) {
+				ImageIO.write(Captcha.error(Code.MISS_PARAMS), "jpg", response.getOutputStream());
+				return;
+			} else if (!Encode.isNumber(height) || Integer.parseInt(height) < 19) {
+				ImageIO.write(Captcha.error(Code.BAD_PARAMS), "jpg", response.getOutputStream());
+				return;
+			}
+			// 来自
+			String from = params.get("from");
+			if (ObjectUtils.isEmpty(from)) {
+				ImageIO.write(Captcha.error(Code.MISS_PARAMS), "jpg", response.getOutputStream());
+				return;
+			}
+			// 生成验证码
+			Captcha captcha = new Captcha(Integer.parseInt(width), Integer.parseInt(height));
+			// 缓存校验码
+			request.getSession().setAttribute(from + "_CAPTCHA", captcha.getCode());
+			// 输出图像流
+			ImageIO.write(captcha.getImage(), "jpg", response.getOutputStream());
+		} catch (IOException e) {
+			e.printStackTrace();
+			try {
+				ImageIO.write(Captcha.error(Code.ERROR), "jpg", response.getOutputStream());
+			} catch (IOException subE) {
+				subE.printStackTrace();
+			}
+		}
 	}
 }

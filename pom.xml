@@ -11,13 +11,15 @@
 
 	<groupId>net.imyeyu</groupId>
 	<artifactId>blog</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0</version>
 	<packaging>war</packaging>
 	<name>BlogAPI</name>
 	<description>imyeyu.net API</description>
 
 	<properties>
-		<java.version>1.8</java.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>16</maven.compiler.source>
+		<maven.compiler.target>16</maven.compiler.target>
 	</properties>
 
 	<dependencies>
@@ -83,7 +85,7 @@
 		<dependency>
 			<groupId>net.imyeyu.betterjava</groupId>
 			<artifactId>BetterJava</artifactId>
-			<version>1.1</version>
+			<version>1.1.5</version>
 		</dependency>
 		<!-- lombok -->
 		<dependency>

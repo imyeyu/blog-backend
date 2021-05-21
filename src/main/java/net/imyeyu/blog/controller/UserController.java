@@ -71,7 +71,7 @@ public class UserController extends BaseController {
 		if (StringUtils.isEmpty(uid)) {
 			return new Response<>(ReturnCode.MISS_PARAMS, "缺少参数：uid");
 		} else if (!Encode.isNumber(uid)) {
-			return new Response<>(ReturnCode.MISS_PARAMS, "参数 uid 应该是个数字");
+			return new Response<>(ReturnCode.BAD_PARAMS, "参数 uid 应该是个数字");
 		}
 		if (StringUtils.isEmpty(params.get("token"))) {
 			return new Response<>(ReturnCode.MISS_PARAMS, "缺少参数：token");
@@ -86,11 +86,12 @@ public class UserController extends BaseController {
 	 * @return true 为注册成功
 	 */
 	@PostMapping("/register")
-	public Response<?> register(User user) {
+	public Response<?> register(@RequestBody User user) {
 		try {
 			service.create(user);
 			return new Response<>(ReturnCode.SUCCESS, user);
 		} catch (Exception e) {
+			e.printStackTrace();
 			return new Response<>(ReturnCode.ERROR, e.getMessage());
 		}
 	}

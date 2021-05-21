@@ -4,7 +4,6 @@ import net.imyeyu.blog.bean.Response;
 import net.imyeyu.blog.entity.Article;
 import net.imyeyu.blog.service.ArticleService;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +33,7 @@ public class ArticleController extends BaseController {
 	@RequestMapping("")
 	public Response<?> getArticles(@RequestParam Long offset) {
 		if (ObjectUtils.isEmpty(offset)) {
-			return new Response<>(Code.MISS_PARAMS, "缺少参数 offset");
+			return new Response<>(Code.MISS_PARAMS, "缺少参数：offset");
 		}
 		return new Response<>(Code.SUCCESS, service.findByList(offset, 16));
 	}

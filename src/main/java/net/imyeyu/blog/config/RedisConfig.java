@@ -14,6 +14,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
@@ -27,12 +28,17 @@ import java.time.Duration;
 @EnableAutoConfiguration
 public class RedisConfig extends CachingConfigurerSupport {
 
+	// 数据库
 	@Value("${spring.redis.database.article-hot}")
-	private int articleHotDatabase;
+	private int articleHotDB;
 
 	@Value("${spring.redis.database.article-read}")
-	private int articleReadDatabase;
+	private int articleReadDB;
 
+	@Value("${spring.redis.database.user-token}")
+	private int userTokenDB;
+
+	// 连接配置
 	@Value("${spring.redis.host}")
 	private String host;
 
@@ -57,6 +63,38 @@ public class RedisConfig extends CachingConfigurerSupport {
 	@Value("${spring.redis.lettuce.pool.max-wait}")
 	private int maxWait;
 
+	/** 长整型序列化对象 */
+	private final RedisSerializer<Long> longSerializer = new RedisSerializer<>() {
+
+		private static byte[] longToBytes(long l) {
+			byte[] result = new byte[Long.BYTES];
+			for (int i = Long.BYTES - 1; i >= 0; i--) {
+				result[i] = (byte)(l & 0xFF);
+				l >>= Byte.SIZE;
+			}
+			return result;
+		}
+
+		private static long bytesToLong(final byte[] b) {
+			long result = 0;
+			for (int i = 0; i < Long.BYTES; i++) {
+				result <<= Byte.SIZE;
+				result |= (b[i] & 0xFF);
+			}
+			return result;
+		}
+
+		@Override
+		public byte[] serialize(Long aLong) throws SerializationException {
+			return longToBytes(aLong);
+		}
+
+		@Override
+		public Long deserialize(byte[] bytes) throws SerializationException {
+			return bytesToLong(bytes);
+		}
+	};
+
 	/** @return Redis 连接池配置 */
 	@Bean
 	public GenericObjectPoolConfig<?> getPoolConfig() {
@@ -69,34 +107,49 @@ public class RedisConfig extends CachingConfigurerSupport {
 	}
 
 	/**
-	 * 文章访问统计
+	 * <p>文章访问统计
+	 * <p>键为文章 ID，值为文章热度对象
 	 *
 	 * @return RedisTemplate
 	 */
 	@Bean("redisArticleHot")
-	public RedisTemplate<String, ArticleHot> getArticleHotRedisTemplate() {
-		return getRedisTemplate(articleHotDatabase);
+	public RedisTemplate<Long, ArticleHot> getArticleHotRedisTemplate() {
+		return getRedisTemplate(articleHotDB, longSerializer);
 	}
 
 	/**
-	 * 文章访问记录
+	 * <p>文章访问记录
+	 * <p>键为用户 IP，值为已访问文章 ID
 	 *
 	 * @return RedisTemplate
 	 */
 	@Bean("redisArticleRead")
 	public RedisTemplate<String, Long> getArticleReadRedisTemplate() {
-		return getRedisTemplate(articleReadDatabase);
+		return getRedisTemplate(articleReadDB, new StringRedisSerializer());
 	}
 
 	/**
-	 * 构造自定义 RedisTemplate
-	 * 针对同一服务器不同数据库
-	 *
-	 * @param <T> 值类型
+	 * <p>用户登录令牌缓存
+	 * <p>键为用户 ID，值为令牌
 	 *
 	 * @return RedisTemplate
 	 */
-	public <T> RedisTemplate<String, T> getRedisTemplate(int database) {
+	@Bean("redisUserToken")
+	public RedisTemplate<Long, String> getUserTokenRedisTemplate() {
+		return getRedisTemplate(userTokenDB, longSerializer);
+	}
+
+	/**
+	 * <p>构造自定义 RedisTemplate
+	 * <p>针对同一服务器不同数据库
+	 *
+	 * @param database   数据库
+	 * @param serializer 序列化方式
+	 * @param <K> 键类型
+	 * @param <T> 值类型
+	 * @return RedisTemplate
+	 */
+	public <K, T> RedisTemplate<K, T> getRedisTemplate(int database, RedisSerializer<K> serializer) {
 		// 构建 Redis 配置
 		RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
 		// 连接参数
@@ -114,11 +167,10 @@ public class RedisConfig extends CachingConfigurerSupport {
 		factory.setDatabase(database);
 		factory.afterPropertiesSet();
 
-		RedisSerializer<String> stringSerializer = new StringRedisSerializer();
-		RedisTemplate<String, T> rt = new RedisTemplate<>();
+		RedisTemplate<K, T> rt = new RedisTemplate<>();
 		rt.setConnectionFactory(factory);
-		rt.setKeySerializer(stringSerializer);
-		rt.setHashKeySerializer(stringSerializer);
+		rt.setKeySerializer(serializer);
+		rt.setHashKeySerializer(serializer);
 		rt.setConnectionFactory(factory);
 		rt.afterPropertiesSet();
 		return rt;

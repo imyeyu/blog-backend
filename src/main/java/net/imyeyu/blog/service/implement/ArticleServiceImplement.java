@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class ArticleServiceImplement implements ArticleService {
 
 	@Autowired
-	private RedisTemplate<String, ArticleHot> redisArticleHot;
+	private RedisTemplate<Long, ArticleHot> redisArticleHot;
 
 	@Autowired
 	private RedisTemplate<String, Long> redisArticleRead;
@@ -62,7 +62,7 @@ public class ArticleServiceImplement implements ArticleService {
 	}
 
 	public List<ArticleHot> getArticleHot() {
-		RedisUtil<ArticleHot> redisUtil = new RedisUtil<>(redisArticleHot);
+		RedisUtil<Long, ArticleHot> redisUtil = new RedisUtil<>(redisArticleHot);
 		try {
 			List<ArticleHot> acs = redisUtil.values();
 			acs.sort(Comparator.comparing(ArticleHot::getCount).reversed());
@@ -82,7 +82,7 @@ public class ArticleServiceImplement implements ArticleService {
 
 	@Override
 	public void read(String ip, Article article) {
-		RedisUtil<Long> rdRead = new RedisUtil<>(redisArticleRead);
+		RedisUtil<String, Long> rdRead = new RedisUtil<>(redisArticleRead);
 
 		if (!rdRead.contains(ip, article.getId()) && !article.isHide()) {
 			// 3 小时内访问记录
@@ -92,16 +92,16 @@ public class ArticleServiceImplement implements ArticleService {
 			update(article);
 
 			// 每周访问计数
-			RedisUtil<ArticleHot> rdHot = new RedisUtil<>(redisArticleHot);
-			ArticleHot ac = rdHot.get(String.valueOf(article.getId()));
+			RedisUtil<Long, ArticleHot> rdHot = new RedisUtil<>(redisArticleHot);
+			ArticleHot ac = rdHot.get(article.getId());
 			if (ac == null) {
 				ac = new ArticleHot(article.getId(), article.getTitle());
 				ac.setRecentAt(System.currentTimeMillis());
-				rdHot.set(String.valueOf(article.getId()), ac, Duration.ofDays(7));
+				rdHot.set(article.getId(), ac, Duration.ofDays(7));
 			} else {
 				ac.increment();
 				ac.setRecentAt(System.currentTimeMillis());
-				rdHot.set(String.valueOf(article.getId()), ac, true);
+				rdHot.set(article.getId(), ac, true);
 			}
 		}
 	}

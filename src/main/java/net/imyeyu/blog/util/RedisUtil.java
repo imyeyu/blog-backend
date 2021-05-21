@@ -6,7 +6,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +17,7 @@ import java.util.function.Consumer;
  * RedisTemplate 功能封装
  * 夜雨 创建于 2021-03-02 17:46
  */
-public record RedisUtil<T>(RedisTemplate<String, T> redisTemplate) {
+public record RedisUtil<K, T>(RedisTemplate<K, T> redisTemplate) {
 
 	/**
 	 * 设置存活时间
@@ -26,7 +25,7 @@ public record RedisUtil<T>(RedisTemplate<String, T> redisTemplate) {
 	 * @param key     键
 	 * @param timeout 存活时长
 	 */
-	public void expire(String key, Duration timeout) {
+	public void expire(K key, Duration timeout) {
 		redisTemplate.expire(key, timeout);
 	}
 
@@ -36,7 +35,7 @@ public record RedisUtil<T>(RedisTemplate<String, T> redisTemplate) {
 	 * @param key 键
 	 * @param s   存活秒数
 	 */
-	public void expire(String key, long s) {
+	public void expire(K key, long s) {
 		expire(key, Duration.ofSeconds(s));
 	}
 
@@ -46,7 +45,7 @@ public record RedisUtil<T>(RedisTemplate<String, T> redisTemplate) {
 	 * @param key 键
 	 * @param h   存活小时
 	 */
-	public void expire(String key, int h) {
+	public void expire(K key, int h) {
 		expire(key, Duration.ofHours(h));
 	}
 
@@ -57,7 +56,7 @@ public record RedisUtil<T>(RedisTemplate<String, T> redisTemplate) {
 	 * @param key 键
 	 * @param v   值
 	 */
-	public void set(String key, T v) {
+	public void set(K key, T v) {
 		redisTemplate.opsForValue().set(key, v);
 	}
 
@@ -68,7 +67,7 @@ public record RedisUtil<T>(RedisTemplate<String, T> redisTemplate) {
 	 * @param v           值
 	 * @param keepTimeout 是否保持剩余生存时间
 	 */
-	public void set(String key, T v, boolean keepTimeout) {
+	public void set(K key, T v, boolean keepTimeout) {
 		if (keepTimeout) {
 			set(key, v, null);
 		} else {
@@ -84,7 +83,7 @@ public record RedisUtil<T>(RedisTemplate<String, T> redisTemplate) {
 	 * @param v   值
 	 * @param s   存活秒数
 	 */
-	public void set(String key, T v, long s) {
+	public void set(K key, T v, long s) {
 		set(key, v, Duration.ofSeconds(s));
 	}
 
@@ -96,7 +95,7 @@ public record RedisUtil<T>(RedisTemplate<String, T> redisTemplate) {
 	 * @param v   值
 	 * @param h   存活小时
 	 */
-	public void set(String key, T v, int h) {
+	public void set(K key, T v, int h) {
 		set(key, v, Duration.ofHours(h));
 	}
 
@@ -107,7 +106,7 @@ public record RedisUtil<T>(RedisTemplate<String, T> redisTemplate) {
 	 * @param v       值
 	 * @param timeout 存活时间（为 null 时保持剩余生存时间）
 	 */
-	public void set(String key, T v, Duration timeout) {
+	public void set(K key, T v, Duration timeout) {
 		if (timeout == null) {
 			Long expire = redisTemplate.getExpire(key, TimeUnit.SECONDS);
 			if (expire != null && 0 < expire) {
@@ -128,7 +127,7 @@ public record RedisUtil<T>(RedisTemplate<String, T> redisTemplate) {
 	 *
 	 * @return 值
 	 */
-	public T get(String key) {
+	public T get(K key) {
 		return redisTemplate.opsForValue().get(key);
 	}
 
@@ -138,7 +137,7 @@ public record RedisUtil<T>(RedisTemplate<String, T> redisTemplate) {
 	 * @param key 键
 	 * @param t   值
 	 */
-	public void add(String key, T t) {
+	public void add(K key, T t) {
 		redisTemplate.opsForList().leftPush(key, t);
 	}
 
@@ -149,7 +148,7 @@ public record RedisUtil<T>(RedisTemplate<String, T> redisTemplate) {
 	 * @param t   值
 	 */
 	@SafeVarargs
-	public final void addAll(String key, T... t) {
+	public final void addAll(K key, T... t) {
 		redisTemplate.opsForList().leftPushAll(key, t);
 	}
 
@@ -160,7 +159,7 @@ public record RedisUtil<T>(RedisTemplate<String, T> redisTemplate) {
 	 *
 	 * @return 列表
 	 */
-	public List<T> getList(String key) {
+	public List<T> getList(K key) {
 		return redisTemplate.opsForList().range(key, 0, -1);
 	}
 
@@ -172,15 +171,15 @@ public record RedisUtil<T>(RedisTemplate<String, T> redisTemplate) {
 	 *
 	 * @return 为 true 时表示存在
 	 */
-	public boolean contains(String key, T t) {
+	public boolean contains(K key, T t) {
 		return getList(key).contains(t);
 	}
 
 	/** @return 所有值 */
 	public List<T> values() {
 		List<T> r = new ArrayList<>();
-		List<String> keys = keys("*");
-		for (String key : keys) {
+		List<K> keys = keys("*");
+		for (K key : keys) {
 			r.add(get(key));
 		}
 		return r;
@@ -211,12 +210,9 @@ public record RedisUtil<T>(RedisTemplate<String, T> redisTemplate) {
 	 *
 	 * @return keys
 	 */
-	public List<String> keys(String pattern) {
-		List<String> keys = new ArrayList<>();
-		this.scan(pattern, item -> {
-			String key = new String(item, StandardCharsets.UTF_8);
-			keys.add(key);
-		});
+	public List<K> keys(String pattern) {
+		List<K> keys = new ArrayList<>();
+		this.scan(pattern, item -> keys.add((K) item));
 		return keys;
 	}
 

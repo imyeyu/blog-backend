@@ -21,7 +21,7 @@ public class RedisTest {
 
 	@Test
 	public void ping() {
-		RedisUtil<String> ru = new RedisUtil<>(redisTemplate);
+		RedisUtil<String, String> ru = new RedisUtil<>(redisTemplate);
 		ru.set("key1中文", "value1", Duration.ofSeconds(60));
 		System.out.println(ru.keys("*"));
 		System.out.println(ru.get("key1中文"));

@@ -3,6 +3,7 @@ package net.imyeyu.blog.service.implement;
 import java.util.List;
 
 import net.imyeyu.betterjava.Encode;
+import net.imyeyu.blog.bean.ReturnCode;
 import net.imyeyu.blog.bean.ServiceException;
 import net.imyeyu.blog.entity.User;
 import net.imyeyu.blog.mapper.UserMapper;
@@ -44,10 +45,10 @@ public class UserServiceImplement implements UserService {
 				// 登录成功
 				return true;
 			} else {
-				throw new ServiceException("密码错误");
+				throw new ServiceException(ReturnCode.BAD_PARAMS, "密码错误");
 			}
 		} else {
-			throw new ServiceException("用户不存在");
+			throw new ServiceException(ReturnCode.NULL_RESULT, "用户不存在");
 		}
 	}
 

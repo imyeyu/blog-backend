@@ -1,5 +1,7 @@
 package net.imyeyu.blog.bean;
 
+import lombok.Getter;
+
 /**
  * 服务异常
  *
@@ -7,11 +9,10 @@ package net.imyeyu.blog.bean;
  */
 public class ServiceException extends Exception {
 
-	public ServiceException() {
-		super();
-	}
+	@Getter private final ReturnCode code;
 
-	public ServiceException(String message) {
-		super(message);
+	public ServiceException(ReturnCode code, String msg) {
+		super(msg);
+		this.code = code;
 	}
 }

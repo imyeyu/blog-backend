@@ -2,6 +2,7 @@ package net.imyeyu.blog.controller;
 
 import net.imyeyu.blog.bean.CaptchaData;
 import net.imyeyu.blog.bean.Response;
+import net.imyeyu.blog.bean.ReturnCode;
 import net.imyeyu.blog.entity.Comment;
 import net.imyeyu.blog.entity.CommentReply;
 import net.imyeyu.blog.service.ArticleService;
@@ -36,12 +37,12 @@ public class CommentController extends BaseController {
 	 */
 	@RequestMapping("")
 	public Response<?> findByArticleId(Long articleId, long offset) {
-		return new Response<>(Code.SUCCESS, commentService.findByArticleId(articleId, offset));
+		return new Response<>(ReturnCode.SUCCESS, commentService.findByArticleId(articleId, offset));
 	}
 
 	@RequestMapping("/reply")
 	public Response<?> findRepliesByCommentId(Long commentId, Long offset) {
-		return new Response<>(Code.SUCCESS, commentService.findRepliesByCommentId(commentId, offset));
+		return new Response<>(ReturnCode.SUCCESS, commentService.findRepliesByCommentId(commentId, offset));
 	}
 
 	/**
@@ -55,10 +56,10 @@ public class CommentController extends BaseController {
 		try {
 			articleService.comment(articleService.find(cd.getData().getArticleId()));
 			commentService.create(cd.getData());
-			return new Response<>(Code.SUCCESS, cd.getData());
+			return new Response<>(ReturnCode.SUCCESS, cd.getData());
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new Response<>(Code.ERROR, "服务端异常：" + e.getMessage());
+			return new Response<>(ReturnCode.ERROR, "服务端异常：" + e.getMessage());
 		}
 	}
 
@@ -74,10 +75,10 @@ public class CommentController extends BaseController {
 			long aid = commentService.find(commentReply.getCommentId()).getArticleId();
 			articleService.comment(articleService.find(aid));
 			commentService.createReply(commentReply);
-			return new Response<>(Code.SUCCESS, commentReply);
+			return new Response<>(ReturnCode.SUCCESS, commentReply);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new Response<>(Code.ERROR, "服务端异常：" + e.getMessage());
+			return new Response<>(ReturnCode.ERROR, "服务端异常：" + e.getMessage());
 		}
 	}
 }

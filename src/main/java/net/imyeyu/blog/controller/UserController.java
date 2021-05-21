@@ -2,6 +2,7 @@ package net.imyeyu.blog.controller;
 
 import net.imyeyu.betterjava.Encode;
 import net.imyeyu.blog.bean.Response;
+import net.imyeyu.blog.bean.ReturnCode;
 import net.imyeyu.blog.bean.ServiceException;
 import net.imyeyu.blog.entity.User;
 import net.imyeyu.blog.service.UserService;
@@ -40,21 +41,21 @@ public class UserController extends BaseController {
 	@PostMapping("/signin")
 	public Response<?> doSignin(@RequestBody Map<String, String> params, HttpServletRequest request) {
 		if (StringUtils.isEmpty(params.get("user"))) {
-			return new Response<>(Code.MISS_PARAMS, "请输入 UID、邮箱或用户名");
+			return new Response<>(ReturnCode.MISS_PARAMS, "请输入 UID、邮箱或用户名");
 		}
 		if (StringUtils.isEmpty(params.get("password"))) {
-			return new Response<>(Code.MISS_PARAMS, "请输入密码");
+			return new Response<>(ReturnCode.MISS_PARAMS, "请输入密码");
 		}
 		if (StringUtils.isEmpty(params.get("captcha")) || !Captcha.isValid(request.getSession(), params.get("captcha"), "SIGNIN")) {
-			return new Response<>(Code.BAD_PARAMS, "验证码错误");
+			return new Response<>(ReturnCode.BAD_PARAMS, "验证码错误");
 		}
 		try {
-			return new Response<>(Code.SUCCESS, service.doSignin(params.get("user"), params.get("password")));
+			return new Response<>(ReturnCode.SUCCESS, service.doSignin(params.get("user"), params.get("password")));
 		} catch (ServiceException e) {
-			return new Response<>(Code.SUCCESS, e.getMessage());
+			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new Response<>(Code.ERROR, e.getMessage());
+			return new Response<>(ReturnCode.ERROR, e.getMessage());
 		}
 	}
 
@@ -68,14 +69,14 @@ public class UserController extends BaseController {
 	public Response<?> isLogin(@RequestBody Map<String, String> params) {
 		String uid = params.get("uid");
 		if (StringUtils.isEmpty(uid)) {
-			return new Response<>(Code.MISS_PARAMS, "缺少参数：uid");
+			return new Response<>(ReturnCode.MISS_PARAMS, "缺少参数：uid");
 		} else if (!Encode.isNumber(uid)) {
-			return new Response<>(Code.MISS_PARAMS, "参数 uid 应该是个数字");
+			return new Response<>(ReturnCode.MISS_PARAMS, "参数 uid 应该是个数字");
 		}
 		if (StringUtils.isEmpty(params.get("token"))) {
-			return new Response<>(Code.MISS_PARAMS, "缺少参数：token");
+			return new Response<>(ReturnCode.MISS_PARAMS, "缺少参数：token");
 		}
-		return new Response<>(Code.SUCCESS, new Token(params.get("token")).isValid(Integer.parseInt(params.get("uid"))));
+		return new Response<>(ReturnCode.SUCCESS, new Token(params.get("token")).isValid(Integer.parseInt(params.get("uid"))));
 	}
 
 	/**
@@ -88,15 +89,14 @@ public class UserController extends BaseController {
 	public Response<?> register(User user) {
 		try {
 			service.create(user);
-			return new Response<>(Code.SUCCESS, user);
+			return new Response<>(ReturnCode.SUCCESS, user);
 		} catch (Exception e) {
-			return new Response<>(Code.ERROR, e.getMessage());
+			return new Response<>(ReturnCode.ERROR, e.getMessage());
 		}
 	}
 	
 	@GetMapping("/delete")
 	public String doDelete() {
-//		System.out.println(Token.isValid(1));
 		return "123";
 	}
 }

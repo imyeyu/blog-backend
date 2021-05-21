@@ -3,7 +3,6 @@ package net.imyeyu.blog.bean;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.imyeyu.blog.controller.BaseController;
 
 /**
  * 返回前端数据对象
@@ -19,15 +18,15 @@ public class Response<T> {
 	private String msg;
 	private T data;
 
-	public Response(BaseController.Code code) {
+	public Response(ReturnCode code) {
 		this(code.getCode(), "", null);
 	}
 
-	public Response(BaseController.Code code, String msg) {
+	public Response(ReturnCode code, String msg) {
 		this(code.getCode(), msg, null);
 	}
 
-	public Response(BaseController.Code code, T data) {
+	public Response(ReturnCode code, T data) {
 		this(code.getCode(), "", data);
 	}
 }

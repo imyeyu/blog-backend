@@ -1,11 +1,10 @@
 package net.imyeyu.blog.util;
 
 import lombok.Getter;
-import net.imyeyu.blog.controller.BaseController;
+import net.imyeyu.blog.bean.ReturnCode;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.awt.Color;
 import java.awt.Font;
@@ -61,7 +60,7 @@ public class Captcha {
 	}
 
 	/** @return 错误回调图像 */
-	public static BufferedImage error(BaseController.Code code) {
+	public static BufferedImage error(ReturnCode code) {
 		final int width = 74, height = 24;
 		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = (Graphics2D) img.getGraphics();

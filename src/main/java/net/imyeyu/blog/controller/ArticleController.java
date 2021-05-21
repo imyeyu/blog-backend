@@ -1,6 +1,7 @@
 package net.imyeyu.blog.controller;
 
 import net.imyeyu.blog.bean.Response;
+import net.imyeyu.blog.bean.ReturnCode;
 import net.imyeyu.blog.entity.Article;
 import net.imyeyu.blog.service.ArticleService;
 import org.apache.commons.lang3.ObjectUtils;
@@ -33,9 +34,9 @@ public class ArticleController extends BaseController {
 	@RequestMapping("")
 	public Response<?> getArticles(@RequestParam Long offset) {
 		if (ObjectUtils.isEmpty(offset)) {
-			return new Response<>(Code.MISS_PARAMS, "缺少参数：offset");
+			return new Response<>(ReturnCode.MISS_PARAMS, "缺少参数：offset");
 		}
-		return new Response<>(Code.SUCCESS, service.findByList(offset, 16));
+		return new Response<>(ReturnCode.SUCCESS, service.findByList(offset, 16));
 	}
 
 	/**
@@ -48,12 +49,12 @@ public class ArticleController extends BaseController {
 	public Response<?> getArticle(@PathVariable long id, HttpServletRequest req) {
 		Article article = service.find(id);
 		service.read(req.getRemoteAddr(), article);
-		return new Response<>(Code.SUCCESS, article);
+		return new Response<>(ReturnCode.SUCCESS, article);
 	}
 
 	/** @return 每周访问排行榜 */
 	@RequestMapping("/hot")
 	public Response<?> getArticleHot() {
-		return new Response<>(Code.SUCCESS, service.getArticleHot());
+		return new Response<>(ReturnCode.SUCCESS, service.getArticleHot());
 	}
 }

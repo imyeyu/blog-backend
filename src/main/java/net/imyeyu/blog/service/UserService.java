@@ -19,6 +19,8 @@ public interface UserService extends BaseService<User> {
 	 */
 	boolean doSignin(String user, String password) throws ServiceException;
 
+	boolean isSignin(Long uid, String token) throws ServiceException;
+
 	User findByName(String name);
 
 	User findByEmail(String email);

@@ -2,6 +2,7 @@ package net.imyeyu.blog.service.implement;
 
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
 import net.imyeyu.betterjava.Encode;
 import net.imyeyu.blog.bean.ReturnCode;
 import net.imyeyu.blog.bean.ServiceException;
@@ -14,15 +15,33 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * 用户管理
+ * <p>用户管理
+ * <p>用户密码摘要和 Token 并不一样，密码摘要存于数据库，Token 用于和前端交流，在 doSignin 执行成功后才会生成 Token 缓存
  * 
  * 夜雨 创建于 2021/2/23 21:43
  */
+@Slf4j
 @Service
 public class UserServiceImplement implements UserService {
 	
 	@Autowired
     private UserMapper mapper;
+
+	@Autowired
+	private Token token;
+
+	/**
+	 * <p>生成密码摘要（与 Token 并不同，Token 用于与前端交流，在 doSignin 执行成功后才会生成 Token 回推前端）
+	 * <p>加盐《天使恋曲》
+	 *
+	 * @param name      用户名
+	 * @param createdAt 创建时间
+	 * @param password  原始密码
+	 * @return 密码摘要
+	 */
+	private String generatePasswordDigest(String name, Long createdAt, String password) {
+		return Encode.md5(name + createdAt + "AngelicSerenade" + password);
+	}
 
 	@Override
 	public boolean doSignin(String user, String password) throws ServiceException {
@@ -38,25 +57,33 @@ public class UserServiceImplement implements UserService {
 			result = findByName(user);
 		}
 		if (!ObjectUtils.isEmpty(result)) {
-			String token = Token.generate(result);
-			// 令牌校验
-			boolean isValid = new Token(token).isValid(result.getId());
-			if (isValid) {
-				// 登录成功
+			// 密码摘要校验
+			if (result.getPassword().equals(generatePasswordDigest(result.getName(), result.getCreatedAt(), password))) {
+				// 生成并缓存 Token
+				token.isValid(result.getId(), token.generate(result));
 				return true;
-			} else {
-				throw new ServiceException(ReturnCode.BAD_PARAMS, "密码错误");
 			}
+			throw new ServiceException(ReturnCode.PARAMS_BAD, "密码错误");
 		} else {
-			throw new ServiceException(ReturnCode.NULL_RESULT, "用户不存在");
+			throw new ServiceException(ReturnCode.RESULT_NULL, "用户不存在");
 		}
 	}
 
 	@Override
+	public boolean isSignin(Long uid, String token) throws ServiceException {
+		return this.token.isValid(uid, token);
+	}
+
+	/**
+	 * 创建用户，此时的 User password 是明文
+	 *
+	 * @param user 用户
+	 */
+	@Override
 	public void create(User user) {
 		user.setCreatedAt(System.currentTimeMillis());
-		// 加盐摘要
-		user.setPassword(Encode.md5(user.getCreatedAt() + "Nagiasu" + user.getPassword()));
+		// 摘要密码
+		user.setPassword(generatePasswordDigest(user.getName(), user.getCreatedAt(), user.getPassword()));
 		mapper.create(user);
 	}
 
@@ -82,7 +109,7 @@ public class UserServiceImplement implements UserService {
 
 	@Override
 	public void update(User user) {
-		// 更新密码
+		// 更新用户
 		user.setPassword(Encode.md5(user.getCreatedAt() + "Nagiasu" + user.getPassword()));
 	}
 

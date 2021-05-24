@@ -4,7 +4,7 @@ import net.imyeyu.blog.entity.Article;
 import net.imyeyu.blog.entity.ArticleHot;
 import net.imyeyu.blog.mapper.ArticleMapper;
 import net.imyeyu.blog.service.ArticleService;
-import net.imyeyu.blog.util.RedisUtil;
+import net.imyeyu.blog.util.Redis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -62,13 +62,13 @@ public class ArticleServiceImplement implements ArticleService {
 	}
 
 	public List<ArticleHot> getArticleHot() {
-		RedisUtil<Long, ArticleHot> redisUtil = new RedisUtil<>(redisArticleHot);
+		Redis<Long, ArticleHot> redis = new Redis<>(redisArticleHot);
 		try {
-			List<ArticleHot> acs = redisUtil.values();
+			List<ArticleHot> acs = redis.values();
 			acs.sort(Comparator.comparing(ArticleHot::getCount).reversed());
 			return acs.subList(0, Math.min(10, acs.size()));
 		} catch (Exception e) {
-			redisUtil.flushAll();
+			redis.flushAll();
 			e.printStackTrace();
 			return new ArrayList<>();
 		}
@@ -82,7 +82,7 @@ public class ArticleServiceImplement implements ArticleService {
 
 	@Override
 	public void read(String ip, Article article) {
-		RedisUtil<String, Long> rdRead = new RedisUtil<>(redisArticleRead);
+		Redis<String, Long> rdRead = new Redis<>(redisArticleRead);
 
 		if (!rdRead.contains(ip, article.getId()) && !article.isHide()) {
 			// 3 小时内访问记录
@@ -92,7 +92,7 @@ public class ArticleServiceImplement implements ArticleService {
 			update(article);
 
 			// 每周访问计数
-			RedisUtil<Long, ArticleHot> rdHot = new RedisUtil<>(redisArticleHot);
+			Redis<Long, ArticleHot> rdHot = new Redis<>(redisArticleHot);
 			ArticleHot ac = rdHot.get(article.getId());
 			if (ac == null) {
 				ac = new ArticleHot(article.getId(), article.getTitle());

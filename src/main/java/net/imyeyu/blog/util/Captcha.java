@@ -2,8 +2,11 @@ package net.imyeyu.blog.util;
 
 import lombok.Getter;
 import net.imyeyu.blog.bean.ReturnCode;
+import net.imyeyu.blog.bean.ServiceException;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpSession;
 import java.awt.Color;
@@ -73,25 +76,42 @@ public class Captcha {
 	}
 
 	/**
-	 * 验证
+	 * <p>验证。通过验证不抛出任何异常也不返回任何内容，否则抛出相应异常
+	 * <p>会验证非空和期限
 	 *
-	 * @param from    Session 验证码标记
-	 * @return true 为正确
+	 * @param captcha 提交的验证码
+	 * @param from    来自模块
+	 * @throws ServiceException 验证异常
 	 */
-	public static boolean isValid(HttpSession session, String captcha, String from) {
-		if (!StringUtils.isEmpty(captcha)) {
-			Object sessionObject = session.getAttribute(from + "_CAPTCHA");
-			if (!ObjectUtils.isEmpty(sessionObject)) {
-				boolean isValid = captcha.equalsIgnoreCase(sessionObject.toString());
-				if (isValid) {
-					// 通过
-					return true;
-				} else {
-					// 不通过，清除缓存
-					session.removeAttribute(from + "_CAPTCHA");
-				}
-			}
+	public static void test(String captcha, String from) throws ServiceException {
+		if (StringUtils.isEmpty(captcha)) {
+			throw new ServiceException(ReturnCode.PARAMS_MISS, "请输入验证码");
 		}
-		return false;
+		ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+		if (sra != null) {
+			HttpSession session = sra.getRequest().getSession();
+			// Session 验证
+			Object sessionObject = session.getAttribute(from + "_CAPTCHA");
+			if (ObjectUtils.isEmpty(sessionObject)) {
+				throw new ServiceException(ReturnCode.PARAMS_EXPIRD, "验证码已过期");
+			}
+			if (!captcha.equalsIgnoreCase(sessionObject.toString())) {
+				// 不通过，清除缓存
+				clear(session, from);
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "验证码错误");
+			}
+		} else {
+			throw new ServiceException(ReturnCode.PARAMS_BAD, "验证码错误");
+		}
+	}
+
+	/**
+	 * 清除验证码
+	 *
+	 * @param session Session
+	 * @param from    验证码标记
+	 */
+	public static void clear(HttpSession session, String from) {
+		session.removeAttribute(from + "_CAPTCHA");
 	}
 }

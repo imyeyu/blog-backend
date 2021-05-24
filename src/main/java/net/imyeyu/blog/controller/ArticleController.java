@@ -34,7 +34,7 @@ public class ArticleController extends BaseController {
 	@RequestMapping("")
 	public Response<?> getArticles(@RequestParam Long offset) {
 		if (ObjectUtils.isEmpty(offset)) {
-			return new Response<>(ReturnCode.MISS_PARAMS, "缺少参数：offset");
+			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：offset");
 		}
 		return new Response<>(ReturnCode.SUCCESS, service.findByList(offset, 16));
 	}

@@ -1,7 +1,6 @@
 package net.imyeyu.blog.controller;
 
 import net.imyeyu.betterjava.Encode;
-import net.imyeyu.blog.bean.Response;
 import net.imyeyu.blog.bean.ReturnCode;
 import net.imyeyu.blog.util.Captcha;
 import org.apache.commons.lang3.ObjectUtils;
@@ -48,25 +47,25 @@ public class MainController extends BaseController {
 			// 宽度
 			String width = params.get("width");
 			if (ObjectUtils.isEmpty(width)) {
-				ImageIO.write(Captcha.error(ReturnCode.MISS_PARAMS), "jpg", response.getOutputStream());
+				ImageIO.write(Captcha.error(ReturnCode.PARAMS_MISS), "jpg", response.getOutputStream());
 				return;
 			} else if (!Encode.isNumber(width) || Integer.parseInt(width) < 64) {
-				ImageIO.write(Captcha.error(ReturnCode.BAD_PARAMS), "jpg", response.getOutputStream());
+				ImageIO.write(Captcha.error(ReturnCode.PARAMS_BAD), "jpg", response.getOutputStream());
 				return;
 			}
 			// 高度
 			String height = params.get("height");
 			if (ObjectUtils.isEmpty(height)) {
-				ImageIO.write(Captcha.error(ReturnCode.MISS_PARAMS), "jpg", response.getOutputStream());
+				ImageIO.write(Captcha.error(ReturnCode.PARAMS_MISS), "jpg", response.getOutputStream());
 				return;
 			} else if (!Encode.isNumber(height) || Integer.parseInt(height) < 19) {
-				ImageIO.write(Captcha.error(ReturnCode.BAD_PARAMS), "jpg", response.getOutputStream());
+				ImageIO.write(Captcha.error(ReturnCode.PARAMS_BAD), "jpg", response.getOutputStream());
 				return;
 			}
 			// 来自
 			String from = params.get("from");
 			if (ObjectUtils.isEmpty(from)) {
-				ImageIO.write(Captcha.error(ReturnCode.MISS_PARAMS), "jpg", response.getOutputStream());
+				ImageIO.write(Captcha.error(ReturnCode.PARAMS_MISS), "jpg", response.getOutputStream());
 				return;
 			}
 			// 生成验证码

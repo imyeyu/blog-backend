@@ -2,54 +2,43 @@ package net.imyeyu.blog.util;
 
 import lombok.NoArgsConstructor;
 import net.imyeyu.betterjava.Encode;
+import net.imyeyu.blog.bean.ReturnCode;
+import net.imyeyu.blog.bean.ServiceException;
 import net.imyeyu.blog.entity.User;
 import net.imyeyu.blog.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpSession;
 
 /**
- * 口令验证机制
+ * <p>口令验证机制
+ * <p>和密码摘要并不一样，密码摘要存于数据库，Token 用于和前端交流，在 UserService doSignin 执行成功后才会生成 Token 缓存
  * 
  * @author 夜雨
- *
  */
 @NoArgsConstructor
+@Component
 public class Token {
-	
+
 	@Autowired
 	private RedisTemplate<Long, String> redisUserToken;
-	
+
 	@Autowired
 	private UserService service;
 	
-	private String token;
-	
-	public Token(String token) {
-		this.token = token;
-	}
-	
 	/**
-	 * 管理员登录
-	 * 
-	 * @return true 时表示管理员登陆
-	 */
-	public boolean isValidAdmin() {
-		return isValid(1);
-	}
-	
-	/**
-	 * <p>验证 Token 是否有效
-	 * <p>当 uid 所查找的 Token 无效但构造的 token 对数据库验证有效时，所有验证机制变为有效，数据库是最后验证也是最高权限验证
-	 * <p>Session 存键为 user.uid，Redis 存键为 uid，值均为 Token
+	 * <p>验证令牌是否有效
+	 * <p>当 uid 所查找的令牌无效但构造的令牌对数据库验证有效时，所有验证机制变为有效，数据库是最后验证也是最高权限验证
+	 * <p>Session 存键为 user.uid，Redis 存键为 uid，值均为令牌
 	 *
 	 * @param uid UID
 	 * @return true 时表示有效
 	 */
-	public boolean isValid(long uid) {
+	public boolean isValid(long uid, String token) throws ServiceException {
 		final String flag = "user." + uid;
 		ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 		if (sra != null) {
@@ -59,29 +48,34 @@ public class Token {
 			if (token.equals(sessionToken)) {
 				return true;
 			}
-			RedisUtil<Long, String> rdToken = new RedisUtil<>(redisUserToken);
 			// Redis 验证
+			Redis<Long, String> rdToken = new Redis<>(redisUserToken);
 			if (token.equals(rdToken.get(uid))) {
 				session.setAttribute("user." + uid, token);
+				rdToken.set(uid, token, 24);
 				return true;
 			}
 			// 数据库验证
-			if (token.equals(generate(service.find(uid)))) {
+			User user = service.find(uid);
+			if (token.equals(generate(user))) {
 				session.setAttribute("user." + uid, token);
-				rdToken.set(uid, token, 1);
+				rdToken.set(uid, token, 24);
 				return true;
 			}
+			return false;
+		} else {
+			throw new ServiceException(ReturnCode.REQUEST_BAD, ReturnCode.REQUEST_BAD.getComment());
 		}
-		return false;
 	}
 	
 	/**
-	 * 生成 Token
-	 * 
-	 * @param user 用户
-	 * @return Token
+	 * <p>生成令牌
+	 * <p>需要 ID、用户名和摘要后的密码
+	 * <p>加盐《来自风平浪静的明天》
+	 *
+	 * @return 令牌
 	 */
-	public static String generate(User user) {
-		return user.getId() + "#" + Encode.md5(user.getName() + "3.012+" + user.getPassword());
+	public String generate(User user) {
+		return user.getId() + "#" + Encode.md5(user.getName() + "Nagiasu" + user.getPassword());
 	}
 }

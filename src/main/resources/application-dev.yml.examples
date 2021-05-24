@@ -9,7 +9,7 @@ spring:
     datasource: # 数据库配置
         url: jdbc:mysql://localhost:3306/blog_test?serverTimezone=UTC&characterEncoding=UTF-8
         username: root
-        password: root
+        password: 123456
         driver-class-name: com.mysql.cj.jdbc.Driver
         hikari: # 连接池
             maximum-pool-size: 60     # 连接池最大连接数，默认是 10
@@ -27,6 +27,7 @@ spring:
         database:
             article-hot: 0  # 热门文章缓存
             article-read: 1 # IP 阅读记录缓存
+            user-token: 2   # 用户令牌缓存
         lettuce: # 连接池配置
             pool:
                 max-wait: -1

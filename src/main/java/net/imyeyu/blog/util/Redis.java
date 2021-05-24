@@ -17,7 +17,7 @@ import java.util.function.Consumer;
  * RedisTemplate 功能封装
  * 夜雨 创建于 2021-03-02 17:46
  */
-public record RedisUtil<K, T>(RedisTemplate<K, T> redisTemplate) {
+public record Redis<K, T>(RedisTemplate<K, T> redisTemplate) {
 
 	/**
 	 * 设置存活时间

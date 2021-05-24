@@ -149,7 +149,7 @@ public class RedisConfig extends CachingConfigurerSupport {
 	 * @param <T> 值类型
 	 * @return RedisTemplate
 	 */
-	public <K, T> RedisTemplate<K, T> getRedisTemplate(int database, RedisSerializer<K> serializer) {
+	private <K, T> RedisTemplate<K, T> getRedisTemplate(int database, RedisSerializer<K> serializer) {
 		// 构建 Redis 配置
 		RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
 		// 连接参数

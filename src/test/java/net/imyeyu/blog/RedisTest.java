@@ -1,6 +1,6 @@
 package net.imyeyu.blog;
 
-import net.imyeyu.blog.util.RedisUtil;
+import net.imyeyu.blog.util.Redis;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ public class RedisTest {
 
 	@Test
 	public void ping() {
-		RedisUtil<String, String> ru = new RedisUtil<>(redisTemplate);
+		Redis<String, String> ru = new Redis<>(redisTemplate);
 		ru.set("key1中文", "value1", Duration.ofSeconds(60));
 		System.out.println(ru.keys("*"));
 		System.out.println(ru.get("key1中文"));

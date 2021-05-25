@@ -68,7 +68,7 @@ public class UserController extends BaseController {
 	}
 
 	/**
-	 * 返回某用户是否已登录
+	 * 返回该 ID 用户是否已登录
 	 *
 	 * @param params 含 uid 和 token
 	 * @return true 为已登录

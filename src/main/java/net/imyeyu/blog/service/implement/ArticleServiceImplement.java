@@ -61,6 +61,7 @@ public class ArticleServiceImplement implements ArticleService {
 		return null;
 	}
 
+	@Override
 	public List<ArticleHot> getArticleHot() {
 		Redis<Long, ArticleHot> redis = new Redis<>(redisArticleHot);
 		try {

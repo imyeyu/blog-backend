@@ -10,8 +10,8 @@ import lombok.Data;
 @Data
 public class BaseEntity {
 
-	private Long id;
-	private Long createdAt;
-	private Long updatedAt;
-	private Long deletedAt;
+	protected Long id;
+	protected Long createdAt;
+	protected Long updatedAt;
+	protected Long deletedAt;
 }

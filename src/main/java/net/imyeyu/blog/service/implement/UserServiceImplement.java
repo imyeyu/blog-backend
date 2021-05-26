@@ -10,13 +10,13 @@ import net.imyeyu.blog.entity.User;
 import net.imyeyu.blog.mapper.UserMapper;
 import net.imyeyu.blog.service.UserService;
 import net.imyeyu.blog.util.Token;
+import net.imyeyu.blog.vo.UserVO;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
  * <p>用户管理
- * <p>用户密码摘要和 Token 并不一样，密码摘要存于数据库，Token 用于和前端交流，在 doSignin 执行成功后才会生成 Token 缓存
  * 
  * 夜雨 创建于 2021/2/23 21:43
  */
@@ -31,7 +31,7 @@ public class UserServiceImplement implements UserService {
 	private Token token;
 
 	/**
-	 * <p>生成密码摘要（与 Token 并不同，Token 用于与前端交流，在 doSignin 执行成功后才会生成 Token 回推前端）
+	 * <p>生成密码摘要（与 Token 并不同，Token 用于与前端交流，在 doSignIn 执行成功后才会生成 Token 回推前端）
 	 * <p>加盐《天使恋曲》
 	 *
 	 * @param name      用户名
@@ -44,7 +44,7 @@ public class UserServiceImplement implements UserService {
 	}
 
 	@Override
-	public boolean doSignin(String user, String password) throws ServiceException {
+	public UserVO doSignIn(String user, String password) throws ServiceException {
 		User result;
 		if (Encode.isNumber(user)) {
 			// UID 登录
@@ -61,7 +61,7 @@ public class UserServiceImplement implements UserService {
 			if (result.getPassword().equals(generatePasswordDigest(result.getName(), result.getCreatedAt(), password))) {
 				// 生成并缓存 Token
 				token.isValid(result.getId(), token.generate(result));
-				return true;
+				return result.toVO(token.generate(result));
 			}
 			throw new ServiceException(ReturnCode.PARAMS_BAD, "密码错误");
 		} else {
@@ -70,7 +70,7 @@ public class UserServiceImplement implements UserService {
 	}
 
 	@Override
-	public boolean isSignin(Long uid, String token) throws ServiceException {
+	public boolean isSignedIn(Long uid, String token) throws ServiceException {
 		return this.token.isValid(uid, token);
 	}
 

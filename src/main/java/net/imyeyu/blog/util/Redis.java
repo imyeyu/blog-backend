@@ -17,7 +17,7 @@ import java.util.function.Consumer;
  * RedisTemplate 功能封装
  * 夜雨 创建于 2021-03-02 17:46
  */
-public record Redis<K, T>(RedisTemplate<K, T> redisTemplate) {
+public record Redis<K, T>(RedisTemplate<K, T> redis) {
 
 	/**
 	 * 设置存活时间
@@ -26,7 +26,7 @@ public record Redis<K, T>(RedisTemplate<K, T> redisTemplate) {
 	 * @param timeout 存活时长
 	 */
 	public void expire(K key, Duration timeout) {
-		redisTemplate.expire(key, timeout);
+		redis.expire(key, timeout);
 	}
 
 	/**
@@ -50,14 +50,13 @@ public record Redis<K, T>(RedisTemplate<K, T> redisTemplate) {
 	}
 
 	/**
-	 * 设置数据
-	 * 生存时间为永久
+	 * 设置数据，生存时间为永久
 	 *
 	 * @param key 键
 	 * @param v   值
 	 */
 	public void set(K key, T v) {
-		redisTemplate.opsForValue().set(key, v);
+		redis.opsForValue().set(key, v);
 	}
 
 	/**
@@ -76,8 +75,7 @@ public record Redis<K, T>(RedisTemplate<K, T> redisTemplate) {
 	}
 
 	/**
-	 * 设置数据
-	 * 会重置生存时间
+	 * 设置数据，会重置生存时间
 	 *
 	 * @param key 键
 	 * @param v   值
@@ -88,8 +86,7 @@ public record Redis<K, T>(RedisTemplate<K, T> redisTemplate) {
 	}
 
 	/**
-	 * 设置数据
-	 * 会重置生存时间
+	 * 设置数据，会重置生存时间
 	 *
 	 * @param key 键
 	 * @param v   值
@@ -108,15 +105,15 @@ public record Redis<K, T>(RedisTemplate<K, T> redisTemplate) {
 	 */
 	public void set(K key, T v, Duration timeout) {
 		if (timeout == null) {
-			Long expire = redisTemplate.getExpire(key, TimeUnit.SECONDS);
+			Long expire = redis.getExpire(key, TimeUnit.SECONDS);
 			if (expire != null && 0 < expire) {
 				timeout = Duration.ofSeconds(expire);
-				redisTemplate.opsForValue().set(key, v, timeout);
+				redis.opsForValue().set(key, v, timeout);
 			} else {
-				redisTemplate.opsForValue().set(key, v);
+				redis.opsForValue().set(key, v);
 			}
 		} else {
-			redisTemplate.opsForValue().set(key, v, timeout);
+			redis.opsForValue().set(key, v, timeout);
 		}
 	}
 
@@ -124,11 +121,20 @@ public record Redis<K, T>(RedisTemplate<K, T> redisTemplate) {
 	 * 获取值
 	 *
 	 * @param key 键
-	 *
 	 * @return 值
 	 */
 	public T get(K key) {
-		return redisTemplate.opsForValue().get(key);
+		return redis.opsForValue().get(key);
+	}
+
+	/**
+	 * 是否存在
+	 *
+	 * @param key 键
+	 * @return true 为存在
+	 */
+	public boolean has(K key) {
+		return get(key) != null;
 	}
 
 	/**
@@ -138,7 +144,7 @@ public record Redis<K, T>(RedisTemplate<K, T> redisTemplate) {
 	 * @param t   值
 	 */
 	public void add(K key, T t) {
-		redisTemplate.opsForList().leftPush(key, t);
+		redis.opsForList().leftPush(key, t);
 	}
 
 	/**
@@ -149,27 +155,25 @@ public record Redis<K, T>(RedisTemplate<K, T> redisTemplate) {
 	 */
 	@SafeVarargs
 	public final void addAll(K key, T... t) {
-		redisTemplate.opsForList().leftPushAll(key, t);
+		redis.opsForList().leftPushAll(key, t);
 	}
 
 	/**
 	 * 获取为列表
 	 *
 	 * @param key 键
-	 *
 	 * @return 列表
 	 */
 	public List<T> getList(K key) {
-		return redisTemplate.opsForList().range(key, 0, -1);
+		return redis.opsForList().range(key, 0, -1);
 	}
 
 	/**
-	 * 为列表时查找是否存在某值
+	 * 值为列表时查找是否存在某值
 	 *
 	 * @param key 键
 	 * @param t   值
-	 *
-	 * @return 为 true 时表示存在
+	 * @return true 为存在
 	 */
 	public boolean contains(K key, T t) {
 		return getList(key).contains(t);
@@ -192,7 +196,7 @@ public record Redis<K, T>(RedisTemplate<K, T> redisTemplate) {
 	 * @param consumer 对迭代到的key进行操作
 	 */
 	public void scan(String pattern, Consumer<byte[]> consumer) {
-		this.redisTemplate.execute((RedisConnection connection) -> {
+		this.redis.execute((RedisConnection connection) -> {
 			try (Cursor<byte[]> cursor = connection.scan(ScanOptions.scanOptions().count(Long.MAX_VALUE).match(pattern).build())) {
 				cursor.forEachRemaining(consumer);
 				return null;
@@ -207,7 +211,6 @@ public record Redis<K, T>(RedisTemplate<K, T> redisTemplate) {
 	 * 获取符合条件的 key
 	 *
 	 * @param pattern 表达式
-	 *
 	 * @return keys
 	 */
 	public List<K> keys(String pattern) {
@@ -218,6 +221,6 @@ public record Redis<K, T>(RedisTemplate<K, T> redisTemplate) {
 
 	/** 删库 */
 	public void flushAll() {
-		Objects.requireNonNull(redisTemplate.getConnectionFactory()).getConnection().flushAll();
+		Objects.requireNonNull(redis.getConnectionFactory()).getConnection().flushAll();
 	}
 }

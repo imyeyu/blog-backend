@@ -2,6 +2,7 @@ package net.imyeyu.blog.service;
 
 import net.imyeyu.blog.bean.ServiceException;
 import net.imyeyu.blog.entity.User;
+import net.imyeyu.blog.vo.UserVO;
 
 /**
  * 用户管理接口
@@ -15,11 +16,20 @@ public interface UserService extends BaseService<User> {
 	 *
 	 * @param user     UID、邮件或用户名
 	 * @param password 密码
-	 * @return true 为登录成功
+	 * @return 该账号数据
+	 * @throws ServiceException 校验异常
 	 */
-	boolean doSignin(String user, String password) throws ServiceException;
+	UserVO doSignIn(String user, String password) throws ServiceException;
 
-	boolean isSignin(Long uid, String token) throws ServiceException;
+	/**
+	 * 校验该 ID 是否已登录
+	 *
+	 * @param uid   ID
+	 * @param token 令牌
+	 * @return 该账号数据
+	 * @throws ServiceException 校验异常
+	 */
+	boolean isSignedIn(Long uid, String token) throws ServiceException;
 
 	User findByName(String name);
 

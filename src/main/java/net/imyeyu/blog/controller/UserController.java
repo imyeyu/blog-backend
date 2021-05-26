@@ -10,7 +10,6 @@ import net.imyeyu.blog.service.UserService;
 import net.imyeyu.blog.util.Captcha;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,8 +39,8 @@ public class UserController extends BaseController {
 	 * @param request 请求体
 	 * @return true 为已登录
 	 */
-	@PostMapping("/signin")
-	public Response<?> doSignin(@RequestBody Map<String, String> params, HttpServletRequest request) {
+	@PostMapping("/sign-in")
+	public Response<?> doSignIn(@RequestBody Map<String, String> params, HttpServletRequest request) {
 		// 用户
 		if (StringUtils.isEmpty(params.get("user"))) {
 			return new Response<>(ReturnCode.PARAMS_MISS, "请输入 UID、邮箱或用户名");
@@ -58,7 +57,7 @@ public class UserController extends BaseController {
 		}
 		// 执行登录
 		try {
-			return new Response<>(ReturnCode.SUCCESS, service.doSignin(params.get("user"), params.get("password")));
+			return new Response<>(ReturnCode.SUCCESS, service.doSignIn(params.get("user"), params.get("password")));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
@@ -73,8 +72,8 @@ public class UserController extends BaseController {
 	 * @param params 含 uid 和 token
 	 * @return true 为已登录
 	 */
-	@PostMapping("/signin/status")
-	public Response<?> isSignin(@RequestBody Map<String, String> params) {
+	@PostMapping("/sign-in/status")
+	public Response<?> isSignedIn(@RequestBody Map<String, String> params) {
 		String uid = params.get("uid");
 		if (StringUtils.isEmpty(uid)) {
 			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：uid");
@@ -85,12 +84,11 @@ public class UserController extends BaseController {
 			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：token");
 		}
 		try {
-			service.isSignin(Long.parseLong(uid), params.get("token"));
+			return new Response<>(ReturnCode.SUCCESS, service.isSignedIn(Long.parseLong(uid), params.get("token")));
 		} catch (ServiceException e) {
 			e.printStackTrace();
 			return new Response<>(e.getCode(), e.getMessage());
 		}
-		return new Response<>(ReturnCode.SUCCESS, 1);
 	}
 
 	/**

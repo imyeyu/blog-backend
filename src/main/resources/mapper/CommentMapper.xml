@@ -7,7 +7,7 @@
 			c.id,
 			c.article_id,
 			c.user_id,
-			uc.user_name AS user_name,
+			uc.name AS name,
 			c.nick,
 			c.data,
 			c.created_at,
@@ -16,8 +16,8 @@
 			crc.cr_length,
 			cr.sender_id,
 			cr.receiver_id,
-			us.user_name AS sender_name,
-			ur.user_name AS receiver_name,
+			us.name AS sender_name,
+			ur.name AS receiver_name,
 			cr.sender_nick,
 			cr.receiver_nick,
 			cr.data AS cr_data,
@@ -86,7 +86,7 @@
 		<!-- 发布者 -->
 		<association property="user" javaType="net.imyeyu.blog.entity.User">
             <id property="id" column="user_id"/>
-            <result property="userName" column="user_name"/>
+            <result property="name" column="name"/>
         </association>
         <!-- 关联回复 -->
         <collection property="replies" ofType="net.imyeyu.blog.entity.CommentReply">
@@ -99,12 +99,12 @@
         	<!-- 回复者 -->
 			<association property="sender" javaType="net.imyeyu.blog.entity.User">
 	            <id property="id" column="sender_id"/>
-	            <result property="userName" column="sender_name"/>
+	            <result property="name" column="sender_name"/>
 	        </association>
 	        <!-- 被回复者 -->
 			<association property="receiver" javaType="net.imyeyu.blog.entity.User">
 	            <id property="id" column="receiver_id"/>
-	            <result property="userName" column="receiver_name"/>
+	            <result property="name" column="receiver_name"/>
 	        </association>
         </collection>
 	</resultMap>
@@ -149,9 +149,9 @@
 	    SELECT
 			c.id,
 			sender_id,
-			us.user_name AS sender_name,
+			us.name AS sender_name,
 			receiver_id,
-			ur.user_name AS receiver_name,
+			ur.name AS receiver_name,
 			sender_nick,
 			receiver_nick,
 			data,
@@ -192,12 +192,12 @@
 		<!-- 回复者 -->
 		<association property="sender" javaType="net.imyeyu.blog.entity.User">
             <id property="id" column="sender_id"/>
-            <result property="userName" column="sender_name"/>
+            <result property="name" column="sender_name"/>
         </association>
 		<!-- 被回复者 -->
 		<association property="receiver" javaType="net.imyeyu.blog.entity.User">
             <id property="id" column="receiver_id"/>
-            <result property="userName" column="receiver_name"/>
+            <result property="name" column="receiver_name"/>
         </association>
 	</resultMap>
 </mapper>

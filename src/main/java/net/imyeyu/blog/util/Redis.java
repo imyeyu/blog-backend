@@ -4,6 +4,9 @@ import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.SerializationException;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -17,7 +20,31 @@ import java.util.function.Consumer;
  * RedisTemplate 功能封装
  * 夜雨 创建于 2021-03-02 17:46
  */
-public record Redis<K, T>(RedisTemplate<K, T> redis) {
+public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializer) {
+
+	// 序列化类型
+	public static final StringRedisSerializer STRING_SERIALIZER = new StringRedisSerializer();
+	public static final RedisSerializer<Long> LONG_SERIALIZER = new RedisSerializer<>() {
+		@Override
+		public byte[] serialize(Long l) throws SerializationException {
+			byte[] result = new byte[Long.BYTES];
+			for (int i = Long.BYTES - 1; i >= 0; i--) {
+				result[i] = (byte)(l & 0xFF);
+				l >>= Byte.SIZE;
+			}
+			return result;
+		}
+
+		@Override
+		public Long deserialize(byte[] b) throws SerializationException {
+			long result = 0;
+			for (int i = 0; i < Long.BYTES; i++) {
+				result <<= Byte.SIZE;
+				result |= (b[i] & 0xFF);
+			}
+			return result;
+		}
+	};
 
 	/**
 	 * 设置存活时间
@@ -193,10 +220,10 @@ public record Redis<K, T>(RedisTemplate<K, T> redis) {
 	 * scan 实现
 	 *
 	 * @param pattern  表达式
-	 * @param consumer 对迭代到的key进行操作
+	 * @param consumer 对迭代到的 key 进行操作
 	 */
 	public void scan(String pattern, Consumer<byte[]> consumer) {
-		this.redis.execute((RedisConnection connection) -> {
+		redis.execute((RedisConnection connection) -> {
 			try (Cursor<byte[]> cursor = connection.scan(ScanOptions.scanOptions().count(Long.MAX_VALUE).match(pattern).build())) {
 				cursor.forEachRemaining(consumer);
 				return null;
@@ -215,7 +242,11 @@ public record Redis<K, T>(RedisTemplate<K, T> redis) {
 	 */
 	public List<K> keys(String pattern) {
 		List<K> keys = new ArrayList<>();
-		this.scan(pattern, item -> keys.add((K) item));
+		scan(pattern, item -> {
+			if (item != null) {
+				keys.add(serializer.deserialize(item));
+			}
+		});
 		return keys;
 	}
 

@@ -1,6 +1,7 @@
 package net.imyeyu.blog.config;
 
 import net.imyeyu.blog.entity.ArticleHot;
+import net.imyeyu.blog.util.Redis;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -14,8 +15,6 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
-import org.springframework.data.redis.serializer.SerializationException;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
 
@@ -63,38 +62,6 @@ public class RedisConfig extends CachingConfigurerSupport {
 	@Value("${spring.redis.lettuce.pool.max-wait}")
 	private int maxWait;
 
-	/** 长整型序列化对象 */
-	private final RedisSerializer<Long> longSerializer = new RedisSerializer<>() {
-
-		private static byte[] longToBytes(long l) {
-			byte[] result = new byte[Long.BYTES];
-			for (int i = Long.BYTES - 1; i >= 0; i--) {
-				result[i] = (byte)(l & 0xFF);
-				l >>= Byte.SIZE;
-			}
-			return result;
-		}
-
-		private static long bytesToLong(final byte[] b) {
-			long result = 0;
-			for (int i = 0; i < Long.BYTES; i++) {
-				result <<= Byte.SIZE;
-				result |= (b[i] & 0xFF);
-			}
-			return result;
-		}
-
-		@Override
-		public byte[] serialize(Long aLong) throws SerializationException {
-			return longToBytes(aLong);
-		}
-
-		@Override
-		public Long deserialize(byte[] bytes) throws SerializationException {
-			return bytesToLong(bytes);
-		}
-	};
-
 	/** @return Redis 连接池配置 */
 	@Bean
 	public GenericObjectPoolConfig<?> getPoolConfig() {
@@ -114,7 +81,7 @@ public class RedisConfig extends CachingConfigurerSupport {
 	 */
 	@Bean("redisArticleHot")
 	public RedisTemplate<Long, ArticleHot> getArticleHotRedisTemplate() {
-		return getRedisTemplate(articleHotDB, longSerializer);
+		return getRedisTemplate(articleHotDB, Redis.LONG_SERIALIZER);
 	}
 
 	/**
@@ -125,7 +92,7 @@ public class RedisConfig extends CachingConfigurerSupport {
 	 */
 	@Bean("redisArticleRead")
 	public RedisTemplate<String, Long> getArticleReadRedisTemplate() {
-		return getRedisTemplate(articleReadDB, new StringRedisSerializer());
+		return getRedisTemplate(articleReadDB, Redis.STRING_SERIALIZER);
 	}
 
 	/**
@@ -136,7 +103,7 @@ public class RedisConfig extends CachingConfigurerSupport {
 	 */
 	@Bean("redisUserToken")
 	public RedisTemplate<Long, String> getUserTokenRedisTemplate() {
-		return getRedisTemplate(userTokenDB, longSerializer);
+		return getRedisTemplate(userTokenDB, Redis.LONG_SERIALIZER);
 	}
 
 	/**

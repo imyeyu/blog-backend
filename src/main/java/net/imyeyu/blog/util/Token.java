@@ -38,7 +38,7 @@ public class Token {
 	 * @param uid UID
 	 * @return true 时表示有效
 	 */
-	public boolean isValid(long uid, String token) throws ServiceException {
+	public boolean isValid(Long uid, String token) throws ServiceException {
 		final String flag = "user." + uid;
 		ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 		if (sra != null) {
@@ -49,7 +49,7 @@ public class Token {
 				return true;
 			}
 			// Redis 验证
-			Redis<Long, String> rdToken = new Redis<>(redisUserToken);
+			Redis<Long, String> rdToken = new Redis<>(redisUserToken, Redis.LONG_SERIALIZER);
 			if (token.equals(rdToken.get(uid))) {
 				session.setAttribute("user." + uid, token);
 				rdToken.set(uid, token, 24);

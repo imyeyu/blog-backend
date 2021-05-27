@@ -63,7 +63,7 @@ public class ArticleServiceImplement implements ArticleService {
 
 	@Override
 	public List<ArticleHot> getArticleHot() {
-		Redis<Long, ArticleHot> redis = new Redis<>(redisArticleHot);
+		Redis<Long, ArticleHot> redis = new Redis<>(redisArticleHot, Redis.LONG_SERIALIZER);
 		try {
 			List<ArticleHot> acs = redis.values();
 			acs.sort(Comparator.comparing(ArticleHot::getCount).reversed());
@@ -83,7 +83,7 @@ public class ArticleServiceImplement implements ArticleService {
 
 	@Override
 	public void read(String ip, Article article) {
-		Redis<String, Long> rdRead = new Redis<>(redisArticleRead);
+		Redis<String, Long> rdRead = new Redis<>(redisArticleRead, Redis.STRING_SERIALIZER);
 
 		if (!rdRead.contains(ip, article.getId()) && !article.isHide()) {
 			// 3 小时内访问记录
@@ -93,7 +93,7 @@ public class ArticleServiceImplement implements ArticleService {
 			update(article);
 
 			// 每周访问计数
-			Redis<Long, ArticleHot> rdHot = new Redis<>(redisArticleHot);
+			Redis<Long, ArticleHot> rdHot = new Redis<>(redisArticleHot, Redis.LONG_SERIALIZER);
 			ArticleHot ac = rdHot.get(article.getId());
 			if (ac == null) {
 				ac = new ArticleHot(article.getId(), article.getTitle());

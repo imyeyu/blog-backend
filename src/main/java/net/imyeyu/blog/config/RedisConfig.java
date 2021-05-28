@@ -15,6 +15,8 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.SerializationException;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
 
@@ -62,6 +64,30 @@ public class RedisConfig extends CachingConfigurerSupport {
 	@Value("${spring.redis.lettuce.pool.max-wait}")
 	private int maxWait;
 
+	// 序列化类型
+	private static final StringRedisSerializer STRING_SERIALIZER = new StringRedisSerializer();
+	private static final RedisSerializer<Long> LONG_SERIALIZER = new RedisSerializer<>() {
+		@Override
+		public byte[] serialize(Long l) throws SerializationException {
+			byte[] result = new byte[Long.BYTES];
+			for (int i = Long.BYTES - 1; i >= 0; i--) {
+				result[i] = (byte)(l & 0xFF);
+				l >>= Byte.SIZE;
+			}
+			return result;
+		}
+
+		@Override
+		public Long deserialize(byte[] b) throws SerializationException {
+			long result = 0;
+			for (int i = 0; i < Long.BYTES; i++) {
+				result <<= Byte.SIZE;
+				result |= (b[i] & 0xFF);
+			}
+			return result;
+		}
+	};
+
 	/** @return Redis 连接池配置 */
 	@Bean
 	public GenericObjectPoolConfig<?> getPoolConfig() {
@@ -80,8 +106,8 @@ public class RedisConfig extends CachingConfigurerSupport {
 	 * @return RedisTemplate
 	 */
 	@Bean("redisArticleHot")
-	public RedisTemplate<Long, ArticleHot> getArticleHotRedisTemplate() {
-		return getRedisTemplate(articleHotDB, Redis.LONG_SERIALIZER);
+	public Redis<Long, ArticleHot> getArticleHotRedisTemplate() {
+		return getRedis(articleHotDB, LONG_SERIALIZER);
 	}
 
 	/**
@@ -91,8 +117,8 @@ public class RedisConfig extends CachingConfigurerSupport {
 	 * @return RedisTemplate
 	 */
 	@Bean("redisArticleRead")
-	public RedisTemplate<String, Long> getArticleReadRedisTemplate() {
-		return getRedisTemplate(articleReadDB, Redis.STRING_SERIALIZER);
+	public Redis<String, Long> getArticleReadRedisTemplate() {
+		return getRedis(articleReadDB, STRING_SERIALIZER);
 	}
 
 	/**
@@ -101,9 +127,9 @@ public class RedisConfig extends CachingConfigurerSupport {
 	 *
 	 * @return RedisTemplate
 	 */
-	@Bean("redisUserToken")
-	public RedisTemplate<Long, String> getUserTokenRedisTemplate() {
-		return getRedisTemplate(userTokenDB, Redis.LONG_SERIALIZER);
+	@Bean("redisToken")
+	public Redis<Long, String> getUserTokenRedisTemplate() {
+		return getRedis(userTokenDB, LONG_SERIALIZER);
 	}
 
 	/**
@@ -116,7 +142,7 @@ public class RedisConfig extends CachingConfigurerSupport {
 	 * @param <T> 值类型
 	 * @return RedisTemplate
 	 */
-	private <K, T> RedisTemplate<K, T> getRedisTemplate(int database, RedisSerializer<K> serializer) {
+	private <K, T> Redis<K, T> getRedis(int database, RedisSerializer<K> serializer) {
 		// 构建 Redis 配置
 		RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
 		// 连接参数
@@ -140,7 +166,7 @@ public class RedisConfig extends CachingConfigurerSupport {
 		rt.setHashKeySerializer(serializer);
 		rt.setConnectionFactory(factory);
 		rt.afterPropertiesSet();
-		return rt;
+		return new Redis<>(rt, serializer);
 	}
 
 	/**

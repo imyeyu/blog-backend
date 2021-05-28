@@ -17,34 +17,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
- * RedisTemplate 功能封装
+ * <p>RedisTemplate 功能封装，简化 Redis 操作
+ * <p>serializer 为该 RedisTemplate 的键的序列化操作，序列化解析器由本类提供
+ *
  * 夜雨 创建于 2021-03-02 17:46
  */
 public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializer) {
-
-	// 序列化类型
-	public static final StringRedisSerializer STRING_SERIALIZER = new StringRedisSerializer();
-	public static final RedisSerializer<Long> LONG_SERIALIZER = new RedisSerializer<>() {
-		@Override
-		public byte[] serialize(Long l) throws SerializationException {
-			byte[] result = new byte[Long.BYTES];
-			for (int i = Long.BYTES - 1; i >= 0; i--) {
-				result[i] = (byte)(l & 0xFF);
-				l >>= Byte.SIZE;
-			}
-			return result;
-		}
-
-		@Override
-		public Long deserialize(byte[] b) throws SerializationException {
-			long result = 0;
-			for (int i = 0; i < Long.BYTES; i++) {
-				result <<= Byte.SIZE;
-				result |= (b[i] & 0xFF);
-			}
-			return result;
-		}
-	};
 
 	/**
 	 * 设置存活时间

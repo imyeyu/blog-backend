@@ -6,7 +6,6 @@ import net.imyeyu.blog.mapper.ArticleMapper;
 import net.imyeyu.blog.service.ArticleService;
 import net.imyeyu.blog.util.Redis;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -24,10 +23,10 @@ import java.util.stream.Collectors;
 public class ArticleServiceImplement implements ArticleService {
 
 	@Autowired
-	private RedisTemplate<Long, ArticleHot> redisArticleHot;
+	private Redis<Long, ArticleHot> redisArticleHot;
 
 	@Autowired
-	private RedisTemplate<String, Long> redisArticleRead;
+	private Redis<String, Long> redisArticleRead;
 
 	@Autowired
 	private ArticleMapper mapper;
@@ -63,13 +62,12 @@ public class ArticleServiceImplement implements ArticleService {
 
 	@Override
 	public List<ArticleHot> getArticleHot() {
-		Redis<Long, ArticleHot> redis = new Redis<>(redisArticleHot, Redis.LONG_SERIALIZER);
 		try {
-			List<ArticleHot> acs = redis.values();
+			List<ArticleHot> acs = redisArticleHot.values();
 			acs.sort(Comparator.comparing(ArticleHot::getCount).reversed());
 			return acs.subList(0, Math.min(10, acs.size()));
 		} catch (Exception e) {
-			redis.flushAll();
+			redisArticleHot.flushAll();
 			e.printStackTrace();
 			return new ArrayList<>();
 		}
@@ -83,26 +81,23 @@ public class ArticleServiceImplement implements ArticleService {
 
 	@Override
 	public void read(String ip, Article article) {
-		Redis<String, Long> rdRead = new Redis<>(redisArticleRead, Redis.STRING_SERIALIZER);
-
-		if (!rdRead.contains(ip, article.getId()) && !article.isHide()) {
+		if (!redisArticleRead.contains(ip, article.getId()) && !article.isHide()) {
 			// 3 小时内访问记录
-			rdRead.add(ip, article.getId());
-			rdRead.expire(ip, 3);
+			redisArticleRead.add(ip, article.getId());
+			redisArticleRead.expire(ip, 3);
 			article.read();
 			update(article);
 
 			// 每周访问计数
-			Redis<Long, ArticleHot> rdHot = new Redis<>(redisArticleHot, Redis.LONG_SERIALIZER);
-			ArticleHot ac = rdHot.get(article.getId());
+			ArticleHot ac = redisArticleHot.get(article.getId());
 			if (ac == null) {
 				ac = new ArticleHot(article.getId(), article.getTitle());
 				ac.setRecentAt(System.currentTimeMillis());
-				rdHot.set(article.getId(), ac, Duration.ofDays(7));
+				redisArticleHot.set(article.getId(), ac, Duration.ofDays(7));
 			} else {
 				ac.increment();
 				ac.setRecentAt(System.currentTimeMillis());
-				rdHot.set(article.getId(), ac, true);
+				redisArticleHot.set(article.getId(), ac, true);
 			}
 		}
 	}

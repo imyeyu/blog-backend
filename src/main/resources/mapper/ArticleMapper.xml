@@ -21,10 +21,10 @@
 		FROM
 			article AS a
 		WHERE
-			a.deleted_at IS NULL
+			a.is_hide = 0
+			AND a.deleted_at IS NULL
 		ORDER BY
-			a.updated_at DESC,
-			a.created_at DESC
+			COALESCE(a.updated_at, a.created_at) DESC
 		LIMIT
 			#{offset}, #{limit}
 	</select>

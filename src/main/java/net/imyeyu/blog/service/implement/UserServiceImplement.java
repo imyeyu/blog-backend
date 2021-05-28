@@ -9,8 +9,9 @@ import net.imyeyu.blog.bean.ServiceException;
 import net.imyeyu.blog.entity.User;
 import net.imyeyu.blog.mapper.UserMapper;
 import net.imyeyu.blog.service.UserService;
+import net.imyeyu.blog.util.Redis;
 import net.imyeyu.blog.util.Token;
-import net.imyeyu.blog.vo.UserVO;
+import net.imyeyu.blog.vo.UserToken;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,9 @@ public class UserServiceImplement implements UserService {
 	
 	@Autowired
     private UserMapper mapper;
+
+	@Autowired
+	private Redis<Long, String> redisToken;
 
 	@Autowired
 	private Token token;
@@ -44,7 +48,7 @@ public class UserServiceImplement implements UserService {
 	}
 
 	@Override
-	public UserVO doSignIn(String user, String password) throws ServiceException {
+	public UserToken doSignIn(String user, String password) throws ServiceException {
 		User result;
 		if (Encode.isNumber(user)) {
 			// UID 登录
@@ -60,8 +64,9 @@ public class UserServiceImplement implements UserService {
 			// 密码摘要校验
 			if (result.getPassword().equals(generatePasswordDigest(result.getName(), result.getCreatedAt(), password))) {
 				// 生成并缓存 Token
-				token.isValid(result.getId(), token.generate(result));
-				return result.toVO(token.generate(result));
+				String token = this.token.generate(result);
+				redisToken.set(result.getId(), token, 24);
+				return result.toToken(token);
 			}
 			throw new ServiceException(ReturnCode.PARAMS_BAD, "密码错误");
 		} else {

@@ -7,7 +7,6 @@ import net.imyeyu.blog.bean.ServiceException;
 import net.imyeyu.blog.entity.User;
 import net.imyeyu.blog.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -25,17 +24,18 @@ import javax.servlet.http.HttpSession;
 public class Token {
 
 	@Autowired
-	private RedisTemplate<Long, String> redisUserToken;
+	private Redis<Long, String> redisToken;
 
 	@Autowired
 	private UserService service;
 	
 	/**
 	 * <p>验证令牌是否有效
-	 * <p>当 uid 所查找的令牌无效但构造的令牌对数据库验证有效时，所有验证机制变为有效，数据库是最后验证也是最高权限验证
+	 * <p>一级验证 Session，二级验证 Redis，有效期为 24 小时（每次二级验证有效时会刷新这个时间，即 24 小时内不再访问则视为登出）
 	 * <p>Session 存键为 user.uid，Redis 存键为 uid，值均为令牌
 	 *
-	 * @param uid UID
+	 * @param uid   UID
+	 * @param token 令牌
 	 * @return true 时表示有效
 	 */
 	public boolean isValid(Long uid, String token) throws ServiceException {
@@ -46,20 +46,14 @@ public class Token {
 			HttpSession session = sra.getRequest().getSession();
 			Object sessionToken = session.getAttribute(flag);
 			if (token.equals(sessionToken)) {
+				System.out.println("session pass");
 				return true;
 			}
 			// Redis 验证
-			Redis<Long, String> rdToken = new Redis<>(redisUserToken, Redis.LONG_SERIALIZER);
-			if (token.equals(rdToken.get(uid))) {
+			if (token.equals(redisToken.get(uid))) {
 				session.setAttribute("user." + uid, token);
-				rdToken.set(uid, token, 24);
-				return true;
-			}
-			// 数据库验证
-			User user = service.find(uid);
-			if (token.equals(generate(user))) {
-				session.setAttribute("user." + uid, token);
-				rdToken.set(uid, token, 24);
+				redisToken.set(uid, token, 24);
+				System.out.println("redis pass");
 				return true;
 			}
 			return false;
@@ -69,13 +63,13 @@ public class Token {
 	}
 	
 	/**
-	 * <p>生成令牌
-	 * <p>需要 ID、用户名和摘要后的密码
+	 * <p>随机生成令牌
 	 * <p>加盐《来自风平浪静的明天》
 	 *
+	 * @param user 用户（含 ID、用户名和摘要后的密码）
 	 * @return 令牌
 	 */
 	public String generate(User user) {
-		return user.getId() + "#" + Encode.md5(user.getName() + "Nagiasu" + user.getPassword());
+		return user.getId() + "#" + Encode.md5(user.getName() + "Nagiasu" + user.getPassword() + Math.random());
 	}
 }

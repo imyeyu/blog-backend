@@ -10,15 +10,16 @@ import lombok.Getter;
 @Getter
 public enum ReturnCode {
 
-	SUCCESS          (20000, "执行成功"),
-	PARAMS_MISS      (40000, "缺少参数"),
+	SUCCESS          (20000, "执行成功"),    // 200 成功
+	PARAMS_MISS      (40000, "缺少参数"),    // 400 参数异常
 	PARAMS_BAD       (40001, "不合法的参数"),
 	PARAMS_EXPIRD    (40002, "过期的参数"),
-	PERMISSION_MISS  (40100, "无权限"),
+	PERMISSION_MISS  (40100, "无权限"),      // 401 权限异常
 	PERMISSION_ERROR (40101, "无权限"),
 	REQUEST_BAD      (40102, "非法请求"),
-	RESULT_NULL      (40400, "无结果"),
-	ERROR            (50000, "服务端异常");
+	DATA_CONFLICT    (40301, "数据冲突"),    // 403 数据异常
+	RESULT_NULL      (40400, "无结果"),      // 404 资源缺失
+	ERROR            (50000, "服务端异常");  // 500 代码异常
 
 	private final Integer code;
 	private final String comment;

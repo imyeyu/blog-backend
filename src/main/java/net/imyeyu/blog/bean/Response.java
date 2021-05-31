@@ -22,6 +22,10 @@ public class Response<T> {
 		this(code.getCode(), "", null);
 	}
 
+	public Response(ReturnCode code, Throwable e) {
+		this(code.getCode(), e.getMessage(), null);
+	}
+
 	public Response(ReturnCode code, String msg) {
 		this(code.getCode(), msg, null);
 	}

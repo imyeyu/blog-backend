@@ -1,7 +1,9 @@
 package net.imyeyu.blog.service;
 
+import net.imyeyu.blog.bean.ServiceException;
 import net.imyeyu.blog.entity.Article;
 import net.imyeyu.blog.entity.ArticleHot;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
@@ -19,10 +21,10 @@ public interface ArticleService extends BaseService<Article> {
 	 * @param limit  数量
 	 * @return 文章列表
 	 */
-	List<Article> findByList(long offset, int limit);
+	List<Article> findManyByList(long offset, int limit);
 
 	/** @return 每周阅读排行 */
-	List<ArticleHot> getArticleHot();
+	List<ArticleHot> getArticleHot() throws ServiceException;
 
 	/** 评论计数 */
 	void comment(Article article);

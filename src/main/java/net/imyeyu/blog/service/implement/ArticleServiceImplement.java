@@ -1,5 +1,7 @@
 package net.imyeyu.blog.service.implement;
 
+import net.imyeyu.blog.bean.ReturnCode;
+import net.imyeyu.blog.bean.ServiceException;
 import net.imyeyu.blog.entity.Article;
 import net.imyeyu.blog.entity.ArticleHot;
 import net.imyeyu.blog.mapper.ArticleMapper;
@@ -36,18 +38,18 @@ public class ArticleServiceImplement implements ArticleService {
 	}
 
 	@Override
-	public Article find(Long id) {
-		return mapper.findById(id);
+	public Article find(Long id) throws ServiceException {
+		return mapper.find(id);
 	}
 
 	@Override
-	public List<Article> find(long offset, int limit) {
-		return mapper.find(offset, limit);
+	public List<Article> findMany(long offset, int limit) throws ServiceException {
+		return mapper.findMany(offset, limit);
 	}
 
 	@Override
-	public List<Article> findByList(long offset, int limit) {
-		return find(offset, limit).stream().filter(article -> !article.isHide()).collect(Collectors.toList());
+	public List<Article> findManyByList(long offset, int limit) {
+		return mapper.findManyByList(offset, limit).stream().filter(article -> !article.isHide()).collect(Collectors.toList());
 	}
 
 	@Override
@@ -61,7 +63,7 @@ public class ArticleServiceImplement implements ArticleService {
 	}
 
 	@Override
-	public List<ArticleHot> getArticleHot() {
+	public List<ArticleHot> getArticleHot() throws ServiceException {
 		try {
 			List<ArticleHot> acs = redisArticleHot.values();
 			acs.sort(Comparator.comparing(ArticleHot::getCount).reversed());
@@ -69,7 +71,7 @@ public class ArticleServiceImplement implements ArticleService {
 		} catch (Exception e) {
 			redisArticleHot.flushAll();
 			e.printStackTrace();
-			return new ArrayList<>();
+			throw new ServiceException(ReturnCode.ERROR, e.getMessage());
 		}
 	}
 

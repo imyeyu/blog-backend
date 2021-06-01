@@ -2,11 +2,23 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="net.imyeyu.blog.mapper.ArticleMapper">
 	<!-- 获取 -->
-	<select id="findById" resultType="net.imyeyu.blog.entity.Article" parameterType="long">
+	<select id="find" resultType="net.imyeyu.blog.entity.Article" parameterType="long">
 		SELECT * FROM `article` WHERE `id` = #{id}
 	</select>
+	<!-- 获取部分 -->
+	<select id="findMany" resultMap="findManyResult">
+		SELECT
+			*
+		FROM
+			`article`
+		ORDER BY
+			COALESCE(a.updated_at, a.created_at) DESC
+		LIMIT
+			#{offset}, #{limit}
+	</select>
+	<resultMap id="findManyResult" type="net.imyeyu.blog.entity.Article" />
 	<!-- 获取列表（摘要） -->
-	<select id="find" resultMap="findResult">
+	<select id="findManyByList" resultMap="findManyByListResult">
 		SELECT
 			a.id,
 			a.type,
@@ -28,7 +40,7 @@
 		LIMIT
 			#{offset}, #{limit}
 	</select>
-	<resultMap id="findResult" type="net.imyeyu.blog.entity.Article">
+	<resultMap id="findManyByListResult" type="net.imyeyu.blog.entity.Article">
 		<id property="id" column="id"/>
 		<result property="title" column="title"/>
 		<result property="type" column="type"/>
@@ -43,26 +55,23 @@
 	<!-- 更新 -->
 	<update id="update" parameterType="net.imyeyu.blog.entity.Article">
 		<if test="id != null">
-			UPDATE article
+			UPDATE `article`
 			<set>
-				title = #{title},
-				type = #{type},
-				clazz = #{clazz},
-				label = #{label},
-				digest = #{digest},
-				data = #{data},
-
-				`reads` = #{reads},
-				likes = #{likes},
-				comments = #{comments},
-
-				is_hide = #{isHide},
-
-				created_at = #{createdAt},
-				updated_at = #{updatedAt},
-				deleted_at = #{deletedAt}
+				`title`      = #{title},
+				`type`       = #{type},
+				`clazz`      = #{clazz},
+				`label`      = #{label},
+				`digest`     = #{digest},
+				`data`       = #{data},
+				`reads`      = #{reads},
+				`likes`      = #{likes},
+				`comments`   = #{comments},
+				`is_hide`    = #{isHide},
+				`created_at` = #{createdAt},
+				`updated_at` = #{updatedAt},
+				`deleted_at` = #{deletedAt}
 			</set>
-			WHERE id = #{id}
+			WHERE `id` = #{id}
 		</if>
 	</update>
 </mapper>

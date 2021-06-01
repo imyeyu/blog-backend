@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="net.imyeyu.blog.mapper.CommentMapper">
+	<!-- 新增评论 -->
+	<insert id="create" parameterType="net.imyeyu.blog.entity.Comment" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO `comments` (
+			`article_id`,
+			`user_id`,
+			`nick`,
+			`data`,
+			`created_at`
+		) VALUES (
+			#{articleId},
+			#{userId},
+			#{nick},
+			#{data},
+			#{createdAt}
+		);
+	</insert>
 	<!-- 获取文章评论（附带子评论） -->
     <select id="findByArticleId" parameterType="map" resultMap="findByArticleIdResult">
 		SELECT
@@ -108,22 +124,6 @@
 	        </association>
         </collection>
 	</resultMap>
-	<!-- 新增评论 -->
-	<insert id="create" parameterType="net.imyeyu.blog.entity.Comment" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-		INSERT INTO `comments` (
-			`article_id`,
-			`user_id`,
-			`nick`,
-			`data`,
-			`created_at`
-		) VALUES (
-			#{comment.articleId},
-			#{comment.userId},
-			#{comment.nick},
-			#{comment.data},
-			#{comment.createdAt}
-		);
-	</insert>
 	<!-- 新增子评论 -->
 	<insert id="createReply" parameterType="net.imyeyu.blog.entity.CommentReply" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
 		INSERT INTO `comment_reply` (
@@ -135,13 +135,13 @@
 			`data`,
 			`created_at`
 		) VALUES (
-			#{commentReply.commentId},
-			#{commentReply.senderId},
-			#{commentReply.receiverId},
-			#{commentReply.senderNick},
-			#{commentReply.receiverNick},
-			#{commentReply.data},
-			#{commentReply.createdAt}
+			#{commentId},
+			#{senderId},
+			#{receiverId},
+			#{senderNick},
+			#{receiverNick},
+			#{data},
+			#{createdAt}
 		);
 	</insert>
 	<!-- 获取文章子评论 -->

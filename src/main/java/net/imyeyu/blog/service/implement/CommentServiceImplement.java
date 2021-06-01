@@ -1,13 +1,14 @@
 package net.imyeyu.blog.service.implement;
 
-import java.util.List;
-
+import net.imyeyu.blog.bean.ServiceException;
 import net.imyeyu.blog.entity.Comment;
 import net.imyeyu.blog.entity.CommentReply;
 import net.imyeyu.blog.mapper.CommentMapper;
 import net.imyeyu.blog.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * 评论操作
@@ -21,7 +22,7 @@ public class CommentServiceImplement implements CommentService {
 	private CommentMapper mapper;
 
 	@Override
-	public void create(Comment comment) {
+	public void create(Comment comment) throws ServiceException {
 		comment.setCreatedAt(System.currentTimeMillis());
 		mapper.create(comment);
 	}
@@ -32,7 +33,7 @@ public class CommentServiceImplement implements CommentService {
 	}
 
 	@Override
-	public List<Comment> find(long offset, int limit) {
+	public List<Comment> findMany(long offset, int limit) {
 		return null;
 	}
 

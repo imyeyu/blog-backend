@@ -1,5 +1,6 @@
 package net.imyeyu.blog.util;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -111,9 +112,9 @@ public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializ
 	public void set(K key, T v, Duration timeout) {
 		if (timeout == null) {
 			Long expire = redis.getExpire(key, TimeUnit.SECONDS);
+			// 存在剩余生存时间并且没有死亡
 			if (expire != null && 0 < expire) {
-				timeout = Duration.ofSeconds(expire);
-				redis.opsForValue().set(key, v, timeout);
+				redis.opsForValue().set(key, v, Duration.ofSeconds(expire));
 			} else {
 				redis.opsForValue().set(key, v);
 			}
@@ -226,6 +227,14 @@ public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializ
 			}
 		});
 		return keys;
+	}
+
+	public boolean delete(K k) {
+		if (!ObjectUtils.isEmpty(k) && has(k)) {
+			Boolean b = redis.delete(k);
+			return b != null && b;
+		}
+		return false;
 	}
 
 	/** 删库 */

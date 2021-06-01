@@ -1,0 +1,32 @@
+package net.imyeyu.blog.entity;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+
+/**
+ * 用户数据
+ *
+ * 夜雨 创建于 2021-05-29 15:58
+ */
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+public class UserData extends BaseEntity implements Serializable {
+
+	private Long userId;
+	private Integer exp;
+	private String avatar;
+	private Byte sex;
+	private Long birth;
+	private String qq;
+	private String sign;
+	private String signedInIp;
+	private Long signedInAt;
+
+	public UserData(Long userId) {
+		this.userId = userId;
+	}
+}

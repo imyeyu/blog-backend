@@ -12,6 +12,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpSession;
+import java.security.SecureRandom;
 
 /**
  * <p>口令验证机制
@@ -46,17 +47,34 @@ public class Token {
 			HttpSession session = sra.getRequest().getSession();
 			Object sessionToken = session.getAttribute(flag);
 			if (token.equals(sessionToken)) {
-				System.out.println("session pass");
 				return true;
 			}
 			// Redis 验证
 			if (token.equals(redisToken.get(uid))) {
 				session.setAttribute("user." + uid, token);
 				redisToken.set(uid, token, 24);
-				System.out.println("redis pass");
 				return true;
 			}
 			return false;
+		} else {
+			throw new ServiceException(ReturnCode.REQUEST_BAD, ReturnCode.REQUEST_BAD.getComment());
+		}
+	}
+
+	/**
+	 * 清除缓存
+	 *
+	 * @param uid uid
+	 * @return true 为清除成功
+	 * @throws ServiceException 异常
+	 */
+	public boolean clear(Long uid) throws ServiceException {
+		ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+		if (sra != null) {
+			// Session
+			sra.getRequest().getSession().removeAttribute("user." + uid);
+			// Redis
+			return redisToken.delete(uid);
 		} else {
 			throw new ServiceException(ReturnCode.REQUEST_BAD, ReturnCode.REQUEST_BAD.getComment());
 		}
@@ -70,6 +88,6 @@ public class Token {
 	 * @return 令牌
 	 */
 	public String generate(User user) {
-		return user.getId() + "#" + Encode.md5(user.getName() + "Nagiasu" + user.getPassword() + Math.random());
+		return user.getId() + "#" + Encode.md5(user.getName() + "Nagiasu" + user.getPassword() + new SecureRandom().nextLong());
 	}
 }

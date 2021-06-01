@@ -1,32 +1,59 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="net.imyeyu.blog.mapper.UserMapper">
-	<!-- 根据 ID 获取 -->
-	<select id="findById" resultType="net.imyeyu.blog.entity.User" parameterType="long">
+	<!-- 新增账号 -->
+	<insert id="create" parameterType="net.imyeyu.blog.entity.User" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO `users` (
+			`email`,
+			`name`,
+			`password`,
+			`created_at`
+		) VALUES (
+			#{email},
+			#{name},
+			#{password},
+			#{createdAt}
+		);
+	</insert>
+	<!-- 根据 ID 获取账号 -->
+	<select id="find" resultType="net.imyeyu.blog.entity.User" parameterType="long">
 		SELECT * FROM `users` WHERE `id` = #{id}
 	</select>
-	<!-- 根据用户名获取 -->
+	<!-- 根据用户名获取账号 -->
 	<select id="findByName" resultType="net.imyeyu.blog.entity.User" parameterType="String">
 		SELECT * FROM `users` WHERE `name` = #{name}
 	</select>
-	<!-- 根据邮箱获取 -->
+	<!-- 根据邮箱获取账号 -->
 	<select id="findByEmail" resultType="net.imyeyu.blog.entity.User" parameterType="String">
-		SELECT * FROM `users` WHERE `id` = #{email}
+		SELECT * FROM `users` WHERE `email` = #{email}
 	</select>
-	<!-- 获取列表 -->
-    <select id="findAll" resultMap="findAllResult">
-        SELECT * FROM users
-    </select>
-	<resultMap id="findAllResult" type="net.imyeyu.blog.entity.User">
-		<id property="id" column="id"/>
-		<result property="email" column="email"/>
-		<result property="name" column="name"/>
-		<result property="password" column="password"/>
-		<result property="createdAt" column="created_at"/>
-		<result property="canceledAt" column="canceled_at"/>
-		<result property="deletedAt" column="deleted_at"/>
-	</resultMap>
-	<insert id="create" parameterType="net.imyeyu.blog.entity.User" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-		INSERT INTO `users` (`name`, `password`, `created_at`) VALUES (#{user.name}, #{user.password}, #{user.createdAt});
+	<!-- 新增用户资料（创建账号时调用，多数数据为空白） -->
+	<insert id="createData" parameterType="net.imyeyu.blog.entity.UserData" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO `user_data` (`user_id`, `created_at`) VALUES (#{userId}, #{createdAt});
 	</insert>
+	<!-- 根据 ID 获取账号 -->
+	<select id="findData" resultType="net.imyeyu.blog.entity.UserData" parameterType="long">
+		SELECT * FROM `user_data` WHERE `user_id` = #{id}
+	</select>
+	<!-- 更新用户资料 -->
+	<update id="updateData" parameterType="net.imyeyu.blog.entity.UserData">
+		<if test="id != null">
+			UPDATE `user_data`
+			<set>
+				`user_id`      = #{userId},
+				`exp`          = #{exp},
+				`avatar`       = #{avatar},
+				`sex`          = #{sex},
+				`birth`        = #{birth},
+				`qq`           = #{qq},
+				`sign`         = #{sign},
+				`signed_in_ip` = #{signedInIp},
+				`signed_in_at` = #{signedInAt},
+				`created_at`   = #{createdAt},
+				`updated_at`   = #{updatedAt},
+				`deleted_at`   = #{deletedAt}
+			</set>
+			WHERE `id` = #{id}
+		</if>
+	</update>
 </mapper>

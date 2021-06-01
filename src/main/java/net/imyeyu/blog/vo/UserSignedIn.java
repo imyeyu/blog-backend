@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserToken {
+public class UserSignedIn {
 
 	private Long id;
 	private String name;

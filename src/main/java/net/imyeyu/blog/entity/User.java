@@ -2,7 +2,7 @@ package net.imyeyu.blog.entity;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import net.imyeyu.blog.vo.UserToken;
+import net.imyeyu.blog.vo.UserSignedIn;
 
 import java.io.Serializable;
 
@@ -20,7 +20,7 @@ public class User extends BaseEntity implements Serializable {
 	private String password;
 	private Long canceledAt;
 
-	public UserToken toToken(String token) {
-		return new UserToken(id, name, token);
+	public UserSignedIn toToken(String token) {
+		return new UserSignedIn(id, name, token);
 	}
 }

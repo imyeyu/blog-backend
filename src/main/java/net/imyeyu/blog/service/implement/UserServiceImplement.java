@@ -1,20 +1,22 @@
 package net.imyeyu.blog.service.implement;
 
-import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
 import net.imyeyu.betterjava.Encode;
 import net.imyeyu.blog.bean.ReturnCode;
 import net.imyeyu.blog.bean.ServiceException;
 import net.imyeyu.blog.entity.User;
+import net.imyeyu.blog.entity.UserData;
 import net.imyeyu.blog.mapper.UserMapper;
 import net.imyeyu.blog.service.UserService;
 import net.imyeyu.blog.util.Redis;
 import net.imyeyu.blog.util.Token;
-import net.imyeyu.blog.vo.UserToken;
+import net.imyeyu.blog.vo.UserSignedIn;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * <p>用户管理
@@ -47,8 +49,30 @@ public class UserServiceImplement implements UserService {
 		return Encode.md5(name + createdAt + "AngelicSerenade" + password);
 	}
 
+	@Transactional(rollbackFor = ServiceException.class)
 	@Override
-	public UserToken doSignIn(String user, String password) throws ServiceException {
+	public UserSignedIn register(User user) throws ServiceException {
+		if (findByName(user.getName()) != null) {
+			throw new ServiceException(ReturnCode.DATA_CONFLICT, "该用户名已存在");
+		}
+		if (findByEmail(user.getEmail()) != null) {
+			throw new ServiceException(ReturnCode.DATA_CONFLICT, "该邮箱已被使用");
+		}
+		// 明文密码（做自动登录）
+		String plainPassword = user.getPassword();
+		user.setCreatedAt(System.currentTimeMillis());
+		// 摘要密码
+		user.setPassword(generatePasswordDigest(user.getName(), user.getCreatedAt(), user.getPassword()));
+		// 注册账号
+		create(user);
+		// 创建资料
+		createData(new UserData(user.getId()));
+		// 自动登录
+		return signIn(String.valueOf(user.getId()), plainPassword);
+	}
+
+	@Override
+	public UserSignedIn signIn(String user, String password) throws ServiceException {
 		User result;
 		if (Encode.isNumber(user)) {
 			// UID 登录
@@ -79,22 +103,23 @@ public class UserServiceImplement implements UserService {
 		return this.token.isValid(uid, token);
 	}
 
-	/**
-	 * 创建用户，此时的 User password 是明文
-	 *
-	 * @param user 用户
-	 */
 	@Override
-	public void create(User user) {
-		user.setCreatedAt(System.currentTimeMillis());
-		// 摘要密码
-		user.setPassword(generatePasswordDigest(user.getName(), user.getCreatedAt(), user.getPassword()));
+	public boolean signOut(Long uid, String token) throws ServiceException {
+		if (this.token.isValid(uid, token)) {
+			return this.token.clear(uid);
+		} else {
+			throw new ServiceException(ReturnCode.PERMISSION_ERROR, "无权限操作");
+		}
+	}
+
+	@Override
+	public void create(User user) throws ServiceException {
 		mapper.create(user);
 	}
 
 	@Override
-	public User find(Long id) {
-		return mapper.findById(id);
+	public User find(Long id) throws ServiceException {
+		return mapper.find(id);
 	}
 
 	@Override
@@ -108,7 +133,7 @@ public class UserServiceImplement implements UserService {
 	}
 
 	@Override
-	public List<User> find(long offset, int limit) {
+	public List<User> findMany(long offset, int limit) {
 		return null;
 	}
 
@@ -121,5 +146,30 @@ public class UserServiceImplement implements UserService {
 	@Override
 	public Long delete(Long... ids) {
 		return null;
+	}
+	
+	@Override
+	public void createData(UserData userData) {
+		mapper.createData(userData);
+	}
+
+	@Override
+	public UserData findData(Long userId) throws ServiceException {
+		UserData result = mapper.findData(userId);
+		if (result != null) {
+			return mapper.findData(userId);
+		} else {
+			new Exception("找不到该用户数据，UID = " + userId).printStackTrace();
+			throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该用户数据，UID = " + userId);
+		}
+	}
+
+	@Override
+	public void updateData(UserData userData) {
+		mapper.updateData(userData);
+	}
+
+	@Override
+	public void deleteData(Long userId) {
 	}
 }

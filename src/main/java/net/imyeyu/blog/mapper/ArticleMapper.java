@@ -1,6 +1,7 @@
 package net.imyeyu.blog.mapper;
 
 import net.imyeyu.blog.entity.Article;
+import net.imyeyu.blog.service.BaseService;
 
 import java.util.List;
 
@@ -9,11 +10,7 @@ import java.util.List;
  *
  * 夜雨 创建于 2021/2/23 21:34
  */
-public interface ArticleMapper {
+public interface ArticleMapper extends BaseService<Article> {
 
-	List<Article> find(long offset, int limit);
-
-	Article findById(long id);
-
-	void update(Article article);
+	List<Article> findManyByList(long offset, int limit);
 }

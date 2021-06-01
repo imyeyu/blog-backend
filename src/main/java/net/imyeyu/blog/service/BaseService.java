@@ -1,5 +1,8 @@
 package net.imyeyu.blog.service;
 
+import net.imyeyu.blog.bean.ServiceException;
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 
 /**
@@ -12,7 +15,7 @@ import java.util.List;
 public interface BaseService<T> {
 
 	/** @param t 创建数据 */
-	void create(T t);
+	void create(T t) throws ServiceException;
 
 	/**
 	 * 根据 ID 获取对象
@@ -20,7 +23,7 @@ public interface BaseService<T> {
 	 * @param id 索引
 	 * @return   原型对象
 	 */
-	T find(Long id);
+	T find(Long id) throws ServiceException;
 
 	/**
 	 * 查询部分
@@ -29,7 +32,7 @@ public interface BaseService<T> {
 	 * @param limit  数量
 	 * @return 原型类型 List 对象
 	 */
-	List<T> find(long offset, int limit);
+	List<T> findMany(long offset, int limit) throws ServiceException;
 	
 	/** @param t  修改数据 */
 	void update(T t);
@@ -40,5 +43,5 @@ public interface BaseService<T> {
 	 * @param ids 索引数组
 	 * @return    成功删除数量
 	 */
-	Long delete(Long... ids);
+	Long delete(Long... ids) throws ServiceException;
 }

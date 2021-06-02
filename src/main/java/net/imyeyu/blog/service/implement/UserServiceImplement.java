@@ -13,6 +13,7 @@ import net.imyeyu.blog.util.Token;
 import net.imyeyu.blog.vo.UserSignedIn;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,10 @@ import java.util.List;
 @Slf4j
 @Service
 public class UserServiceImplement implements UserService {
+
+	/** 用户密码盐值 */
+	@Value("${slat.user.password}")
+	private String salt;
 	
 	@Autowired
     private UserMapper mapper;
@@ -46,7 +51,7 @@ public class UserServiceImplement implements UserService {
 	 * @return 密码摘要
 	 */
 	private String generatePasswordDigest(String name, Long createdAt, String password) {
-		return Encode.md5(name + createdAt + "AngelicSerenade" + password);
+		return Encode.md5(name + createdAt + salt + password);
 	}
 
 	@Transactional(rollbackFor = ServiceException.class)
@@ -105,7 +110,7 @@ public class UserServiceImplement implements UserService {
 
 	@Override
 	public boolean signOut(Long uid, String token) throws ServiceException {
-		if (this.token.isValid(uid, token)) {
+		if (isSignedIn(uid, token)) {
 			return this.token.clear(uid);
 		} else {
 			throw new ServiceException(ReturnCode.PERMISSION_ERROR, "无权限操作");

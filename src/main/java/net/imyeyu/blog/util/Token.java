@@ -7,6 +7,7 @@ import net.imyeyu.blog.bean.ServiceException;
 import net.imyeyu.blog.entity.User;
 import net.imyeyu.blog.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -23,6 +24,10 @@ import java.security.SecureRandom;
 @NoArgsConstructor
 @Component
 public class Token {
+
+	/** 用户令牌盐值 */
+	@Value("${slat.user.token}")
+	private String salt;
 
 	@Autowired
 	private Redis<Long, String> redisToken;
@@ -81,13 +86,12 @@ public class Token {
 	}
 	
 	/**
-	 * <p>随机生成令牌
-	 * <p>加盐《来自风平浪静的明天》
+	 * 随机生成令牌
 	 *
 	 * @param user 用户（含 ID、用户名和摘要后的密码）
 	 * @return 令牌
 	 */
 	public String generate(User user) {
-		return user.getId() + "#" + Encode.md5(user.getName() + "Nagiasu" + user.getPassword() + new SecureRandom().nextLong());
+		return user.getId() + "#" + Encode.md5(user.getName() + salt + new SecureRandom().nextLong());
 	}
 }

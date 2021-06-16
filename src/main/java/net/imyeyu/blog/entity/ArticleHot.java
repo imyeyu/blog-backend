@@ -16,12 +16,14 @@ import java.io.Serializable;
 public class ArticleHot extends BaseEntity implements Serializable {
 
 	private String title;
+	private String type;
 	private int count = 1;
 	private Long recentAt; // 最近访问
 
-	public ArticleHot(Long id, String title) {
+	public ArticleHot(Long id, String title, String type) {
 		setId(id);
 		this.title = title;
+		this.type = type;
 	}
 
 	public void increment() {

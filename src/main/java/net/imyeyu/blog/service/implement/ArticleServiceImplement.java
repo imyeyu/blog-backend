@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -93,7 +92,7 @@ public class ArticleServiceImplement implements ArticleService {
 			// 每周访问计数
 			ArticleHot ac = redisArticleHot.get(article.getId());
 			if (ac == null) {
-				ac = new ArticleHot(article.getId(), article.getTitle());
+				ac = new ArticleHot(article.getId(), article.getTitle(), article.getType());
 				ac.setRecentAt(System.currentTimeMillis());
 				redisArticleHot.set(article.getId(), ac, Duration.ofDays(7));
 			} else {

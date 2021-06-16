@@ -1,10 +1,15 @@
 package net.imyeyu.blog.controller;
 
 import net.imyeyu.betterjava.Encode;
+import net.imyeyu.blog.bean.Response;
 import net.imyeyu.blog.bean.ReturnCode;
+import net.imyeyu.blog.bean.ServiceException;
+import net.imyeyu.blog.service.VersionService;
 import net.imyeyu.blog.util.Captcha;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +28,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/")
 public class MainController extends BaseController {
+
+	@Autowired
+	private VersionService versionService;
 
 	@RequestMapping("")
 	public String root() {
@@ -81,6 +89,24 @@ public class MainController extends BaseController {
 			} catch (IOException subE) {
 				subE.printStackTrace();
 			}
+		}
+	}
+
+	/**
+	 * 获取软件最新版本状态
+	 *
+	 * @param name 软件名称
+	 * @return 最新版本状态
+	 */
+	@GetMapping("/versions/{name}")
+	public Response<?> getVersion(@PathVariable("name") String name) {
+		if (name == null || "".equals(name)) {
+			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：name");
+		}
+		try {
+			return new Response<>(ReturnCode.SUCCESS, versionService.findByName(name));
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e.getMessage());
 		}
 	}
 }

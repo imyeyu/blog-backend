@@ -17,8 +17,9 @@ import java.io.Serializable;
 public class UserData extends BaseEntity implements Serializable {
 
 	private Long userId;
-	private Integer exp;
+	private String wrapper;
 	private String avatar;
+	private Integer exp;
 	private Byte sex;
 	private Long birth;
 	private String qq;

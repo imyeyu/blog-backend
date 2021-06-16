@@ -88,7 +88,7 @@ public class Token {
 	/**
 	 * 随机生成令牌
 	 *
-	 * @param user 用户（含 ID、用户名和摘要后的密码）
+	 * @param user 用户（含 ID、用户名）
 	 * @return 令牌
 	 */
 	public String generate(User user) {

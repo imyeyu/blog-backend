@@ -1,12 +1,12 @@
 package net.imyeyu.blog.service;
 
 import net.imyeyu.blog.bean.ServiceException;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
 /**
- * 基本数据库交互接口
+ * <p>基本数据库交互接口
+ * <p>Mapper 继承本接口后不再需要基本 CRUD 接口
  * 
  * @param <T> 交互实体
  *

@@ -42,7 +42,7 @@ public class UserServiceImplement implements UserService {
 	private Token token;
 
 	/**
-	 * <p>生成密码摘要（与 Token 并不同，Token 用于与前端交流，在 doSignIn 执行成功后才会生成 Token 回推前端）
+	 * 生成密码摘要（与 Token 并不同，Token 用于与前端交流，在 doSignIn 执行成功后才会生成 Token 回推前端）
 	 *
 	 * @param name      用户名
 	 * @param createdAt 创建时间

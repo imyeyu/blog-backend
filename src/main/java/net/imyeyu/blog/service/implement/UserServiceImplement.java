@@ -33,7 +33,7 @@ public class UserServiceImplement implements UserService {
 	private String salt;
 	
 	@Autowired
-    private UserMapper mapper;
+	private UserMapper mapper;
 
 	@Autowired
 	private Redis<Long, String> redisToken;
@@ -43,7 +43,6 @@ public class UserServiceImplement implements UserService {
 
 	/**
 	 * <p>生成密码摘要（与 Token 并不同，Token 用于与前端交流，在 doSignIn 执行成功后才会生成 Token 回推前端）
-	 * <p>加盐《天使恋曲》
 	 *
 	 * @param name      用户名
 	 * @param createdAt 创建时间

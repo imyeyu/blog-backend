@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="net.imyeyu.blog.mapper.DynamicDataMapper">
+	<!-- 根据程序名获取最新版本信息 -->
+	<select id="findByKey" resultType="net.imyeyu.blog.entity.DynamicData" parameterType="String">
+		SELECT * FROM `dynamic_data` WHERE `key` = #{key}
+	</select>
+</mapper>

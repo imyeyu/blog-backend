@@ -4,6 +4,7 @@ import net.imyeyu.betterjava.Encode;
 import net.imyeyu.blog.bean.Response;
 import net.imyeyu.blog.bean.ReturnCode;
 import net.imyeyu.blog.bean.ServiceException;
+import net.imyeyu.blog.service.DynamicDataService;
 import net.imyeyu.blog.service.VersionService;
 import net.imyeyu.blog.util.Captcha;
 import org.apache.commons.lang3.ObjectUtils;
@@ -31,6 +32,9 @@ public class MainController extends BaseController {
 
 	@Autowired
 	private VersionService versionService;
+
+	@Autowired
+	private DynamicDataService dynamicDataService;
 
 	@RequestMapping("")
 	public String root() {
@@ -105,6 +109,24 @@ public class MainController extends BaseController {
 		}
 		try {
 			return new Response<>(ReturnCode.SUCCESS, versionService.findByName(name));
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e.getMessage());
+		}
+	}
+
+	/**
+	 * 获取自定义动态数据
+	 *
+	 * @param key 键
+	 * @return 动态数据
+	 */
+	@GetMapping("/dynamic/{key}")
+	public Response<?> getDynamicData(@PathVariable("key") String key) {
+		if (key == null || "".equals(key)) {
+			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：key");
+		}
+		try {
+			return new Response<>(ReturnCode.SUCCESS, dynamicDataService.findByKey(key));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		}

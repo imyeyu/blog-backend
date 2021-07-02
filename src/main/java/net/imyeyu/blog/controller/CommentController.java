@@ -54,7 +54,6 @@ public class CommentController extends BaseController {
 	@PostMapping("")
 	public Response<?> create(@RequestBody CaptchaData<Comment> cd) {
 		try {
-			System.out.println(cd.getData().getArticleId());
 			articleService.comment(articleService.find(cd.getData().getArticleId()));
 			commentService.create(cd.getData());
 			return new Response<>(ReturnCode.SUCCESS, cd.getData());

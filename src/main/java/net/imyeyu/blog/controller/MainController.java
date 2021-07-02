@@ -1,13 +1,20 @@
 package net.imyeyu.blog.controller;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.imyeyu.betterjava.Encode;
+import net.imyeyu.betterjava.Network;
 import net.imyeyu.blog.bean.Response;
 import net.imyeyu.blog.bean.ReturnCode;
 import net.imyeyu.blog.bean.ServiceException;
+import net.imyeyu.blog.bean.github.Commit;
+import net.imyeyu.blog.bean.github.Committer;
 import net.imyeyu.blog.service.DynamicDataService;
 import net.imyeyu.blog.service.VersionService;
 import net.imyeyu.blog.util.Captcha;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,10 +26,14 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 /**
- * 主接口
+ * 主接口（乱七八糟的接口）
  *
  * 夜雨 创建于 2021/2/23 21:38
  */
@@ -104,7 +115,7 @@ public class MainController extends BaseController {
 	 */
 	@GetMapping("/versions/{name}")
 	public Response<?> getVersion(@PathVariable("name") String name) {
-		if (name == null || "".equals(name)) {
+		if (StringUtils.isEmpty(name)) {
 			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：name");
 		}
 		try {
@@ -122,13 +133,59 @@ public class MainController extends BaseController {
 	 */
 	@GetMapping("/dynamic/{key}")
 	public Response<?> getDynamicData(@PathVariable("key") String key) {
-		if (key == null || "".equals(key)) {
+		if (StringUtils.isEmpty(key)) {
 			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：key");
 		}
 		try {
 			return new Response<>(ReturnCode.SUCCESS, dynamicDataService.findByKey(key));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
+		}
+	}
+
+	/**
+	 * 获取 Github 仓库提交记录（最近 32 条）
+	 *
+	 * @param user  用户
+	 * @param repos 仓库
+	 * @return 提交记录
+	 */
+	@GetMapping("/github/{user}/{repos}")
+	public Response<?> getGithubCommits(@PathVariable("user") String user, @PathVariable("repos") String repos) {
+		if (StringUtils.isEmpty(user)) {
+			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数: user");
+		}
+		if (StringUtils.isEmpty(repos)) {
+			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数: repos");
+		}
+		try {
+			String response = Network.doGet("https://api.github.com/repos/" + user + "/" + repos + "/commits");
+			JsonArray commits = JsonParser.parseString(response).getAsJsonArray();
+
+			JsonObject commit, committer;
+			String msg, url, name, date;
+
+			final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+			dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+			List<Commit> result = new ArrayList<>();
+			for (int i = 0, l = commits.size(); i < l && i < 32; i++) {
+				// HTML URL
+				commit = commits.get(i).getAsJsonObject();
+				url = commit.get("html_url").getAsString();
+				// 提交说明
+				commit = commit.get("commit").getAsJsonObject();
+				msg = commit.get("message").getAsString();
+				// 提交者
+				committer = commit.get("committer").getAsJsonObject();
+				name = committer.get("name").getAsString();
+				date = committer.get("date").getAsString();
+
+				result.add(new Commit(msg, url, new Committer(name, dateFormat.parse(date).getTime())));
+			}
+			return new Response<>(ReturnCode.SUCCESS, result);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
 }

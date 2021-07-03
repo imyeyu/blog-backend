@@ -5,11 +5,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.imyeyu.betterjava.Encode;
 import net.imyeyu.betterjava.Network;
+import net.imyeyu.blog.bean.GithubCommit;
 import net.imyeyu.blog.bean.Response;
 import net.imyeyu.blog.bean.ReturnCode;
 import net.imyeyu.blog.bean.ServiceException;
-import net.imyeyu.blog.bean.github.Commit;
-import net.imyeyu.blog.bean.github.Committer;
 import net.imyeyu.blog.service.DynamicDataService;
 import net.imyeyu.blog.service.VersionService;
 import net.imyeyu.blog.util.Captcha;
@@ -167,7 +166,7 @@ public class MainController extends BaseController {
 
 			final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 			dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-			List<Commit> result = new ArrayList<>();
+			List<GithubCommit> result = new ArrayList<>();
 			for (int i = 0, l = commits.size(); i < l && i < 24; i++) {
 				// HTML URL
 				commit = commits.get(i).getAsJsonObject();
@@ -180,7 +179,7 @@ public class MainController extends BaseController {
 				name = committer.get("name").getAsString();
 				date = committer.get("date").getAsString();
 
-				result.add(new Commit(msg, url, new Committer(name, dateFormat.parse(date).getTime())));
+				result.add(new GithubCommit(name, msg, url, dateFormat.parse(date).getTime()));
 			}
 			return new Response<>(ReturnCode.SUCCESS, result);
 		} catch (Exception e) {

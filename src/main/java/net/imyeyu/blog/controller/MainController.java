@@ -1,6 +1,7 @@
 package net.imyeyu.blog.controller;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.imyeyu.betterjava.Encode;
@@ -159,29 +160,37 @@ public class MainController extends BaseController {
 		}
 		try {
 			String response = Network.doGet("https://api.github.com/repos/" + user + "/" + repos + "/commits");
-			JsonArray commits = JsonParser.parseString(response).getAsJsonArray();
+			JsonElement jsonElement = JsonParser.parseString(response);
+			if (jsonElement.isJsonArray()) {
+				// 请求正确
+				JsonArray commits = jsonElement.getAsJsonArray();
 
-			JsonObject commit, committer;
-			String msg, url, name, date;
+				JsonObject commit, committer;
+				String msg, url, name, date;
 
-			final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-			dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-			List<GithubCommit> result = new ArrayList<>();
-			for (int i = 0, l = commits.size(); i < l && i < 24; i++) {
-				// HTML URL
-				commit = commits.get(i).getAsJsonObject();
-				url = commit.get("html_url").getAsString();
-				// 提交说明
-				commit = commit.get("commit").getAsJsonObject();
-				msg = commit.get("message").getAsString();
-				// 提交者
-				committer = commit.get("committer").getAsJsonObject();
-				name = committer.get("name").getAsString();
-				date = committer.get("date").getAsString();
+				final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+				dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+				List<GithubCommit> result = new ArrayList<>();
+				for (int i = 0, l = commits.size(); i < l && i < 24; i++) {
+					// HTML URL
+					commit = commits.get(i).getAsJsonObject();
+					url = commit.get("html_url").getAsString();
+					// 提交说明
+					commit = commit.get("commit").getAsJsonObject();
+					msg = commit.get("message").getAsString().replaceAll("\n", "");
+					// 提交者
+					committer = commit.get("committer").getAsJsonObject();
+					name = committer.get("name").getAsString();
+					date = committer.get("date").getAsString();
 
-				result.add(new GithubCommit(name, msg, url, dateFormat.parse(date).getTime()));
+					result.add(new GithubCommit(name, msg, url, dateFormat.parse(date).getTime()));
+				}
+				return new Response<>(ReturnCode.SUCCESS, result);
+			} else {
+				// 请求错误
+				JsonObject result = jsonElement.getAsJsonObject();
+				return new Response<>(ReturnCode.PARAMS_BAD, "Github API 请求失败：" + result.get("message").getAsString());
 			}
-			return new Response<>(ReturnCode.SUCCESS, result);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new Response<>(ReturnCode.ERROR, e);

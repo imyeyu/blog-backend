@@ -144,7 +144,7 @@ public class MainController extends BaseController {
 	}
 
 	/**
-	 * 获取 Github 仓库提交记录（最近 32 条）
+	 * 获取 Github 仓库提交记录（最近 24 条）
 	 *
 	 * @param user  用户
 	 * @param repos 仓库
@@ -168,7 +168,7 @@ public class MainController extends BaseController {
 			final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 			dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 			List<Commit> result = new ArrayList<>();
-			for (int i = 0, l = commits.size(); i < l && i < 32; i++) {
+			for (int i = 0, l = commits.size(); i < l && i < 24; i++) {
 				// HTML URL
 				commit = commits.get(i).getAsJsonObject();
 				url = commit.get("html_url").getAsString();

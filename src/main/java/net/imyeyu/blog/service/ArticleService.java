@@ -35,8 +35,7 @@ public interface ArticleService extends BaseService<Article> {
 	/**
 	 * 同步标签
 	 *
-	 * @param aid    文章 ID
-	 * @param labels 标签
+	 * @param article 文章
 	 */
-	void syncLabels(Long aid, List<ArticleLabel> labels);
+	void syncLabels(Article article);
 }

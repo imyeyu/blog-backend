@@ -37,7 +37,7 @@ public class ArticleServiceImplement implements ArticleService {
 	@Override
 	public void create(Article article) throws ServiceException {
 		mapper.create(article);
-		syncLabels(article.getId(), article.getLabels());
+		syncLabels(article);
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public class ArticleServiceImplement implements ArticleService {
 	@Override
 	public void update(Article article) {
 		mapper.update(article);
-		syncLabels(article.getId(), article.getLabels());
+		syncLabels(article);
 	}
 
 	@Override
@@ -110,10 +110,11 @@ public class ArticleServiceImplement implements ArticleService {
 
 	@Transactional
 	@Override
-	public void syncLabels(Long aid, List<ArticleLabel> labels) {
-		mapper.clearLabels(aid);
+	public void syncLabels(Article article) {
+		mapper.clearLabels(article.getId());
+		List<ArticleLabel> labels = article.getLabels();
 		for (int i = 0; i < labels.size(); i++) {
-			mapper.addLabel(aid, labels.get(i).getId());
+			mapper.addLabel(article.getId(), labels.get(i).getId());
 		}
 	}
 }

@@ -4,16 +4,17 @@ import net.imyeyu.blog.bean.ReturnCode;
 import net.imyeyu.blog.bean.ServiceException;
 import net.imyeyu.blog.entity.Article;
 import net.imyeyu.blog.entity.ArticleHot;
+import net.imyeyu.blog.entity.ArticleLabel;
 import net.imyeyu.blog.mapper.ArticleMapper;
 import net.imyeyu.blog.service.ArticleService;
 import net.imyeyu.blog.util.Redis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 文章操作
@@ -32,8 +33,11 @@ public class ArticleServiceImplement implements ArticleService {
 	@Autowired
 	private ArticleMapper mapper;
 
+	@Transactional
 	@Override
-	public void create(Article t) {
+	public void create(Article article) throws ServiceException {
+		mapper.create(article);
+		syncLabels(article.getId(), article.getLabels());
 	}
 
 	@Override
@@ -48,12 +52,13 @@ public class ArticleServiceImplement implements ArticleService {
 
 	@Override
 	public List<Article> findManyByList(long offset, int limit) {
-		return mapper.findManyByList(offset, limit).stream().filter(article -> !article.isHide()).collect(Collectors.toList());
+		return mapper.findManyByList(offset, limit);
 	}
 
 	@Override
 	public void update(Article article) {
 		mapper.update(article);
+		syncLabels(article.getId(), article.getLabels());
 	}
 
 	@Override
@@ -82,7 +87,7 @@ public class ArticleServiceImplement implements ArticleService {
 
 	@Override
 	public void read(String ip, Article article) {
-		if (!redisArticleRead.contains(ip, article.getId()) && !article.isHide()) {
+		if (!redisArticleRead.contains(ip, article.getId())) {
 			// 3 小时内访问记录
 			redisArticleRead.add(ip, article.getId());
 			redisArticleRead.expire(ip, 3);
@@ -100,6 +105,15 @@ public class ArticleServiceImplement implements ArticleService {
 				ac.setRecentAt(System.currentTimeMillis());
 				redisArticleHot.set(article.getId(), ac, true);
 			}
+		}
+	}
+
+	@Transactional
+	@Override
+	public void syncLabels(Long aid, List<ArticleLabel> labels) {
+		mapper.clearLabels(aid);
+		for (int i = 0; i < labels.size(); i++) {
+			mapper.addLabel(aid, labels.get(i).getId());
 		}
 	}
 }

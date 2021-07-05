@@ -3,7 +3,7 @@ package net.imyeyu.blog.service;
 import net.imyeyu.blog.bean.ServiceException;
 import net.imyeyu.blog.entity.Article;
 import net.imyeyu.blog.entity.ArticleHot;
-import org.apache.ibatis.annotations.Mapper;
+import net.imyeyu.blog.entity.ArticleLabel;
 
 import java.util.List;
 
@@ -31,4 +31,12 @@ public interface ArticleService extends BaseService<Article> {
 
 	/** 更新阅读计数，包括触发每周热门排行，同一 IP 3 小时内访问多次的文章只计一次 */
 	void read(String ip, Article article);
+
+	/**
+	 * 同步标签
+	 *
+	 * @param aid    文章 ID
+	 * @param labels 标签
+	 */
+	void syncLabels(Long aid, List<ArticleLabel> labels);
 }

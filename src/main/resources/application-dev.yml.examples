@@ -6,6 +6,9 @@ multiple:
 
 # Spring
 spring:
+    mvc:
+        converters:
+            preferred-json-mapper: gson # 返回 JSON 序列化使用 GSON
     datasource: # 数据库配置
         url: jdbc:mysql://localhost:3306/blog_test?serverTimezone=UTC&characterEncoding=UTF-8
         username: root

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="net.imyeyu.blog.mapper.ArticleLabelMapper">
+	<!-- 新增 -->
+	<insert id="create" parameterType="net.imyeyu.blog.entity.ArticleLabel" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO `labels` (`name`, `created_at`) VALUES (#{name}, #{createdAt});
+	</insert>
+	<!-- 获取 -->
+	<select id="find" resultType="net.imyeyu.blog.entity.ArticleLabel" parameterType="long" >
+		SELECT * FROM `labels` WHERE `id` = #{id}
+	</select>
+	<!-- 获取 -->
+	<select id="findByName" resultType="net.imyeyu.blog.entity.ArticleLabel" parameterType="String" >
+		SELECT * FROM `labels` WHERE `name` = #{name}
+	</select>
+	<!-- 更新 -->
+	<update id="update" parameterType="net.imyeyu.blog.entity.ArticleLabel">
+		<if test="id != null">
+			UPDATE `labels`
+			<set>
+				`name`       = #{name},
+				`created_at` = #{createdAt},
+				`updated_at` = #{updatedAt},
+				`deleted_at` = #{deletedAt}
+			</set>
+			WHERE `id` = #{id}
+		</if>
+	</update>
+	<!-- 删除 -->
+	<delete id="delete" parameterType="long">
+		<if test="id != null">
+			UPDATE `labels`
+			<set>
+				`deleted_at` = STRFTIME('%s','now')
+			</set>
+			WHERE `id` = #{id}
+		</if>
+	</delete>
+</mapper>

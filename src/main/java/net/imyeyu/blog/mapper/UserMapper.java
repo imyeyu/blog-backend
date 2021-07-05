@@ -6,7 +6,7 @@ import net.imyeyu.blog.service.BaseService;
 import org.apache.ibatis.annotations.Param;
 
 /**
- * 用户 SQL 映射
+ * 用户
  *
  * 夜雨 创建于 2021/2/23 21:33
  */

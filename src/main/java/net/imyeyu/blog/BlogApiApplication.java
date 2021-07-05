@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 /**
  * 夜雨博客后端 API
  *
- * 夜雨 创建于 2021/2/23 21:35
+ * <p>夜雨 创建于 2021-02-23 21:35
  */
 @SpringBootApplication
 @MapperScan("net.imyeyu.blog.mapper")

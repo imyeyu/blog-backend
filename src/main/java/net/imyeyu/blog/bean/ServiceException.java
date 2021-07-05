@@ -5,7 +5,7 @@ import lombok.Getter;
 /**
  * 服务异常
  *
- * 夜雨 创建于 2021-05-20 15:18
+ * <p>夜雨 创建于 2021-05-20 15:18
  */
 public class ServiceException extends Exception {
 

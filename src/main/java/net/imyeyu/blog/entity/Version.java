@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 /**
  * 版本管理
  *
- * 夜雨 创建于 2021-06-10 16:01
+ * <p>夜雨 创建于 2021-06-10 16:01
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

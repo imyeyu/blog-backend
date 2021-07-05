@@ -21,7 +21,7 @@ import java.util.function.Consumer;
  * <p>RedisTemplate 功能封装，简化 Redis 操作
  * <p>serializer 为该 RedisTemplate 的键的序列化操作，序列化解析器由本类提供
  *
- * 夜雨 创建于 2021-03-02 17:46
+ * <p>夜雨 创建于 2021-03-02 17:46
  */
 public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializer) {
 

@@ -7,7 +7,7 @@ import net.imyeyu.betterjava.bean.BlogResponse;
 /**
  * 返回前端数据对象
  *
- * 夜雨 创建于 2021-05-20 00:08
+ * <p>夜雨 创建于 2021-05-20 00:08
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

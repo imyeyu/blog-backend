@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
@@ -14,11 +15,12 @@ import java.sql.SQLException;
 /**
  * MySQL JSON 数据类型处理器
  *
- * 夜雨 创建于 2021-07-04 09:36
+ * <p>夜雨 创建于 2021-07-04 09:36
  */
 public class JsonHandler extends BaseTypeHandler<JsonObject> {
 
-	private static final Gson GSON = new Gson();
+	@Autowired
+	private Gson gson;
 
 	@Override
 	public void setNonNullParameter(PreparedStatement ps, int i, JsonObject parameter, JdbcType jdbcType) throws SQLException {

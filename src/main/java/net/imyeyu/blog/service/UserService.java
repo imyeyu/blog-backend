@@ -8,7 +8,7 @@ import net.imyeyu.blog.vo.UserSignedIn;
 /**
  * 用户管理接口
  * 
- * 夜雨 创建于 2021-02-23 21:32
+ * <p>夜雨 创建于 2021-02-23 21:32
  */
 public interface UserService extends BaseService<User> {
 

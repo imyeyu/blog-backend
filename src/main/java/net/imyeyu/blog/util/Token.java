@@ -19,7 +19,7 @@ import java.security.SecureRandom;
  * <p>口令验证机制
  * <p>和密码摘要并不一样，密码摘要存于数据库，Token 用于和前端交流，在 UserService doSignin 执行成功后才会生成 Token 缓存
  * 
- * @author 夜雨
+ * <p>夜雨 创建于 2021-03-11 19:02
  */
 @NoArgsConstructor
 @Component

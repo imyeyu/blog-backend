@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 /**
  * 用户令牌
  *
- * 夜雨 创建于 2021-05-25 23:35
+ * <p>夜雨 创建于 2021-05-25 23:35
  */
 @Data
 @NoArgsConstructor

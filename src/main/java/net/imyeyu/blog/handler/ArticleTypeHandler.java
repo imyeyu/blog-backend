@@ -12,7 +12,7 @@ import java.sql.SQLException;
 /**
  * 文章类型枚举映射
  *
- * 夜雨 创建于 2021-07-04 10:19
+ * <p>夜雨 创建于 2021-07-04 10:19
  */
 public class ArticleTypeHandler extends BaseTypeHandler<ArticleType> {
 

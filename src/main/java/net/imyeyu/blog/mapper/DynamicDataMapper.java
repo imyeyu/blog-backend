@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Param;
 /**
  * 自定义动态数据
  *
- * 夜雨 创建于 2021-07-01 19:35
+ * <p>夜雨 创建于 2021-07-01 19:35
  */
 public interface DynamicDataMapper extends BaseService<DynamicData> {
 

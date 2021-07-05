@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 /**
  * 用户
  *
- * 夜雨 创建于 2021/2/23 21:33
+ * <p>夜雨 创建于 2021-02-23 21:33
  */
 public interface UserMapper extends BaseService<User> {
 

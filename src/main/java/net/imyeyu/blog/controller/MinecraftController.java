@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Minecraft 相关接口
  *
- * 夜雨 创建于 2021-05-20 00:24
+ * <p>夜雨 创建于 2021-05-20 00:24
  */
 @RestController
 @RequestMapping("mc")

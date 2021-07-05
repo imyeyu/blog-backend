@@ -9,7 +9,7 @@ import java.io.Serializable;
  * 访问排行（每周）
  * 只记录访问次数、标题和最近访问，具体文章有 Redis key 记录
  *
- * 夜雨 创建于 2021/3/1 17:10
+ * <p>夜雨 创建于 2021-03-01 17:10
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

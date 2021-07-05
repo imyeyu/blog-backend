@@ -18,7 +18,7 @@ import java.util.Random;
 /**
  * 验证码绘制
  *
- * 夜雨 创建于 2021-05-20 16:48
+ * <p>夜雨 创建于 2021-05-20 16:48
  */
 public class Captcha {
 

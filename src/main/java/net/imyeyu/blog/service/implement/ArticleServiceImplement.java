@@ -114,7 +114,9 @@ public class ArticleServiceImplement implements ArticleService {
 		mapper.clearLabels(article.getId());
 		List<ArticleLabel> labels = article.getLabels();
 		for (int i = 0; i < labels.size(); i++) {
-			mapper.addLabel(article.getId(), labels.get(i).getId());
+			if (labels.get(i) != null) {
+				mapper.addLabel(article.getId(), labels.get(i).getId());
+			}
 		}
 	}
 }

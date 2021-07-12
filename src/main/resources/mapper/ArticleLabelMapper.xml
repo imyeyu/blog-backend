@@ -9,7 +9,7 @@
 	<select id="find" resultType="net.imyeyu.blog.entity.ArticleLabel" parameterType="long" >
 		SELECT * FROM `labels` WHERE `id` = #{id}
 	</select>
-	<!-- 获取 -->
+	<!-- 根据标签名获取 -->
 	<select id="findByName" resultType="net.imyeyu.blog.entity.ArticleLabel" parameterType="String" >
 		SELECT * FROM `labels` WHERE `name` = #{name}
 	</select>

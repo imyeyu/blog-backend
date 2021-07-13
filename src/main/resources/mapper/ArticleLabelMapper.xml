@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="net.imyeyu.blog.mapper.ArticleLabelMapper">
+<mapper namespace="net.imyeyu.blogapi.mapper.ArticleLabelMapper">
 	<!-- 新增 -->
-	<insert id="create" parameterType="net.imyeyu.blog.entity.ArticleLabel" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+	<insert id="create" parameterType="net.imyeyu.blogapi.entity.ArticleLabel" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
 		INSERT INTO `labels` (`name`, `created_at`) VALUES (#{name}, #{createdAt});
 	</insert>
 	<!-- 获取 -->
-	<select id="find" resultType="net.imyeyu.blog.entity.ArticleLabel" parameterType="long" >
+	<select id="find" resultType="net.imyeyu.blogapi.entity.ArticleLabel" parameterType="long" >
 		SELECT * FROM `labels` WHERE `id` = #{id}
 	</select>
 	<!-- 根据标签名获取 -->
-	<select id="findByName" resultType="net.imyeyu.blog.entity.ArticleLabel" parameterType="String" >
+	<select id="findByName" resultType="net.imyeyu.blogapi.entity.ArticleLabel" parameterType="String" >
 		SELECT * FROM `labels` WHERE `name` = #{name}
 	</select>
 	<!-- 更新 -->
-	<update id="update" parameterType="net.imyeyu.blog.entity.ArticleLabel">
+	<update id="update" parameterType="net.imyeyu.blogapi.entity.ArticleLabel">
 		<if test="id != null">
 			UPDATE `labels`
 			<set>
@@ -36,4 +36,31 @@
 			WHERE `id` = #{id}
 		</if>
 	</delete>
+
+	<!-- 同步表操作 -->
+
+	<!-- 查找该文章的标签 -->
+	<select id="findManyByArticleId" resultMap="findMap" parameterType="long">
+		SELECT
+			l.id,
+			l.name
+		FROM
+			labels AS l
+		LEFT OUTER JOIN
+			article_label AS al
+		ON
+			l.id = al.label_id
+		WHERE
+			al.article_id = #{aid}
+	</select>
+	<!-- 清除标签 -->
+	<delete id="clearLabels" parameterType="long">
+		DELETE FROM `article_label` WHERE `article_id` = #{aid}
+	</delete>
+	<!-- 插入标签 -->
+	<insert id="addLabel">
+		INSERT INTO `article_label` (`article_id`, `label_id`) VALUES (#{aid}, #{lid});
+	</insert>
+	<!-- 查找结果列表 -->
+	<resultMap id="findMap" type="net.imyeyu.blogapi.entity.ArticleLabel" />
 </mapper>

@@ -42,8 +42,8 @@ spring:
 # MyBatis
 mybatis:
     mapper-locations: classpath:mapper/*.xml       # XML 位置
-    type-aliases-package: net.imyeyu.blog.entity   # 实体类位置
-    type-handlers-package: net.imyeyu.blog.handler # 类型处理器位置
+    type-aliases-package: net.imyeyu.blogapi.entity   # 实体类位置
+    type-handlers-package: net.imyeyu.blogapi.handler # 类型处理器位置
     configuration:
         map-underscore-to-camel-case: true       # 映射驼峰转下划线
 

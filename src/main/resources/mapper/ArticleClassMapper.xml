@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="net.imyeyu.blog.mapper.ArticleClassMapper">
-	<!-- 获取 -->
-	<select id="find" resultType="net.imyeyu.blog.entity.ArticleClass" parameterType="long" >
-		SELECT * FROM `article_class` WHERE `id` = #{id}
-	</select>
+<mapper namespace="net.imyeyu.blogapi.mapper.ArticleClassMapper">
 	<!-- 新增 -->
-	<insert id="create" parameterType="net.imyeyu.blog.entity.ArticleClass" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+	<insert id="create" parameterType="net.imyeyu.blogapi.entity.ArticleClass" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
 		INSERT INTO
 			`article_class` (
 				`name`, `is_other`, `order`, `created_at`
@@ -14,8 +10,16 @@
 		VALUES
 			(#{name}, #{isOther}, #{order}, #{createdAt});
 	</insert>
+	<!-- 获取 -->
+	<select id="find" resultType="net.imyeyu.blogapi.entity.ArticleClass" parameterType="long">
+		SELECT * FROM `article_class` WHERE `id` = #{id}
+	</select>
+	<!-- 获取所有 -->
+	<select id="findMany" resultType="net.imyeyu.blogapi.entity.ArticleClass" parameterType="long">
+		SELECT * FROM `article_class` WHERE `id` = #{id}
+	</select>
 	<!-- 更新 -->
-	<update id="update" parameterType="net.imyeyu.blog.entity.ArticleClass">
+	<update id="update" parameterType="net.imyeyu.blogapi.entity.ArticleClass">
 		<if test="id != null">
 			UPDATE `article_class`
 			<set>

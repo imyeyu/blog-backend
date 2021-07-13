@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="net.imyeyu.blog.mapper.CommentMapper">
+<mapper namespace="net.imyeyu.blogapi.mapper.CommentMapper">
 	<!-- 新增评论 -->
-	<insert id="create" parameterType="net.imyeyu.blog.entity.Comment" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+	<insert id="create" parameterType="net.imyeyu.blogapi.entity.Comment" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
 		INSERT INTO `comments` (
 			`article_id`,
 			`user_id`,
@@ -93,19 +93,19 @@
 		ON
 			crc.crc_id = c.id
     </select>
-	<resultMap id="findByArticleIdResult" type="net.imyeyu.blog.entity.Comment">
+	<resultMap id="findByArticleIdResult" type="net.imyeyu.blogapi.entity.Comment">
 		<id property="id" column="id"/>
 		<result property="nick" column="nick"/>
 		<result property="data" column="data"/>
         <result property="repliesLength" column="cr_length" />
 		<result property="createdAt" column="created_at"/>
 		<!-- 发布者 -->
-		<association property="user" javaType="net.imyeyu.blog.entity.User">
+		<association property="user" javaType="net.imyeyu.blogapi.entity.User">
             <id property="id" column="user_id"/>
             <result property="name" column="name"/>
         </association>
         <!-- 关联回复 -->
-        <collection property="replies" ofType="net.imyeyu.blog.entity.CommentReply">
+        <collection property="replies" ofType="net.imyeyu.blogapi.entity.CommentReply">
         	<id property="id" column="cr_id" />
         	<result property="commentId" column="comment_id" />
         	<result property="senderNick" column="sender_nick" />
@@ -113,19 +113,19 @@
         	<result property="data" column="cr_data" />
 			<result property="createdAt" column="cr_created_at"/>
         	<!-- 回复者 -->
-			<association property="sender" javaType="net.imyeyu.blog.entity.User">
+			<association property="sender" javaType="net.imyeyu.blogapi.entity.User">
 	            <id property="id" column="sender_id"/>
 	            <result property="name" column="sender_name"/>
 	        </association>
 	        <!-- 被回复者 -->
-			<association property="receiver" javaType="net.imyeyu.blog.entity.User">
+			<association property="receiver" javaType="net.imyeyu.blogapi.entity.User">
 	            <id property="id" column="receiver_id"/>
 	            <result property="name" column="receiver_name"/>
 	        </association>
         </collection>
 	</resultMap>
 	<!-- 新增子评论 -->
-	<insert id="createReply" parameterType="net.imyeyu.blog.entity.CommentReply" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+	<insert id="createReply" parameterType="net.imyeyu.blogapi.entity.CommentReply" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
 		INSERT INTO `comment_reply` (
 			`comment_id`,
 			`sender_id`,
@@ -181,7 +181,7 @@
 		ON
 			ur.id = c.receiver_id
     </select>
-	<resultMap id="findRepliesByCommentIdResult" type="net.imyeyu.blog.entity.CommentReply">
+	<resultMap id="findRepliesByCommentIdResult" type="net.imyeyu.blogapi.entity.CommentReply">
 		<id property="id" column="id"/>
 		<result property="data" column="data"/>
 		<result property="senderId" column="sender_id"/>
@@ -190,12 +190,12 @@
 		<result property="receiverNick" column="receiver_nick"/>
 		<result property="createdAt" column="created_at"/>
 		<!-- 回复者 -->
-		<association property="sender" javaType="net.imyeyu.blog.entity.User">
+		<association property="sender" javaType="net.imyeyu.blogapi.entity.User">
             <id property="id" column="sender_id"/>
             <result property="name" column="sender_name"/>
         </association>
 		<!-- 被回复者 -->
-		<association property="receiver" javaType="net.imyeyu.blog.entity.User">
+		<association property="receiver" javaType="net.imyeyu.blogapi.entity.User">
             <id property="id" column="receiver_id"/>
             <result property="name" column="receiver_name"/>
         </association>

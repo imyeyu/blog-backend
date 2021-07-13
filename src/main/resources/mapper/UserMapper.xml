@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="net.imyeyu.blog.mapper.UserMapper">
+<mapper namespace="net.imyeyu.blogapi.mapper.UserMapper">
 	<!-- 新增账号 -->
-	<insert id="create" parameterType="net.imyeyu.blog.entity.User" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+	<insert id="create" parameterType="net.imyeyu.blogapi.entity.User" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
 		INSERT INTO `users` (
 			`email`,
 			`name`,
@@ -16,27 +16,27 @@
 		);
 	</insert>
 	<!-- 根据 ID 获取账号 -->
-	<select id="find" resultType="net.imyeyu.blog.entity.User" parameterType="long">
+	<select id="find" resultType="net.imyeyu.blogapi.entity.User" parameterType="long">
 		SELECT * FROM `users` WHERE `id` = #{id}
 	</select>
 	<!-- 根据用户名获取账号 -->
-	<select id="findByName" resultType="net.imyeyu.blog.entity.User" parameterType="String">
+	<select id="findByName" resultType="net.imyeyu.blogapi.entity.User" parameterType="String">
 		SELECT * FROM `users` WHERE `name` = #{name}
 	</select>
 	<!-- 根据邮箱获取账号 -->
-	<select id="findByEmail" resultType="net.imyeyu.blog.entity.User" parameterType="String">
+	<select id="findByEmail" resultType="net.imyeyu.blogapi.entity.User" parameterType="String">
 		SELECT * FROM `users` WHERE `email` = #{email}
 	</select>
 	<!-- 新增用户资料（创建账号时同步调用，多数数据为空白） -->
-	<insert id="createData" parameterType="net.imyeyu.blog.entity.UserData" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+	<insert id="createData" parameterType="net.imyeyu.blogapi.entity.UserData" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
 		INSERT INTO `user_data` (`user_id`, `created_at`) VALUES (#{userId}, #{createdAt});
 	</insert>
 	<!-- 根据用户 ID 获取用户资料 -->
-	<select id="findData" resultType="net.imyeyu.blog.entity.UserData" parameterType="long">
+	<select id="findData" resultType="net.imyeyu.blogapi.entity.UserData" parameterType="long">
 		SELECT * FROM `user_data` WHERE `user_id` = #{id}
 	</select>
 	<!-- 更新用户资料 -->
-	<update id="updateData" parameterType="net.imyeyu.blog.entity.UserData">
+	<update id="updateData" parameterType="net.imyeyu.blogapi.entity.UserData">
 		<if test="id != null">
 			UPDATE `user_data`
 			<set>

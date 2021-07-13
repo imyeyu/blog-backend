@@ -10,7 +10,7 @@
 	</parent>
 
 	<groupId>net.imyeyu</groupId>
-	<artifactId>blog</artifactId>
+	<artifactId>blogapi</artifactId>
 	<version>1.0</version>
 	<packaging>war</packaging>
 	<name>BlogAPI</name>
@@ -92,6 +92,16 @@
 			<groupId>net.imyeyu.betterjava</groupId>
 			<artifactId>BetterJava</artifactId>
 			<version>1.1.6</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-controls</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.openjfx</groupId>
+					<artifactId>javafx-graphics</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<!-- lombok -->
 		<dependency>

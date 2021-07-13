@@ -1,74 +1,61 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="net.imyeyu.blog.mapper.ArticleMapper">
+<mapper namespace="net.imyeyu.blogapi.mapper.ArticleMapper">
 	<!-- 新增 -->
-	<insert id="create" parameterType="net.imyeyu.blog.entity.Article" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+	<insert id="create" parameterType="net.imyeyu.blogapi.entity.Article" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
 		INSERT INTO
-			`article` (
-				`title`,
-				`type`,
-				`class_id`,
-				`digest`,
-				`data`,
-				`extend_data`,
-				`reads`,
-				`likes`,
-				`comments`,
-				`can_comment`,
-				`created_at`
-			)
+		`article` (
+		`title`,
+		`type`,
+		`class_id`,
+		`digest`,
+		`data`,
+		`extend_data`,
+		`reads`,
+		`likes`,
+		`comments`,
+		`can_comment`,
+		`created_at`
+		)
 		VALUES (
-			#{title},
-			#{type},
-			#{clazz.id},
-			#{digest},
-			#{data},
-			#{extendData, jdbcType=OTHER, typeHandler=net.imyeyu.blog.handler.JsonHandler},
-			#{reads},
-			#{likes},
-			#{comments},
-			#{canComment},
-			#{createdAt}
+		#{title},
+		#{type},
+		#{clazz.id},
+		#{digest},
+		#{data},
+		#{extendData, jdbcType=OTHER, typeHandler=net.imyeyu.blogapi.handler.JsonHandler},
+		#{reads},
+		#{likes},
+		#{comments},
+		#{canComment},
+		#{createdAt}
 		);
 	</insert>
 	<!-- 获取 -->
 	<select id="find" resultMap="findById" parameterType="long">
 		SELECT
 			a.*,
-			l.id AS l_id,
-			l.name AS l_name
+			c.id AS c_id,
+			c.name AS c_name
 		FROM
-			labels AS l
-		LEFT OUTER JOIN
-			article_label AS al
+			article_class AS c
+		LEFT JOIN
+			article AS a
 		ON
-			l.id = al.label_id
-		LEFT OUTER JOIN (
-			SELECT
-				a.*,
-				c.id AS c_id,
-				c.name AS c_name
-			FROM
-				article_class AS c
-			LEFT JOIN
-				article AS a
-			ON
-				a.class_id = c.id
-				AND a.deleted_at IS NULL
-				AND c.deleted_at IS NULL
-		) as a
-		ON
-			a.id = al.article_id
+			a.class_id = c.id
 		WHERE
 			a.id = #{id}
+			AND a.deleted_at IS NULL
+			AND c.deleted_at IS NULL
+		LIMIT 1
 	</select>
-	<resultMap id="findById" type="net.imyeyu.blog.entity.Article">
+	<resultMap id="findById" type="net.imyeyu.blogapi.entity.Article">
 		<id property="id" column="id" />
 		<result property="title" column="title" />
 		<result property="type" column="type" />
 		<result property="digest" column="digest" />
 		<result property="data" column="data" />
-		<result property="extendData" column="extend_data" typeHandler="net.imyeyu.blog.handler.JsonHandler" />
+		<result property="extendData" column="extend_data" typeHandler="net.imyeyu.blogapi.handler.JsonHandler" />
 		<result property="reads" column="reads" />
 		<result property="likes" column="likes" />
 		<result property="comments" column="comments" />
@@ -77,15 +64,10 @@
 		<result property="updatedAt" column="updated_at" />
 		<result property="deletedAt" column="deleted_at" />
 		<!-- 关联分类 -->
-		<association property="clazz" javaType="net.imyeyu.blog.entity.ArticleClass">
+		<association property="clazz" javaType="net.imyeyu.blogapi.entity.ArticleClass">
 			<id property="id" column="c_id"/>
 			<result property="name" column="c_name"/>
 		</association>
-		<!-- 关联标签 -->
-		<collection property="labels" ofType="net.imyeyu.blog.entity.ArticleLabel">
-			<id property="id" column="l_id" />
-			<result property="name" column="l_name" />
-		</collection>
 	</resultMap>
 	<!-- 获取部分 -->
 	<select id="findMany" resultMap="findResult">
@@ -120,35 +102,27 @@
 		LIMIT
 			#{offset}, #{limit}
 	</select>
-	<resultMap id="findResult" type="net.imyeyu.blog.entity.Article" />
+	<resultMap id="findResult" type="net.imyeyu.blogapi.entity.Article" />
 	<!-- 更新 -->
-	<update id="update" parameterType="net.imyeyu.blog.entity.Article">
+	<update id="update" parameterType="net.imyeyu.blogapi.entity.Article">
 		<if test="id != null">
 			UPDATE `article`
 			<set>
-				`title`       = #{title},
-				`type`        = #{type},
-				`class_id`    = #{clazz.id},
-				`digest`      = #{digest},
-				`data`        = #{data},
-				`extend_data` = #{extendData, jdbcType=OTHER, typeHandler=net.imyeyu.blog.handler.JsonHandler},
-				`reads`       = #{reads},
-				`likes`       = #{likes},
-				`comments`    = #{comments},
+				`title` = #{title},
+				`type` = #{type},
+				`class_id` = #{clazz.id},
+				`digest` = #{digest},
+				`data` = #{data},
+				`extend_data` = #{extendData, jdbcType=OTHER, typeHandler=net.imyeyu.blogapi.handler.JsonHandler},
+				`reads` = #{reads},
+				`likes` = #{likes},
+				`comments` = #{comments},
 				`can_comment` = #{canComment},
-				`created_at`  = #{createdAt},
-				`updated_at`  = #{updatedAt},
-				`deleted_at`  = #{deletedAt}
+				`created_at` = #{createdAt},
+				`updated_at` = #{updatedAt},
+				`deleted_at` = #{deletedAt}
 			</set>
 			WHERE `id` = #{id}
 		</if>
 	</update>
-	<!-- 清除标签 -->
-	<delete id="clearLabels" parameterType="long">
-		DELETE FROM `article_label` WHERE `article_id` = #{aid}
-	</delete>
-	<!-- 插入标签 -->
-	<insert id="addLabel">
-		INSERT INTO `article_label` (`article_id`, `label_id`) VALUES (#{aid}, #{lid});
-	</insert>
 </mapper>

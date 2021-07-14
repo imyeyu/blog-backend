@@ -227,7 +227,13 @@ public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializ
 		return keys;
 	}
 
-	public boolean delete(K k) {
+	/**
+	 * 销毁对象
+	 *
+	 * @param k 键
+	 * @return true 为成功
+	 */
+	public boolean destroy(K k) {
 		if (!ObjectUtils.isEmpty(k) && has(k)) {
 			Boolean b = redis.delete(k);
 			return b != null && b;

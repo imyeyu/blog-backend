@@ -26,13 +26,7 @@ public class Article extends BaseEntity implements Serializable {
 
 	private int reads;
 	private int likes;
-	private int comments;
 	private boolean canComment;
-
-	/** 评论一次 */
-	public void comment() {
-		comments++;
-	}
 
 	/** 阅读一次 */
 	public void read() {

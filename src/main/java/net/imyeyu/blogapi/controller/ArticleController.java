@@ -27,7 +27,7 @@ public class ArticleController extends BaseController {
 	private ArticleService service;
 
 	/**
-	 * 获取文章（简要）
+	 * 获取文章列表（简要）
 	 *
 	 * @param offset 查询偏移
 	 * @return 文章列表
@@ -37,7 +37,12 @@ public class ArticleController extends BaseController {
 		if (ObjectUtils.isEmpty(offset)) {
 			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：offset");
 		}
-		return new Response<>(ReturnCode.SUCCESS, service.findManyByList(offset, 16));
+		try {
+			return new Response<>(ReturnCode.SUCCESS, service.findMany(offset, 16));
+		} catch (ServiceException e) {
+			e.printStackTrace();
+			return new Response<>(ReturnCode.ERROR, e);
+		}
 	}
 
 	/**

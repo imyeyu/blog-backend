@@ -19,32 +19,7 @@ public class VersionServiceImplement implements VersionService {
 	private VersionMapper mapper;
 
 	@Override
-	public void create(Version version) throws ServiceException {
-		mapper.create(version);
-	}
-
-	@Override
-	public Version find(Long id) throws ServiceException {
-		return mapper.find(id);
-	}
-
-	@Override
 	public Version findByName(String name) throws ServiceException {
 		return mapper.findByName(name);
-	}
-
-	@Override
-	public List<Version> findMany(long offset, int limit) throws ServiceException {
-		return mapper.findMany(offset, limit);
-	}
-
-	@Override
-	public void update(Version version) {
-		mapper.update(version);
-	}
-
-	@Override
-	public Long delete(Long... ids) throws ServiceException {
-		return mapper.delete(ids);
 	}
 }

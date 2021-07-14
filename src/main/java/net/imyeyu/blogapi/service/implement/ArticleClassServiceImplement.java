@@ -20,33 +20,17 @@ public class ArticleClassServiceImplement implements ArticleClassService {
 	private ArticleClassMapper mapper;
 
 	@Override
-	public void create(ArticleClass articleClass) throws ServiceException {
-		mapper.create(articleClass);
-	}
-
-	@Override
 	public ArticleClass find(Long id) throws ServiceException {
 		return mapper.find(id);
 	}
 
 	@Override
 	public ArticleClassSide findBySide() {
-
 		return null;
 	}
 
 	@Override
 	public List<ArticleClass> findMany(long offset, int limit) throws ServiceException {
 		return mapper.findMany(offset, limit);
-	}
-
-	@Override
-	public void update(ArticleClass articleClass) {
-		mapper.update(articleClass);
-	}
-
-	@Override
-	public Long delete(Long... ids) throws ServiceException {
-		return mapper.delete(ids);
 	}
 }

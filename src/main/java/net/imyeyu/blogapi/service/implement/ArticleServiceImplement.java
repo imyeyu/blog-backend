@@ -10,7 +10,6 @@ import net.imyeyu.blogapi.service.ArticleService;
 import net.imyeyu.blogapi.util.Redis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.Comparator;
@@ -36,13 +35,6 @@ public class ArticleServiceImplement implements ArticleService {
 	@Autowired
 	private ArticleLabelService labelService;
 
-	@Transactional
-	@Override
-	public void create(Article article) throws ServiceException {
-		mapper.create(article);
-		labelService.syncLabels(article);
-	}
-
 	@Override
 	public Article find(Long id) throws ServiceException {
 		Article article = mapper.find(id);
@@ -53,23 +45,6 @@ public class ArticleServiceImplement implements ArticleService {
 	@Override
 	public List<Article> findMany(long offset, int limit) throws ServiceException {
 		return mapper.findMany(offset, limit);
-	}
-
-	@Override
-	public List<Article> findManyByList(long offset, int limit) {
-		return mapper.findManyByList(offset, limit);
-	}
-
-	@Transactional
-	@Override
-	public void update(Article article) {
-		mapper.update(article);
-		labelService.syncLabels(article);
-	}
-
-	@Override
-	public Long delete(Long... ids) {
-		return null;
 	}
 
 	@Override
@@ -86,13 +61,7 @@ public class ArticleServiceImplement implements ArticleService {
 	}
 
 	@Override
-	public void comment(Article article) {
-		article.comment();
-		update(article);
-	}
-
-	@Override
-	public void read(String ip, Article article) {
+	public void read(String ip, Article article) throws ServiceException {
 		if (!redisArticleRead.contains(ip, article.getId())) {
 			// 3 小时内访问记录
 			redisArticleRead.add(ip, article.getId());

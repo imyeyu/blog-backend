@@ -32,24 +32,22 @@ public interface UserService extends BaseService<User> {
 	UserSignedIn signIn(String user, String password) throws ServiceException;
 
 	/**
-	 * 校验该 ID 是否已登录
+	 * 校验该令牌是否已登录（令牌有 UID，不需要传）
 	 *
-	 * @param uid   uid
 	 * @param token 令牌
 	 * @return true 为已登录
 	 * @throws ServiceException 服务异常
 	 */
-	boolean isSignedIn(Long uid, String token) throws ServiceException;
+	boolean isSignedIn(String token) throws ServiceException;
 
 	/**
 	 * 退出登录
 	 *
-	 * @param uid   uid
 	 * @param token 令牌
 	 * @return true 为退出成功
 	 * @throws ServiceException 服务异常
 	 */
-	boolean signOut(Long uid, String token) throws ServiceException;
+	boolean signOut(String token) throws ServiceException;
 
 	/**
 	 * 根据用户名查找

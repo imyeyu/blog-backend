@@ -40,53 +40,65 @@ public class Token {
 	 * <p>一级验证 Session，二级验证 Redis，有效期为 24 小时（每次二级验证有效时会刷新这个时间，即 24 小时内不再访问则视为登出）
 	 * <p>Session 存键为 user.uid，Redis 存键为 uid，值均为令牌
 	 *
-	 * @param uid   UID
 	 * @param token 令牌
 	 * @return true 时表示有效
 	 */
-	public boolean isValid(Long uid, String token) throws ServiceException {
-		final String flag = "user." + uid;
-		ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-		if (sra != null) {
-			// Session 验证
-			HttpSession session = sra.getRequest().getSession();
-			Object sessionToken = session.getAttribute(flag);
-			if (token.equals(sessionToken)) {
-				return true;
+	public boolean isValid(String token) throws ServiceException {
+		try {
+			// 截取 UID
+			Long uid = Long.parseLong(token.substring(0, token.indexOf("#")));
+			final String flag = "user." + uid;
+			ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+			if (sra != null) {
+				// Session 验证
+				HttpSession session = sra.getRequest().getSession();
+				Object sessionToken = session.getAttribute(flag);
+				if (token.equals(sessionToken)) {
+					return true;
+				}
+				// Redis 验证
+				if (token.equals(redisToken.get(uid))) {
+					session.setAttribute("user." + uid, token);
+					redisToken.set(uid, token, 24);
+					return true;
+				}
+				return false;
+			} else {
+				throw new ServiceException(ReturnCode.REQUEST_BAD, ReturnCode.REQUEST_BAD.getComment());
 			}
-			// Redis 验证
-			if (token.equals(redisToken.get(uid))) {
-				session.setAttribute("user." + uid, token);
-				redisToken.set(uid, token, 24);
-				return true;
-			}
-			return false;
-		} else {
-			throw new ServiceException(ReturnCode.REQUEST_BAD, ReturnCode.REQUEST_BAD.getComment());
+		} catch (Exception e) {
+			throw new ServiceException(ReturnCode.PARAMS_BAD, "无效的令牌");
 		}
 	}
 
 	/**
 	 * 清除缓存
 	 *
-	 * @param uid uid
+	 * @param token 令牌
 	 * @return true 为清除成功
 	 * @throws ServiceException 异常
 	 */
-	public boolean clear(Long uid) throws ServiceException {
-		ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-		if (sra != null) {
-			// Session
-			sra.getRequest().getSession().removeAttribute("user." + uid);
-			// Redis
-			return redisToken.delete(uid);
-		} else {
-			throw new ServiceException(ReturnCode.REQUEST_BAD, ReturnCode.REQUEST_BAD.getComment());
+	public boolean clear(String token) throws ServiceException {
+		try {
+			// 截取 UID
+			Long uid = Long.parseLong(token.substring(0, token.indexOf("#")));
+			ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+			if (sra != null) {
+				// Session
+				sra.getRequest().getSession().removeAttribute("user." + uid);
+				// Redis
+				return redisToken.destroy(uid);
+			} else {
+				throw new ServiceException(ReturnCode.REQUEST_BAD, ReturnCode.REQUEST_BAD.getComment());
+			}
+		} catch (Exception e) {
+			throw new ServiceException(ReturnCode.PARAMS_BAD, "无效的令牌");
 		}
 	}
 	
 	/**
-	 * 随机生成令牌
+	 * <p>随机生成令牌
+	 * <p>结果示例：32#69290ea91da44cd76a595af2a447a7d8
 	 *
 	 * @param user 用户（含 ID、用户名）
 	 * @return 令牌

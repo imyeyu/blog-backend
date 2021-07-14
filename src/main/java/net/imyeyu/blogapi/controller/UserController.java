@@ -1,6 +1,5 @@
 package net.imyeyu.blogapi.controller;
 
-import net.imyeyu.betterjava.Encode;
 import net.imyeyu.blogapi.bean.CaptchaData;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
@@ -111,17 +110,11 @@ public class UserController extends BaseController {
 	 */
 	@PostMapping("/sign-in/status")
 	public Response<?> isSignedIn(@RequestBody Map<String, String> params) {
-		String uid = params.get("uid");
-		if (StringUtils.isEmpty(uid)) {
-			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：uid");
-		} else if (!Encode.isNumber(uid)) {
-			return new Response<>(ReturnCode.PARAMS_BAD, "参数 uid 应该是个数字");
-		}
 		if (StringUtils.isEmpty(params.get("token"))) {
 			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：token");
 		}
 		try {
-			return new Response<>(ReturnCode.SUCCESS, service.isSignedIn(Long.parseLong(uid), params.get("token")));
+			return new Response<>(ReturnCode.SUCCESS, service.isSignedIn(params.get("token")));
 		} catch (ServiceException e) {
 			e.printStackTrace();
 			return new Response<>(e.getCode(), e);
@@ -157,17 +150,11 @@ public class UserController extends BaseController {
 	 */
 	@PostMapping("/sign-out")
 	public Response<?> signOut(@RequestBody Map<String, String> params) {
-		String uid = params.get("uid");
-		if (StringUtils.isEmpty(uid)) {
-			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：uid");
-		} else if (!Encode.isNumber(uid)) {
-			return new Response<>(ReturnCode.PARAMS_BAD, "参数 uid 应该是个数字");
-		}
 		if (StringUtils.isEmpty(params.get("token"))) {
 			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：token");
 		}
 		try {
-			return new Response<>(ReturnCode.SUCCESS, service.signOut(Long.parseLong(uid), params.get("token")));
+			return new Response<>(ReturnCode.SUCCESS, service.signOut(params.get("token")));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {

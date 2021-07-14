@@ -103,14 +103,14 @@ public class UserServiceImplement implements UserService {
 	}
 
 	@Override
-	public boolean isSignedIn(Long uid, String token) throws ServiceException {
-		return this.token.isValid(uid, token);
+	public boolean isSignedIn(String token) throws ServiceException {
+		return this.token.isValid(token);
 	}
 
 	@Override
-	public boolean signOut(Long uid, String token) throws ServiceException {
-		if (isSignedIn(uid, token)) {
-			return this.token.clear(uid);
+	public boolean signOut(String token) throws ServiceException {
+		if (isSignedIn(token)) {
+			return this.token.clear(token);
 		} else {
 			throw new ServiceException(ReturnCode.PERMISSION_ERROR, "无权限操作");
 		}

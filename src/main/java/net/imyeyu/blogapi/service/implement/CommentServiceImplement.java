@@ -1,5 +1,6 @@
 package net.imyeyu.blogapi.service.implement;
 
+import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.Comment;
 import net.imyeyu.blogapi.entity.CommentReply;
@@ -28,8 +29,13 @@ public class CommentServiceImplement implements CommentService {
 	}
 
 	@Override
-	public Comment find(Long id) {
-		return null;
+	public Comment find(Long id) throws ServiceException {
+		Comment comment = mapper.find(id);
+		if (comment != null) {
+			return mapper.find(id);
+		} else {
+			throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该评论");
+		}
 	}
 
 	@Override

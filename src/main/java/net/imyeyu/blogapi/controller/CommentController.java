@@ -3,10 +3,12 @@ package net.imyeyu.blogapi.controller;
 import net.imyeyu.blogapi.bean.CaptchaData;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
+import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.Comment;
 import net.imyeyu.blogapi.entity.CommentReply;
 import net.imyeyu.blogapi.service.ArticleService;
 import net.imyeyu.blogapi.service.CommentService;
+import net.imyeyu.blogapi.util.Captcha;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -53,8 +55,13 @@ public class CommentController extends BaseController {
 	 */
 	@PostMapping("")
 	public Response<?> create(@RequestBody CaptchaData<Comment> cd) {
+		// 验证码
 		try {
-			articleService.comment(articleService.find(cd.getData().getArticleId()));
+			Captcha.test(cd.getCaptcha(), "COMMENT");
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e);
+		}
+		try {
 			commentService.create(cd.getData());
 			return new Response<>(ReturnCode.SUCCESS, cd.getData());
 		} catch (Exception e) {
@@ -66,16 +73,20 @@ public class CommentController extends BaseController {
 	/**
 	 * 提交回复
 	 *
-	 * @param commentReply 回复对象
+	 * @param cd 含验证评论回复
 	 * @return 回复结果
 	 */
 	@PostMapping("/reply")
-	public Response<?> createReply(@RequestBody CommentReply commentReply) {
+	public Response<?> createReply(@RequestBody CaptchaData<CommentReply> cd) {
+		// 验证码
 		try {
-			long aid = commentService.find(commentReply.getCommentId()).getArticleId();
-			articleService.comment(articleService.find(aid));
-			commentService.createReply(commentReply);
-			return new Response<>(ReturnCode.SUCCESS, commentReply);
+			Captcha.test(cd.getCaptcha(), "COMMENT_REPLY");
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e);
+		}
+		try {
+			commentService.createReply(cd.getData());
+			return new Response<>(ReturnCode.SUCCESS, cd.getData());
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new Response<>(ReturnCode.ERROR, "服务端异常：" + e);

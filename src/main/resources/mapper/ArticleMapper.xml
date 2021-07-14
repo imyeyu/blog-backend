@@ -1,36 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="net.imyeyu.blogapi.mapper.ArticleMapper">
-	<!-- 新增 -->
-	<insert id="create" parameterType="net.imyeyu.blogapi.entity.Article" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-		INSERT INTO
-		`article` (
-		`title`,
-		`type`,
-		`class_id`,
-		`digest`,
-		`data`,
-		`extend_data`,
-		`reads`,
-		`likes`,
-		`comments`,
-		`can_comment`,
-		`created_at`
-		)
-		VALUES (
-		#{title},
-		#{type},
-		#{clazz.id},
-		#{digest},
-		#{data},
-		#{extendData, jdbcType=OTHER, typeHandler=net.imyeyu.blogapi.handler.JsonHandler},
-		#{reads},
-		#{likes},
-		#{comments},
-		#{canComment},
-		#{createdAt}
-		);
-	</insert>
 	<!-- 获取 -->
 	<select id="find" resultMap="findById" parameterType="long">
 		SELECT
@@ -58,7 +28,6 @@
 		<result property="extendData" column="extend_data" typeHandler="net.imyeyu.blogapi.handler.JsonHandler" />
 		<result property="reads" column="reads" />
 		<result property="likes" column="likes" />
-		<result property="comments" column="comments" />
 		<result property="canComment" column="can_comment" />
 		<result property="createdAt" column="created_at" />
 		<result property="updatedAt" column="updated_at" />
@@ -72,24 +41,12 @@
 	<!-- 获取部分 -->
 	<select id="findMany" resultMap="findResult">
 		SELECT
-			*
-		FROM
-			`article`
-		ORDER BY
-			COALESCE(a.updated_at, a.created_at) DESC
-		LIMIT
-			#{offset}, #{limit}
-	</select>
-	<!-- 获取列表（摘要） -->
-	<select id="findManyByList" resultMap="findResult">
-		SELECT
 			a.id,
 			a.type,
 			a.title,
 			a.digest,
 			a.likes,
 			a.reads,
-			a.comments,
 			a.created_at,
 			a.updated_at
 		FROM
@@ -103,26 +60,4 @@
 			#{offset}, #{limit}
 	</select>
 	<resultMap id="findResult" type="net.imyeyu.blogapi.entity.Article" />
-	<!-- 更新 -->
-	<update id="update" parameterType="net.imyeyu.blogapi.entity.Article">
-		<if test="id != null">
-			UPDATE `article`
-			<set>
-				`title` = #{title},
-				`type` = #{type},
-				`class_id` = #{clazz.id},
-				`digest` = #{digest},
-				`data` = #{data},
-				`extend_data` = #{extendData, jdbcType=OTHER, typeHandler=net.imyeyu.blogapi.handler.JsonHandler},
-				`reads` = #{reads},
-				`likes` = #{likes},
-				`comments` = #{comments},
-				`can_comment` = #{canComment},
-				`created_at` = #{createdAt},
-				`updated_at` = #{updatedAt},
-				`deleted_at` = #{deletedAt}
-			</set>
-			WHERE `id` = #{id}
-		</if>
-	</update>
 </mapper>

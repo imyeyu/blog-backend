@@ -14,20 +14,19 @@ import java.util.List;
 public interface ArticleService extends BaseService<Article> {
 
 	/**
-	 * 查询文章（主页列表，过滤隐藏的文章）
+	 * 获取每周阅读排行
 	 *
-	 * @param offset 偏移
-	 * @param limit  数量
-	 * @return 文章列表
+	 * @return 热门文章列表
+	 * @throws ServiceException 服务异常
 	 */
-	List<Article> findManyByList(long offset, int limit);
-
-	/** @return 每周阅读排行 */
 	List<ArticleHot> getArticleHot() throws ServiceException;
 
-	/** 评论计数 */
-	void comment(Article article);
-
-	/** 更新阅读计数，包括触发每周热门排行，同一 IP 3 小时内访问多次的文章只计一次 */
-	void read(String ip, Article article);
+	/**
+	 * 更新阅读计数，包括触发每周热门排行统计，同一 IP 3 小时内访问多次的文章只计一次
+	 *
+	 * @param ip      访问者 IP
+	 * @param article 访问文章
+	 * @throws ServiceException 服务异常
+	 */
+	void read(String ip, Article article) throws ServiceException;
 }

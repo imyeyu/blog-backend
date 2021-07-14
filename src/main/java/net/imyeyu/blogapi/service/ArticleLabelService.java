@@ -1,6 +1,5 @@
 package net.imyeyu.blogapi.service;
 
-import net.imyeyu.blogapi.entity.Article;
 import net.imyeyu.blogapi.entity.ArticleLabel;
 
 import java.util.List;
@@ -27,11 +26,4 @@ public interface ArticleLabelService extends BaseService<ArticleLabel>{
 	 * @return 标签列表
 	 */
 	List<ArticleLabel> findManyByArticleId(long aid);
-
-	/**
-	 * 同步标签
-	 *
-	 * @param article 文章
-	 */
-	void syncLabels(Article article);
 }

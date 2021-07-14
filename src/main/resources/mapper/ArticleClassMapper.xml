@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="net.imyeyu.blogapi.mapper.ArticleClassMapper">
-	<!-- 新增 -->
-	<insert id="create" parameterType="net.imyeyu.blogapi.entity.ArticleClass" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-		INSERT INTO
-			`article_class` (
-				`name`, `is_other`, `order`, `created_at`
-			)
-		VALUES
-			(#{name}, #{isOther}, #{order}, #{createdAt});
-	</insert>
 	<!-- 获取 -->
 	<select id="find" resultType="net.imyeyu.blogapi.entity.ArticleClass" parameterType="long">
 		SELECT * FROM `article_class` WHERE `id` = #{id}
@@ -18,29 +9,4 @@
 	<select id="findMany" resultType="net.imyeyu.blogapi.entity.ArticleClass" parameterType="long">
 		SELECT * FROM `article_class` WHERE `id` = #{id}
 	</select>
-	<!-- 更新 -->
-	<update id="update" parameterType="net.imyeyu.blogapi.entity.ArticleClass">
-		<if test="id != null">
-			UPDATE `article_class`
-			<set>
-				`name`       = #{name},
-				`is_other`   = ${isOther},
-				`order`      = #{order},
-				`created_at` = #{createdAt},
-				`updated_at` = #{updatedAt},
-				`deleted_at` = #{deletedAt}
-			</set>
-			WHERE `id` = #{id}
-		</if>
-	</update>
-	<!-- 删除 -->
-	<delete id="delete" parameterType="long">
-		<if test="id != null">
-			UPDATE `article_class`
-			<set>
-				`deleted_at` = STRFTIME('%s','now')
-			</set>
-			WHERE `id` = #{id}
-		</if>
-	</delete>
 </mapper>

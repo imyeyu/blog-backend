@@ -1,18 +1,14 @@
 package net.imyeyu.blogapi.controller;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import net.imyeyu.betterjava.Encode;
-import net.imyeyu.betterjava.Network;
-import net.imyeyu.blogapi.bean.GithubCommit;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.service.DynamicDataService;
+import net.imyeyu.blogapi.service.FriendChainService;
 import net.imyeyu.blogapi.service.VersionService;
 import net.imyeyu.blogapi.util.Captcha;
+import net.imyeyu.blogapi.util.GitHub;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +22,7 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 /**
  * 主接口（乱七八糟的接口）
@@ -42,7 +34,13 @@ import java.util.TimeZone;
 public class MainController extends BaseController {
 
 	@Autowired
+	private GitHub gitHub;
+
+	@Autowired
 	private VersionService versionService;
+
+	@Autowired
+	private FriendChainService friendChainService;
 
 	@Autowired
 	private DynamicDataService dynamicDataService;
@@ -107,6 +105,16 @@ public class MainController extends BaseController {
 		}
 	}
 
+	/** @return 所有友链 */
+	@GetMapping("/friend-chain")
+	public Response<?> getFriendChain() {
+		try {
+			return new Response<>(ReturnCode.SUCCESS, friendChainService.findAll());
+		} catch (Exception e) {
+			return new Response<>(ReturnCode.ERROR, e);
+		}
+	}
+
 	/**
 	 * 获取软件最新版本状态
 	 *
@@ -151,7 +159,7 @@ public class MainController extends BaseController {
 	 * @return 提交记录
 	 */
 	@GetMapping("/github/{user}/{repos}")
-	public Response<?> getGithubCommits(@PathVariable("user") String user, @PathVariable("repos") String repos) {
+	public Response<?> getGitHubCommits(@PathVariable("user") String user, @PathVariable("repos") String repos) {
 		if (StringUtils.isEmpty(user)) {
 			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数: user");
 		}
@@ -159,38 +167,7 @@ public class MainController extends BaseController {
 			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数: repos");
 		}
 		try {
-			String response = Network.doGet("https://api.github.com/repos/" + user + "/" + repos + "/commits");
-			JsonElement jsonElement = JsonParser.parseString(response);
-			if (jsonElement.isJsonArray()) {
-				// 请求正确
-				JsonArray commits = jsonElement.getAsJsonArray();
-
-				JsonObject commit, committer;
-				String msg, url, name, date;
-
-				final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-				dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-				List<GithubCommit> result = new ArrayList<>();
-				for (int i = 0, l = commits.size(); i < l && i < 24; i++) {
-					// HTML URL
-					commit = commits.get(i).getAsJsonObject();
-					url = commit.get("html_url").getAsString();
-					// 提交说明
-					commit = commit.get("commit").getAsJsonObject();
-					msg = commit.get("message").getAsString().replaceAll("\n", "");
-					// 提交者
-					committer = commit.get("committer").getAsJsonObject();
-					name = committer.get("name").getAsString();
-					date = committer.get("date").getAsString();
-
-					result.add(new GithubCommit(name, msg, url, dateFormat.parse(date).getTime()));
-				}
-				return new Response<>(ReturnCode.SUCCESS, result);
-			} else {
-				// 请求错误
-				JsonObject result = jsonElement.getAsJsonObject();
-				return new Response<>(ReturnCode.PARAMS_BAD, "Github API 请求失败：" + result.get("message").getAsString());
-			}
+			return new Response<>(ReturnCode.SUCCESS, gitHub.getCommits(user, repos));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new Response<>(ReturnCode.ERROR, e);

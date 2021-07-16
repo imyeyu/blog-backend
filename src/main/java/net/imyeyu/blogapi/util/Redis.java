@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
- * <p>RedisTemplate 功能封装，简化 Redis 操作
- * <p>serializer 为该 RedisTemplate 的键的序列化操作，序列化解析器由本类提供
+ * RedisTemplate 功能封装，简化 Redis 操作
+ * <p>serializer 为该 RedisTemplate 的键的序列化操作，序列化解析器由 {@link net.imyeyu.blogapi.config.RedisConfig} 提供
  *
  * <p>夜雨 创建于 2021-03-02 17:46
  */

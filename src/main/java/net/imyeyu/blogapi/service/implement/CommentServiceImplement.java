@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * 评论操作
+ * 评论操作服务实现
  * 
  * <p>夜雨 创建于 2021-02-23 21:41
  */

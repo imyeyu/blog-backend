@@ -2,7 +2,6 @@ package net.imyeyu.blogapi.service.implement;
 
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
-import net.imyeyu.blogapi.entity.Article;
 import net.imyeyu.blogapi.entity.ArticleClass;
 import net.imyeyu.blogapi.mapper.ArticleClassMapper;
 import net.imyeyu.blogapi.service.ArticleClassService;

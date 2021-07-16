@@ -6,7 +6,7 @@ import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.vo.UserSignedIn;
 
 /**
- * 用户管理接口
+ * 用户管理服务
  * 
  * <p>夜雨 创建于 2021-02-23 21:32
  */

@@ -1,7 +1,6 @@
 package net.imyeyu.blogapi.mapper;
 
 import net.imyeyu.blogapi.entity.Version;
-import net.imyeyu.blogapi.service.BaseService;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -9,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
  *
  * <p>夜雨 创建于 2021-06-10 16:08
  */
-public interface VersionMapper extends BaseService<Version> {
+public interface VersionMapper extends BaseMapper<Version> {
 
 	Version findByName(@Param("name") String name);
 }

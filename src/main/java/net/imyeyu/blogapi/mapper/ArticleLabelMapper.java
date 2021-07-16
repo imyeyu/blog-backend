@@ -1,7 +1,6 @@
 package net.imyeyu.blogapi.mapper;
 
 import net.imyeyu.blogapi.entity.ArticleLabel;
-import net.imyeyu.blogapi.service.BaseService;
 
 import java.util.List;
 
@@ -10,7 +9,7 @@ import java.util.List;
  *
  * <p>夜雨 创建于 2021-07-04 19:35
  */
-public interface ArticleLabelMapper extends BaseService<ArticleLabel> {
+public interface ArticleLabelMapper extends BaseMapper<ArticleLabel> {
 
 	ArticleLabel findByName(String name);
 

@@ -5,8 +5,7 @@ import net.imyeyu.blogapi.bean.ServiceException;
 import java.util.List;
 
 /**
- * <p>基本数据库交互接口，不必实现所有接口
- * <p>Mapper 继承本接口后不再需要基本 CRUD 接口
+ * 基本数据库交互接口，不必实现所有接口，如果不实现而调用将不会执行任何事情
  *
  * <p>夜雨 创建于 2021-02-23 21:32
  *
@@ -42,7 +41,7 @@ public interface BaseService<T> {
 	 * @return 原型类型 List 对象
 	 * @throws ServiceException 服务异常
 	 */
-	default List<T> findMany(long offset, int limit) throws ServiceException {
+	default List<T> findMany(Long offset, int limit) throws ServiceException {
 		return null;
 	}
 

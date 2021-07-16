@@ -12,11 +12,11 @@ import org.apache.ibatis.annotations.Param;
  *
  * <p>夜雨 创建于 2021/2/23 21:33
  */
-public interface CommentMapper extends BaseService<Comment> {
+public interface CommentMapper extends BaseMapper<Comment> {
 
-	List<Comment> findByArticleId(@Param("articleId") Long articleId, @Param("offset") Long offset);
+	List<Comment> findByArticleId(Long articleId, Long offset);
 	
-	List<CommentReply> findRepliesByCommentId(@Param("commentId") Long commentId, @Param("offset") Long offset);
+	List<CommentReply> findRepliesByCommentId(Long commentId, Long offset);
 
-	void createReply(@Param("data") CommentReply commentReply);
+	void createReply(CommentReply commentReply);
 }

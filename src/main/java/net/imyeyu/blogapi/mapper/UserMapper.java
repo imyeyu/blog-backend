@@ -2,7 +2,6 @@ package net.imyeyu.blogapi.mapper;
 
 import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserData;
-import net.imyeyu.blogapi.service.BaseService;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -10,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
  *
  * <p>夜雨 创建于 2021-02-23 21:33
  */
-public interface UserMapper extends BaseService<User> {
+public interface UserMapper extends BaseMapper<User> {
 
 	User findByName(@Param("name") String name);
 

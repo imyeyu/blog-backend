@@ -39,7 +39,7 @@ public class CommentServiceImplement implements CommentService {
 	}
 
 	@Override
-	public List<Comment> findMany(long offset, int limit) {
+	public List<Comment> findMany(Long offset, int limit) {
 		return null;
 	}
 

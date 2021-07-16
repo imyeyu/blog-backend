@@ -57,10 +57,10 @@ public class UserServiceImplement implements UserService {
 	@Override
 	public UserSignedIn register(User user) throws ServiceException {
 		if (findByName(user.getName()) != null) {
-			throw new ServiceException(ReturnCode.DATA_CONFLICT, "该用户名已存在");
+			throw new ServiceException(ReturnCode.DATA_EXIST, "该用户名已存在");
 		}
 		if (findByEmail(user.getEmail()) != null) {
-			throw new ServiceException(ReturnCode.DATA_CONFLICT, "该邮箱已被使用");
+			throw new ServiceException(ReturnCode.DATA_EXIST, "该邮箱已被使用");
 		}
 		// 明文密码（做自动登录）
 		String plainPassword = user.getPassword();
@@ -137,7 +137,7 @@ public class UserServiceImplement implements UserService {
 	}
 
 	@Override
-	public List<User> findMany(long offset, int limit) {
+	public List<User> findMany(Long offset, int limit) {
 		return null;
 	}
 

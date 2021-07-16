@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GithubCommit {
+public class GitHubCommit {
 
 	private String name;
 	private String msg;

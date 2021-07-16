@@ -1,5 +1,6 @@
 package net.imyeyu.blogapi.service;
 
+import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.ArticleClass;
 import net.imyeyu.blogapi.vo.ArticleClassSide;
 
@@ -8,7 +9,7 @@ import net.imyeyu.blogapi.vo.ArticleClassSide;
  *
  * <p>夜雨 创建于 2021-07-04 19:29
  */
-public interface ArticleClassService extends BaseService<ArticleClass>{
+public interface ArticleClassService extends BaseService<ArticleClass> {
 
-	ArticleClassSide findBySide();
+	ArticleClassSide findBySide() throws ServiceException;
 }

@@ -4,15 +4,19 @@ import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.Article;
+import net.imyeyu.blogapi.service.ArticleClassService;
+import net.imyeyu.blogapi.service.ArticleLabelService;
 import net.imyeyu.blogapi.service.ArticleService;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 文章接口
@@ -26,24 +30,11 @@ public class ArticleController extends BaseController {
 	@Autowired
 	private ArticleService service;
 
-	/**
-	 * 获取文章列表（简要）
-	 *
-	 * @param offset 查询偏移
-	 * @return 文章列表
-	 */
-	@RequestMapping("")
-	public Response<?> getArticles(@RequestParam Long offset) {
-		if (ObjectUtils.isEmpty(offset)) {
-			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：offset");
-		}
-		try {
-			return new Response<>(ReturnCode.SUCCESS, service.findMany(offset, 16));
-		} catch (ServiceException e) {
-			e.printStackTrace();
-			return new Response<>(ReturnCode.ERROR, e);
-		}
-	}
+	@Autowired
+	private ArticleClassService classService;
+
+	@Autowired
+	private ArticleLabelService labelService;
 
 	/**
 	 * 获取指定文章
@@ -68,13 +59,78 @@ public class ArticleController extends BaseController {
 		}
 	}
 
+	/**
+	 * 获取文章列表（简要）
+	 *
+	 * @param offset 查询偏移
+	 * @return 文章列表
+	 */
+	@RequestMapping("/list")
+	public Response<?> getArticles(@RequestParam Long offset) {
+		if (ObjectUtils.isEmpty(offset)) {
+			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：offset");
+		}
+		try {
+			List<Article> many = service.findMany(offset, 16);
+			return new Response<>(ReturnCode.SUCCESS, many);
+		} catch (ServiceException e) {
+			e.printStackTrace();
+			return new Response<>(ReturnCode.ERROR, e);
+		}
+	}
+
+	@RequestMapping("/list/class")
+	public Response<?> getArticlesByClass(@RequestParam Long cid, @RequestParam Long offset) {
+		if (ObjectUtils.isEmpty(cid)) {
+			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：cid");
+		}
+		if (ObjectUtils.isEmpty(offset)) {
+			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：offset");
+		}
+		try {
+			return new Response<>(ReturnCode.SUCCESS, service.findManyByClass(classService.find(cid), offset, 16));
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(ReturnCode.ERROR, e);
+		}
+	}
+
+	@RequestMapping("/list/label")
+	public Response<?> getArticlesByLabel(@RequestParam Long lid, @RequestParam Long offset) {
+		if (ObjectUtils.isEmpty(lid)) {
+			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：lid");
+		}
+		if (ObjectUtils.isEmpty(offset)) {
+			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：offset");
+		}
+		try {
+			return new Response<>(ReturnCode.SUCCESS, service.findManyByLabel(labelService.find(lid), offset, 16));
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(ReturnCode.ERROR, e);
+		}
+	}
+
+	/** @return 文章分类 */
+	@RequestMapping("/class")
+	public Response<?> getArticleClass() {
+		try {
+			return new Response<>(ReturnCode.SUCCESS, classService.findBySide());
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e);
+		}
+	}
+
 	/** @return 每周访问排行榜 */
 	@RequestMapping("/hot")
 	public Response<?> getArticleHot() {
 		try {
 			return new Response<>(ReturnCode.SUCCESS, service.getArticleHot());
 		} catch (ServiceException e) {
-			e.printStackTrace();
 			return new Response<>(e.getCode(), e);
 		}
 	}

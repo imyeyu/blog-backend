@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="net.imyeyu.blogapi.mapper.ArticleClassMapper">
-	<!-- 获取 -->
-	<select id="find" resultType="net.imyeyu.blogapi.entity.ArticleClass" parameterType="long">
-		SELECT * FROM `article_class` WHERE `id` = #{id}
+	<!-- 获取主分类 -->
+	<select id="findMain" resultType="net.imyeyu.blogapi.entity.ArticleClass">
+		SELECT * FROM `article_class` WHERE `is_other` = 0 AND `deleted_at` IS NULL ORDER BY `order`
 	</select>
-	<!-- 获取所有 -->
-	<select id="findMany" resultType="net.imyeyu.blogapi.entity.ArticleClass" parameterType="long">
-		SELECT * FROM `article_class` WHERE `id` = #{id}
+	<!-- 获取其他分类 -->
+	<select id="findOther" resultType="net.imyeyu.blogapi.entity.ArticleClass">
+		SELECT * FROM `article_class` WHERE `is_other` = 1 AND `deleted_at` IS NULL ORDER BY `order`
 	</select>
 </mapper>

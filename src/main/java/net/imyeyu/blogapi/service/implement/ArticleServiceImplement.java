@@ -3,7 +3,9 @@ package net.imyeyu.blogapi.service.implement;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.Article;
+import net.imyeyu.blogapi.entity.ArticleClass;
 import net.imyeyu.blogapi.entity.ArticleHot;
+import net.imyeyu.blogapi.entity.ArticleLabel;
 import net.imyeyu.blogapi.mapper.ArticleMapper;
 import net.imyeyu.blogapi.service.ArticleLabelService;
 import net.imyeyu.blogapi.service.ArticleService;
@@ -16,7 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * 文章操作
+ * 文章服务实现
  * 
  * <p>夜雨 创建于 2021-02-17 17:48
  */
@@ -38,13 +40,27 @@ public class ArticleServiceImplement implements ArticleService {
 	@Override
 	public Article find(Long id) throws ServiceException {
 		Article article = mapper.find(id);
-		article.setLabels(labelService.findManyByArticleId(id));
-		return article;
+		if (article != null) {
+			article.setLabels(labelService.findManyByArticleId(id));
+			return article;
+		} else {
+			throw new ServiceException(ReturnCode.RESULT_NULL, "该文章不存在");
+		}
 	}
 
 	@Override
-	public List<Article> findMany(long offset, int limit) throws ServiceException {
+	public List<Article> findMany(Long offset, int limit) throws ServiceException {
 		return mapper.findMany(offset, limit);
+	}
+
+	@Override
+	public List<Article> findManyByClass(ArticleClass clazz, Long offset, int limit) {
+		return mapper.findManyByClass(clazz.getId(), offset, limit);
+	}
+
+	@Override
+	public List<Article> findManyByLabel(ArticleLabel label, Long offset, int limit) {
+		return mapper.findManyByLabel(label.getId(), offset, limit);
 	}
 
 	@Override

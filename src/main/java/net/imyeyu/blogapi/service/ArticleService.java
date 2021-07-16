@@ -2,7 +2,9 @@ package net.imyeyu.blogapi.service;
 
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.Article;
+import net.imyeyu.blogapi.entity.ArticleClass;
 import net.imyeyu.blogapi.entity.ArticleHot;
+import net.imyeyu.blogapi.entity.ArticleLabel;
 
 import java.util.List;
 
@@ -12,6 +14,28 @@ import java.util.List;
  * <p>夜雨 创建于 2021-02-23 21:33
  */
 public interface ArticleService extends BaseService<Article> {
+
+	/**
+	 * 根据分类获取文章
+	 *
+	 * @param clazz  分类
+	 * @param offset 偏移
+	 * @param limit  数量
+	 * @return 文章列表
+	 * @throws ServiceException 服务异常
+	 */
+	List<Article> findManyByClass(ArticleClass clazz, Long offset, int limit) throws ServiceException;
+
+	/**
+	 * 根据标签获取文章
+	 *
+	 * @param label  标签
+	 * @param offset 偏移
+	 * @param limit  数量
+	 * @return 文章列表
+	 * @throws ServiceException 服务异常
+	 */
+	List<Article> findManyByLabel(ArticleLabel label, Long offset, int limit) throws ServiceException;
 
 	/**
 	 * 获取每周阅读排行

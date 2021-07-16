@@ -1,5 +1,6 @@
 package net.imyeyu.blogapi.service.implement;
 
+import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.ArticleLabel;
 import net.imyeyu.blogapi.mapper.ArticleLabelMapper;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
+ * 文章标签服务实现
+ *
  * <p>夜雨 创建于 2021-07-04 19:35
  */
 @Service
@@ -20,7 +23,12 @@ public class ArticleLabelServiceImplement implements ArticleLabelService {
 
 	@Override
 	public ArticleLabel find(Long id) throws ServiceException {
-		return mapper.find(id);
+		ArticleLabel al = mapper.find(id);
+		if (al != null) {
+			return al;
+		} else {
+			throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该标签");
+		}
 	}
 
 	@Override

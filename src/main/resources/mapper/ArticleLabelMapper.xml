@@ -2,11 +2,24 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="net.imyeyu.blogapi.mapper.ArticleLabelMapper">
 	<!-- 获取 -->
-	<select id="find" resultType="net.imyeyu.blogapi.entity.ArticleLabel" parameterType="long" >
+	<select id="find" resultType="net.imyeyu.blogapi.entity.ArticleLabel" parameterType="long">
 		SELECT * FROM `labels` WHERE `id` = #{id}
 	</select>
 	<!-- 根据标签名获取 -->
-	<select id="findByName" resultType="net.imyeyu.blogapi.entity.ArticleLabel" parameterType="String" >
+	<select id="findByName" resultType="net.imyeyu.blogapi.entity.ArticleLabel" parameterType="String">
 		SELECT * FROM `labels` WHERE `name` = #{name}
+	</select>
+	<!-- 根据文章 ID 获取 -->
+	<select id="findManyByArticleId" resultType="net.imyeyu.blogapi.entity.ArticleLabel" parameterType="long">
+		SELECT
+			*
+		FROM
+			`labels` AS l
+		LEFT JOIN
+			`article_label` AS al
+		ON
+			l.id = al.label_id
+		WHERE
+			al.article_id = #{aid}
 	</select>
 </mapper>

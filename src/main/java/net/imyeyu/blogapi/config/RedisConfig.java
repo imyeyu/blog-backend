@@ -1,6 +1,6 @@
 package net.imyeyu.blogapi.config;
 
-import net.imyeyu.blogapi.entity.ArticleHot;
+import net.imyeyu.blogapi.entity.ArticleTopRanking;
 import net.imyeyu.blogapi.util.Redis;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Value;
@@ -100,18 +100,18 @@ public class RedisConfig extends CachingConfigurerSupport {
 	}
 
 	/**
-	 * <p>文章访问统计
+	 * 文章访问统计
 	 * <p>键为文章 ID，值为文章热度对象
 	 *
 	 * @return RedisTemplate
 	 */
 	@Bean("redisArticleHot")
-	public Redis<Long, ArticleHot> getArticleHotRedisTemplate() {
+	public Redis<Long, ArticleTopRanking> getArticleHotRedisTemplate() {
 		return getRedis(articleHotDB, LONG_SERIALIZER);
 	}
 
 	/**
-	 * <p>文章访问记录
+	 * 文章访问记录
 	 * <p>键为用户 IP，值为已访问文章 ID
 	 *
 	 * @return RedisTemplate
@@ -122,7 +122,7 @@ public class RedisConfig extends CachingConfigurerSupport {
 	}
 
 	/**
-	 * <p>用户登录令牌缓存
+	 * 用户登录令牌缓存
 	 * <p>键为用户 ID，值为令牌
 	 *
 	 * @return RedisTemplate
@@ -133,7 +133,7 @@ public class RedisConfig extends CachingConfigurerSupport {
 	}
 
 	/**
-	 * <p>构造自定义 RedisTemplate
+	 * 构造自定义 RedisTemplate
 	 * <p>针对同一服务器不同数据库
 	 *
 	 * @param database   数据库

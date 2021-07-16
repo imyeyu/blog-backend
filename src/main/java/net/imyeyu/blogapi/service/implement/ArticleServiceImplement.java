@@ -4,7 +4,7 @@ import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.Article;
 import net.imyeyu.blogapi.entity.ArticleClass;
-import net.imyeyu.blogapi.entity.ArticleHot;
+import net.imyeyu.blogapi.entity.ArticleTopRanking;
 import net.imyeyu.blogapi.entity.ArticleLabel;
 import net.imyeyu.blogapi.mapper.ArticleMapper;
 import net.imyeyu.blogapi.service.ArticleLabelService;
@@ -26,7 +26,7 @@ import java.util.List;
 public class ArticleServiceImplement implements ArticleService {
 
 	@Autowired
-	private Redis<Long, ArticleHot> redisArticleHot;
+	private Redis<Long, ArticleTopRanking> redisArticleHot;
 
 	@Autowired
 	private Redis<String, Long> redisArticleRead;
@@ -64,10 +64,10 @@ public class ArticleServiceImplement implements ArticleService {
 	}
 
 	@Override
-	public List<ArticleHot> getArticleHot() throws ServiceException {
+	public List<ArticleTopRanking> getArticleHot() throws ServiceException {
 		try {
-			List<ArticleHot> acs = redisArticleHot.values();
-			acs.sort(Comparator.comparing(ArticleHot::getCount).reversed());
+			List<ArticleTopRanking> acs = redisArticleHot.values();
+			acs.sort(Comparator.comparing(ArticleTopRanking::getCount).reversed());
 			return acs.subList(0, Math.min(10, acs.size()));
 		} catch (Exception e) {
 			redisArticleHot.flushAll();
@@ -87,9 +87,9 @@ public class ArticleServiceImplement implements ArticleService {
 
 			// 每周访问计数
 			if (article.getId() != 1) {
-				ArticleHot ah = redisArticleHot.get(article.getId());
+				ArticleTopRanking ah = redisArticleHot.get(article.getId());
 				if (ah == null) {
-					ah = new ArticleHot(article.getId(), article.getTitle(), article.getType());
+					ah = new ArticleTopRanking(article.getId(), article.getTitle(), article.getType());
 					ah.setRecentAt(System.currentTimeMillis());
 					redisArticleHot.set(article.getId(), ah, Duration.ofDays(7));
 				} else {

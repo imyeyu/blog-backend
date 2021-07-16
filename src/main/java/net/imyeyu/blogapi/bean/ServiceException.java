@@ -11,6 +11,11 @@ public class ServiceException extends Exception {
 
 	@Getter private final ReturnCode code;
 
+	public ServiceException(ReturnCode code) {
+		super(code.getComment());
+		this.code = code;
+	}
+
 	public ServiceException(ReturnCode code, String msg) {
 		super(msg);
 		this.code = code;

@@ -18,20 +18,24 @@
 		);
 	</insert>
 	<!-- 获取文章评论（附带子评论） -->
-    <select id="findByArticleId" parameterType="map" resultMap="findByArticleIdResult">
+    <select id="findMany" parameterType="map" resultMap="findManyResult">
 		SELECT
+	        -- 主评论
 			c.id,
 			c.article_id,
 			c.user_id,
+			user_has_avatar,
 			uc.name AS name,
 			c.nick,
 			c.data,
 			c.created_at,
+	        -- 回复
 			cr.id AS cr_id,
 			cr.comment_id,
 			crc.cr_length,
 			cr.sender_id,
 			cr.receiver_id,
+			sender_has_avatar,
 			us.name AS sender_name,
 			ur.name AS receiver_name,
 			cr.sender_nick,
@@ -39,34 +43,46 @@
 			cr.data AS cr_data,
 			cr.created_at AS cr_created_at
 		FROM (
+	        -- 查询主评论
 			SELECT
-				*
+				c.*,
+				usd.has_avatar AS user_has_avatar
 			FROM
 				comments AS c
+			LEFT JOIN
+				user_data AS usd
+			ON
+				usd.user_id = c.user_id
 			WHERE
 				c.article_id = #{articleId}
-				AND deleted_at IS NULL
+				AND c.deleted_at IS NULL
 			ORDER BY
-				created_at DESC
+				c.created_at DESC
 			LIMIT
-				#{offset}, 10
-		) AS c
+	            #{offset}, 10
+			) AS c
 		LEFT JOIN
 			users AS uc
 		ON
 			uc.id = c.user_id
 		LEFT JOIN (
+	        -- 查询回复
 			SELECT
 				*
 			FROM (
 				SELECT
-					*,
+					crt.*,
+					urd.has_avatar AS sender_has_avatar,
 					ROW_NUMBER() OVER (PARTITION BY comment_id) AS seq
 				FROM
-					comment_reply
+					comment_reply AS crt
+				LEFT JOIN
+					user_data AS urd
+				ON
+					urd.user_id = crt.sender_id
 				WHERE
-					deleted_at IS NULL
-			) AS cr
+					crt.deleted_at IS NULL
+				) AS cr
 			WHERE
 				cr.seq &lt; 7
 		) AS cr
@@ -82,6 +98,7 @@
 		ON
 			ur.id = cr.receiver_id
 		LEFT JOIN(
+	        -- 统计回复
 			SELECT
 				ANY_VALUE(comment_id) AS crc_id,
 				COUNT(comment_id) AS cr_length
@@ -93,7 +110,7 @@
 		ON
 			crc.crc_id = c.id
     </select>
-	<resultMap id="findByArticleIdResult" type="net.imyeyu.blogapi.entity.Comment">
+	<resultMap id="findManyResult" type="net.imyeyu.blogapi.entity.Comment">
 		<id property="id" column="id"/>
 		<result property="nick" column="nick"/>
 		<result property="data" column="data"/>
@@ -102,7 +119,10 @@
 		<!-- 发布者 -->
 		<association property="user" javaType="net.imyeyu.blogapi.entity.User">
             <id property="id" column="user_id"/>
-            <result property="name" column="name"/>
+			<result property="name" column="name"/>
+			<association property="data" javaType="net.imyeyu.blogapi.entity.UserData">
+				<result property="hasAvatar" column="user_has_avatar"/>
+			</association>
         </association>
         <!-- 关联回复 -->
         <collection property="replies" ofType="net.imyeyu.blogapi.entity.CommentReply">
@@ -116,6 +136,9 @@
 			<association property="sender" javaType="net.imyeyu.blogapi.entity.User">
 	            <id property="id" column="sender_id"/>
 	            <result property="name" column="sender_name"/>
+				<association property="data" javaType="net.imyeyu.blogapi.entity.UserData">
+					<result property="hasAvatar" column="sender_has_avatar"/>
+				</association>
 	        </association>
 	        <!-- 被回复者 -->
 			<association property="receiver" javaType="net.imyeyu.blogapi.entity.User">
@@ -145,7 +168,7 @@
 		);
 	</insert>
 	<!-- 获取文章子评论 -->
-    <select id="findRepliesByCommentId" parameterType="map" resultMap="findRepliesByCommentIdResult">
+    <select id="findManyReplies" parameterType="map" resultMap="findManyRepliesResult">
 	    SELECT
 			c.id,
 			sender_id,
@@ -181,7 +204,7 @@
 		ON
 			ur.id = c.receiver_id
     </select>
-	<resultMap id="findRepliesByCommentIdResult" type="net.imyeyu.blogapi.entity.CommentReply">
+	<resultMap id="findManyRepliesResult" type="net.imyeyu.blogapi.entity.CommentReply">
 		<id property="id" column="id"/>
 		<result property="data" column="data"/>
 		<result property="senderId" column="sender_id"/>
@@ -200,4 +223,24 @@
             <result property="name" column="receiver_name"/>
         </association>
 	</resultMap>
+	<!-- 统计该文章的所有评论和子评论 -->
+	<select id="getLength" parameterType="long" resultType="int">
+		SELECT
+			SUM(r.cc + r.crc)
+		FROM (
+			SELECT
+				COUNT(c.id) AS cc,
+				COUNT(cr.comment_id) AS crc
+			FROM
+				comments AS c
+			LEFT JOIN
+				comment_reply AS cr
+			ON
+				cr.comment_id = c.id
+			WHERE
+				c.article_id = #{articleId}
+				AND c.deleted_at IS NULL
+				AND cr.deleted_at IS NULL
+		) AS r
+	</select>
 </mapper>

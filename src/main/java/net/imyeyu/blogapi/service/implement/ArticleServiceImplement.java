@@ -9,6 +9,7 @@ import net.imyeyu.blogapi.entity.ArticleLabel;
 import net.imyeyu.blogapi.mapper.ArticleMapper;
 import net.imyeyu.blogapi.service.ArticleLabelService;
 import net.imyeyu.blogapi.service.ArticleService;
+import net.imyeyu.blogapi.service.CommentService;
 import net.imyeyu.blogapi.util.Redis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,9 @@ public class ArticleServiceImplement implements ArticleService {
 	private ArticleMapper mapper;
 
 	@Autowired
+	private CommentService commentService;
+
+	@Autowired
 	private ArticleLabelService labelService;
 
 	@Override
@@ -42,6 +46,7 @@ public class ArticleServiceImplement implements ArticleService {
 		Article article = mapper.find(id);
 		if (article != null) {
 			article.setLabels(labelService.findManyByArticleId(id));
+			article.setComments(commentService.getLength(id));
 			return article;
 		} else {
 			throw new ServiceException(ReturnCode.RESULT_NULL, "该文章不存在");
@@ -64,7 +69,7 @@ public class ArticleServiceImplement implements ArticleService {
 	}
 
 	@Override
-	public List<ArticleTopRanking> getArticleHot() throws ServiceException {
+	public List<ArticleTopRanking> getTopRanking() throws ServiceException {
 		try {
 			List<ArticleTopRanking> acs = redisArticleHot.values();
 			acs.sort(Comparator.comparing(ArticleTopRanking::getCount).reversed());

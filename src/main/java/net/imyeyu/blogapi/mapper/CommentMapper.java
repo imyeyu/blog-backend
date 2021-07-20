@@ -14,9 +14,11 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface CommentMapper extends BaseMapper<Comment> {
 
-	List<Comment> findByArticleId(Long articleId, Long offset);
+	List<Comment> findMany(Long articleId, Long offset);
 	
-	List<CommentReply> findRepliesByCommentId(Long commentId, Long offset);
+	List<CommentReply> findManyReplies(Long commentId, Long offset);
+
+	int getLength(Long articleId);
 
 	void createReply(CommentReply commentReply);
 }

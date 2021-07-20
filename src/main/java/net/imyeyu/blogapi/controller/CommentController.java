@@ -38,13 +38,13 @@ public class CommentController extends BaseController {
 	 * @return 文章评论
 	 */
 	@RequestMapping("")
-	public Response<?> findByArticleId(Long articleId, long offset) {
-		return new Response<>(ReturnCode.SUCCESS, commentService.findByArticleId(articleId, offset));
+	public Response<?> getByArticleId(Long articleId, long offset) {
+		return new Response<>(ReturnCode.SUCCESS, commentService.findMany(articleId, offset));
 	}
 
 	@RequestMapping("/reply")
-	public Response<?> findRepliesByCommentId(Long commentId, Long offset) {
-		return new Response<>(ReturnCode.SUCCESS, commentService.findRepliesByCommentId(commentId, offset));
+	public Response<?> getRepliesByCommentId(Long commentId, Long offset) {
+		return new Response<>(ReturnCode.SUCCESS, commentService.findManyReplies(commentId, offset));
 	}
 
 	/**

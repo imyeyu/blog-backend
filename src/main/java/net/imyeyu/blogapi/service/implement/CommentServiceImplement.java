@@ -1,6 +1,5 @@
 package net.imyeyu.blogapi.service.implement;
 
-import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.Comment;
 import net.imyeyu.blogapi.entity.CommentReply;
@@ -29,40 +28,24 @@ public class CommentServiceImplement implements CommentService {
 	}
 
 	@Override
-	public Comment find(Long id) throws ServiceException {
-		Comment comment = mapper.find(id);
-		if (comment != null) {
-			return mapper.find(id);
-		} else {
-			throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该评论");
-		}
+	public List<Comment> findMany(Long articleId, Long offset) {
+		return mapper.findMany(articleId, offset);
 	}
 
-	@Override
-	public List<Comment> findMany(Long offset, int limit) {
-		return null;
-	}
-
-	public List<Comment> findByArticleId(Long articleId, Long offset) {
-		return mapper.findByArticleId(articleId, offset);
-	}
-
-	@Override
-	public void update(Comment t) {
-	}
-
-	@Override
-	public Long delete(Long... ids) {
-		return null;
-	}
-	
 	// 子评论
+	@Override
 	public void createReply(CommentReply commentReply) {
 		commentReply.setCreatedAt(System.currentTimeMillis());
 		mapper.createReply(commentReply);
 	}
 
-	public List<CommentReply> findRepliesByCommentId(Long commentId, Long offset) {
-		return mapper.findRepliesByCommentId(commentId, offset);
+	@Override
+	public List<CommentReply> findManyReplies(Long commentId, Long offset) {
+		return mapper.findManyReplies(commentId, offset);
+	}
+
+	@Override
+	public int getLength(Long articleId) {
+		return mapper.getLength(articleId);
 	}
 }

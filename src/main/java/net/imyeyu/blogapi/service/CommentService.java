@@ -19,7 +19,7 @@ public interface CommentService extends BaseService<Comment> {
 	 * @param offset    查询偏移量
 	 * @return 评论列表
 	 */
-	List<Comment> findByArticleId(Long articleId, Long offset);
+	List<Comment> findMany(Long articleId, Long offset);
 	
 	/**
 	 * 获取子评论
@@ -28,7 +28,9 @@ public interface CommentService extends BaseService<Comment> {
 	 * @param offset    查询偏移量
 	 * @return 回复列表
 	 */
-	List<CommentReply> findRepliesByCommentId(Long commentId, Long offset);
+	List<CommentReply> findManyReplies(Long commentId, Long offset);
+
+	int getLength(Long articleId);
 	
 	/** @param commentReply 回复评论对象 */
 	void createReply(CommentReply commentReply);

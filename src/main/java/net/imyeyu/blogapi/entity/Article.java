@@ -26,6 +26,7 @@ public class Article extends BaseEntity implements Serializable {
 
 	private int reads;
 	private int likes;
+	private int comments; // 评论数量，仅在服务调用 find() 时有数据
 	private boolean canComment;
 
 	/** 阅读一次 */

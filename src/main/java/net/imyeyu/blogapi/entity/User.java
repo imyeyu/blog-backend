@@ -20,6 +20,8 @@ public class User extends BaseEntity implements Serializable {
 	private String password;
 	private Long canceledAt;
 
+	private UserData data;
+
 	public UserSignedIn toToken(String token) {
 		return new UserSignedIn(id, name, token);
 	}

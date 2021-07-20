@@ -43,7 +43,7 @@ public class ArticleController extends BaseController {
 	 * @return 文章
 	 */
 	@RequestMapping("/{id}")
-	public Response<?> getArticle(@PathVariable Long id, HttpServletRequest req) {
+	public Response<?> get(@PathVariable Long id, HttpServletRequest req) {
 		if (ObjectUtils.isEmpty(id)) {
 			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：id");
 		}
@@ -66,7 +66,7 @@ public class ArticleController extends BaseController {
 	 * @return 文章列表
 	 */
 	@RequestMapping("/list")
-	public Response<?> getArticles(@RequestParam Long offset) {
+	public Response<?> getMany(@RequestParam Long offset) {
 		if (ObjectUtils.isEmpty(offset)) {
 			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：offset");
 		}
@@ -80,7 +80,7 @@ public class ArticleController extends BaseController {
 	}
 
 	@RequestMapping("/list/class")
-	public Response<?> getArticlesByClass(@RequestParam Long cid, @RequestParam Long offset) {
+	public Response<?> getManyByClass(@RequestParam Long cid, @RequestParam Long offset) {
 		if (ObjectUtils.isEmpty(cid)) {
 			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：cid");
 		}
@@ -98,7 +98,7 @@ public class ArticleController extends BaseController {
 	}
 
 	@RequestMapping("/list/label")
-	public Response<?> getArticlesByLabel(@RequestParam Long lid, @RequestParam Long offset) {
+	public Response<?> getManyByLabel(@RequestParam Long lid, @RequestParam Long offset) {
 		if (ObjectUtils.isEmpty(lid)) {
 			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：lid");
 		}
@@ -116,8 +116,8 @@ public class ArticleController extends BaseController {
 	}
 
 	/** @return 文章分类 */
-	@RequestMapping("/class")
-	public Response<?> getArticleClass() {
+	@RequestMapping("/classes")
+	public Response<?> getClasses() {
 		try {
 			return new Response<>(ReturnCode.SUCCESS, classService.findBySide());
 		} catch (ServiceException e) {
@@ -126,10 +126,10 @@ public class ArticleController extends BaseController {
 	}
 
 	/** @return 每周访问排行榜 */
-	@RequestMapping("/hot")
-	public Response<?> getArticleHot() {
+	@RequestMapping("/top-ranking")
+	public Response<?> getTopRanking() {
 		try {
-			return new Response<>(ReturnCode.SUCCESS, service.getArticleHot());
+			return new Response<>(ReturnCode.SUCCESS, service.getTopRanking());
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		}

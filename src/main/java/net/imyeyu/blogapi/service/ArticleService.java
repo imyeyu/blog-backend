@@ -43,7 +43,7 @@ public interface ArticleService extends BaseService<Article> {
 	 * @return 热门文章列表
 	 * @throws ServiceException 服务异常
 	 */
-	List<ArticleTopRanking> getArticleHot() throws ServiceException;
+	List<ArticleTopRanking> getTopRanking() throws ServiceException;
 
 	/**
 	 * 更新阅读计数，包括触发每周热门排行统计，同一 IP 3 小时内访问多次的文章只计一次

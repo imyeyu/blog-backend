@@ -30,7 +30,7 @@ import java.time.Duration;
 public class RedisConfig extends CachingConfigurerSupport {
 
 	// 数据库
-	@Value("${spring.redis.database.article-hot}")
+	@Value("${spring.redis.database.article-top-ranking}")
 	private int articleHotDB;
 
 	@Value("${spring.redis.database.article-read}")

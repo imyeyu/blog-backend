@@ -30,9 +30,9 @@ spring:
         password:
         timeout: 8000
         database:
-            article-hot: 0  # 热门文章缓存
-            article-read: 1 # IP 阅读记录缓存
-            user-token: 2   # 用户令牌缓存
+            article-top-ranking: 0 # 热门文章缓存
+            article-read: 1        # IP 阅读记录缓存
+            user-token: 2          # 用户令牌缓存
         lettuce: # 连接池配置
             pool:
                 max-wait: -1
@@ -41,15 +41,16 @@ spring:
                 max-active: 8
 # MyBatis
 mybatis:
-    mapper-locations: classpath:mapper/*.xml       # XML 位置
+    mapper-locations: classpath:mapper/*.xml          # XML 位置
     type-aliases-package: net.imyeyu.blogapi.entity   # 实体类位置
     type-handlers-package: net.imyeyu.blogapi.handler # 类型处理器位置
     configuration:
-        map-underscore-to-camel-case: true       # 映射驼峰转下划线
+        map-underscore-to-camel-case: true            # 映射驼峰转下划线
 
 # CORS 跨域
 cors:
-    allow-origin: '*'       # 允许访问的客户端域名，如：http://web.xxx.com，多个域名逗号分割，* 表示不做任何限制。
+    # 允许访问的客户端域名，如：http://web.xxx.com，多个域名逗号分割，* 表示不做任何限制（不做任何限制时 allow-credentials 无效）
+    allow-origin: 'http://localhost:8080'
     allow-methods: '*'      # 允许请求的方法名，多个方法名逗号分割，如：GET, POST, PUT, DELETE, OPTIONS。
     allow-credentials: true # 是否允许请求带有验证信息，若要获取客户端域下的 Cookie 时，设置为 true。
     allow-headers: '*'      # 允许服务端访问的客户端请求头，多个请求头逗号分割，如：Content-Type。

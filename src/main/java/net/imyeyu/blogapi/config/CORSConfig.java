@@ -2,12 +2,15 @@ package net.imyeyu.blogapi.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import javax.servlet.Filter;
 import java.util.Arrays;
 
 /**
@@ -36,15 +39,17 @@ public class CORSConfig {
 	private String allowHeaders;
 
 	@Bean
-	public CorsFilter corsFilter() {
+	public FilterRegistrationBean<Filter> corsFilter() {
 		CorsConfiguration config = new CorsConfiguration();
-		config.setAllowedOriginPatterns(Arrays.asList(allowOrigin.split(",")));
-		config.setAllowCredentials(allowCredentials);
-		config.addAllowedMethod(allowMethods);
 		config.addAllowedHeader(allowHeaders);
+		config.addAllowedMethod(allowMethods);
+		config.setAllowCredentials(allowCredentials);
+		config.setAllowedOriginPatterns(Arrays.asList(allowOrigin.split(",")));
 
-		UrlBasedCorsConfigurationSource configSource = new UrlBasedCorsConfigurationSource();
-		configSource.registerCorsConfiguration("/**", config);
-		return new CorsFilter(configSource);
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", config);
+		FilterRegistrationBean<Filter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
+		bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+		return bean;
 	}
 }

@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * 夜雨 创建于 2021-07-15 15:59
  */
@@ -12,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class FriendChain extends BaseEntity {
+public class FriendChain extends BaseEntity implements Serializable {
 
 	private String icon;
 	private String name;

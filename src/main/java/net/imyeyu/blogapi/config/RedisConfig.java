@@ -39,6 +39,12 @@ public class RedisConfig extends CachingConfigurerSupport {
 	@Value("${spring.redis.database.user-token}")
 	private int userTokenDB;
 
+	@Value("${spring.redis.database.access-limit}")
+	private int accessLimit;
+
+	@Value("${spring.redis.database.setting}")
+	private int setting;
+
 	// 连接配置
 	@Value("${spring.redis.host}")
 	private String host;
@@ -100,8 +106,7 @@ public class RedisConfig extends CachingConfigurerSupport {
 	}
 
 	/**
-	 * 文章访问统计
-	 * <p>键为文章 ID，值为文章热度对象
+	 * 文章访问统计，文章 ID: ArticleTopRanking 对象
 	 *
 	 * @return RedisTemplate
 	 */
@@ -111,8 +116,7 @@ public class RedisConfig extends CachingConfigurerSupport {
 	}
 
 	/**
-	 * 文章访问记录
-	 * <p>键为用户 IP，值为已访问文章 ID
+	 * 文章访问记录，IP: [文章 ID]
 	 *
 	 * @return RedisTemplate
 	 */
@@ -122,14 +126,33 @@ public class RedisConfig extends CachingConfigurerSupport {
 	}
 
 	/**
-	 * 用户登录令牌缓存
-	 * <p>键为用户 ID，值为令牌
+	 * 用户登录令牌缓存，UID: 令牌
 	 *
 	 * @return RedisTemplate
 	 */
 	@Bean("redisToken")
 	public Redis<Long, String> getUserTokenRedisTemplate() {
 		return getRedis(userTokenDB, LONG_SERIALIZER);
+	}
+
+	/**
+	 * 接口访问控制，IP#方法: 上一次访问时间戳
+	 *
+	 * @return RedisTemplate
+	 */
+	@Bean("redisAccessLimit")
+	public Redis<String, Long> getAccessLimitRedisTemplate() {
+		return getRedis(accessLimit, STRING_SERIALIZER);
+	}
+
+	/**
+	 * 系统配置，SettingKey 枚举: String 配置值
+	 *
+	 * @return RedisTemplate
+	 */
+	@Bean("redisSetting")
+	public Redis<String, String> getSettingRedisTemplate() {
+		return getRedis(setting, STRING_SERIALIZER);
 	}
 
 	/**

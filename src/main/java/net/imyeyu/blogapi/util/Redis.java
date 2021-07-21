@@ -132,6 +132,36 @@ public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializ
 	}
 
 	/**
+	 * 获取值，强转为 String
+	 *
+	 * @param key 键
+	 * @return 值
+	 */
+	public String getString(K key) {
+		return get(key).toString();
+	}
+
+	/**
+	 * 获取值，强转为 Boolean
+	 *
+	 * @param key 键
+	 * @return 值
+	 */
+	public Boolean is(K key) {
+		return Boolean.parseBoolean(getString(key));
+	}
+
+	/**
+	 * 获取值，强转为 Boolean 并取反
+	 *
+	 * @param key 键
+	 * @return 值
+	 */
+	public Boolean not(K key) {
+		return !is(key);
+	}
+
+	/**
 	 * 是否存在
 	 *
 	 * @param key 键

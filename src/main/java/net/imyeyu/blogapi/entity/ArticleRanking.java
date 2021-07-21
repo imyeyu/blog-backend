@@ -27,7 +27,7 @@ public class ArticleRanking extends BaseEntity implements Serializable {
 	}
 
 	/** 访问计数 + 1 */
-	public void increment() {
+	public void read() {
 		count++;
 	}
 }

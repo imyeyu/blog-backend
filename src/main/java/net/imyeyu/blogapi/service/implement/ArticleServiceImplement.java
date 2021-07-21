@@ -103,7 +103,7 @@ public class ArticleServiceImplement implements ArticleService {
 					ah.setRecentAt(System.currentTimeMillis());
 					redisArticleRanking.set(article.getId(), ah, Duration.ofDays(7));
 				} else {
-					ah.increment();
+					ah.read();
 					ah.setRecentAt(System.currentTimeMillis());
 					redisArticleRanking.set(article.getId(), ah, true);
 				}

@@ -53,4 +53,13 @@ public interface ArticleService extends BaseService<Article> {
 	 * @throws ServiceException 服务异常
 	 */
 	void read(String ip, Article article) throws ServiceException;
+
+	/**
+	 * 喜欢文章
+	 *
+	 * @param aid 文章 ID
+	 * @return 最新喜欢数量
+	 * @throws ServiceException 服务异常
+	 */
+	int like(Long aid) throws ServiceException;
 }

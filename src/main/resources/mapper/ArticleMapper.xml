@@ -82,4 +82,15 @@
 			#{offset}, #{limit}
 	</select>
 	<resultMap id="findManyResult" type="net.imyeyu.blogapi.entity.Article" />
+	<!-- 更新 -->
+	<update id="update" parameterType="net.imyeyu.blogapi.entity.Article">
+		<if test="id != null">
+			UPDATE `article`
+			<set>
+				`reads`       = #{reads},
+				`likes`       = #{likes}
+			</set>
+			WHERE `id` = #{id}
+		</if>
+	</update>
 </mapper>

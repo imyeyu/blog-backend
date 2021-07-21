@@ -69,6 +69,11 @@ public class ArticleServiceImplement implements ArticleService {
 	}
 
 	@Override
+	public void update(Article article) throws ServiceException {
+		mapper.update(article);
+	}
+
+	@Override
 	public List<ArticleTopRanking> getTopRanking() throws ServiceException {
 		try {
 			List<ArticleTopRanking> acs = redisArticleHot.values();
@@ -104,5 +109,13 @@ public class ArticleServiceImplement implements ArticleService {
 				}
 			}
 		}
+	}
+
+	@Override
+	public int like(Long aid) throws ServiceException {
+		Article article = mapper.find(aid);
+		article.like();
+		update(article);
+		return article.getLikes();
 	}
 }

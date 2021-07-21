@@ -1,5 +1,6 @@
 package net.imyeyu.blogapi.controller;
 
+import net.imyeyu.blogapi.bean.AccessLimit;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
@@ -10,7 +11,6 @@ import net.imyeyu.blogapi.service.ArticleService;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -60,6 +60,26 @@ public class ArticleController extends BaseController {
 	}
 
 	/**
+	 * 喜欢文章
+	 * <p>限制每个 IP 1240 毫秒触发一次，不需要登录
+	 *
+	 * @param id 文章 ID
+	 * @return 最新喜欢数量
+	 */
+	@AccessLimit(time = 1240, needLogin = false)
+	@RequestMapping("/like/{id}")
+	public Response<?> like(@PathVariable Long id) {
+		if (ObjectUtils.isEmpty(id)) {
+			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：id");
+		}
+		try {
+			return new Response<>(ReturnCode.SUCCESS, service.like(id));
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e.getMessage());
+		}
+	}
+
+	/**
 	 * 获取文章列表（简要）
 	 *
 	 * @param offset 查询偏移
@@ -74,7 +94,6 @@ public class ArticleController extends BaseController {
 			List<Article> many = service.findMany(offset, 16);
 			return new Response<>(ReturnCode.SUCCESS, many);
 		} catch (ServiceException e) {
-			e.printStackTrace();
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}

@@ -1,7 +1,7 @@
 package net.imyeyu.blogapi.util;
 
 import com.google.gson.Gson;
-import net.imyeyu.blogapi.bean.AccessLimit;
+import net.imyeyu.blogapi.annotation.AccessLimit;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import org.springframework.beans.factory.annotation.Autowired;

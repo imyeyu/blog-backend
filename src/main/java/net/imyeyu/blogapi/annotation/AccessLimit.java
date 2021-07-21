@@ -1,4 +1,4 @@
-package net.imyeyu.blogapi.bean;
+package net.imyeyu.blogapi.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

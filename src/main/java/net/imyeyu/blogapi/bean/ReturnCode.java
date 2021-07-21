@@ -11,22 +11,23 @@ import lombok.Getter;
 public enum ReturnCode {
 
 	// 200 正常
-	SUCCESS          (20000, "执行成功"),
+	SUCCESS           (20000, "执行成功"),
 	// 400 参数异常
-	PARAMS_MISS      (40000, "缺少参数"),
-	PARAMS_BAD       (40001, "不合法的参数"),
-	PARAMS_EXPIRD    (40002, "过期的参数"),
+	PARAMS_MISS       (40000, "缺少参数"),
+	PARAMS_BAD        (40001, "不合法的参数"),
+	PARAMS_EXPIRD     (40002, "过期的参数"),
 	// 401 权限异常
-	PERMISSION_MISS  (40100, "无权限"),
-	PERMISSION_ERROR (40101, "无权限"),
-	REQUEST_BAD      (40102, "非法请求"),
+	PERMISSION_MISS   (40100, "无权限"),
+	PERMISSION_ERROR  (40101, "无权限"),
+	REQUEST_BAD       (40102, "非法请求"),
 	// 403 数据异常
-	DATA_EXIST       (40301, "数据已存在"),
+	DATA_EXIST        (40301, "数据已存在"),
 	// 404 资源异常
-	RESULT_NULL      (40400, "无结果"),
+	RESULT_NULL       (40400, "无结果"),
 	// 500 致命异常
-	ERROR            (50000, "服务端异常"),
-	ERROR_NPE_METHOD (50001, "服务端异常");
+	ERROR             (50000, "服务异常"),
+	ERROR_NPE_METHOD  (50001, "服务异常"),
+	ERROR_OFF_SERVICE (50002, "服务关闭");
 
 	private final Integer code;
 	private final String comment;

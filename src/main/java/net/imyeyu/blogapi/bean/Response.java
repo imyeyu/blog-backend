@@ -14,7 +14,7 @@ import net.imyeyu.betterjava.bean.BlogResponse;
 public class Response<T> extends BlogResponse<T> {
 
 	public Response(ReturnCode code) {
-		super(code.getCode(), "", null);
+		super(code.getCode(), null, null);
 	}
 
 	public Response(ReturnCode code, Throwable e) {
@@ -26,6 +26,6 @@ public class Response<T> extends BlogResponse<T> {
 	}
 
 	public Response(ReturnCode code, T data) {
-		super(code.getCode(), "", data);
+		super(code.getCode(), null, data);
 	}
 }

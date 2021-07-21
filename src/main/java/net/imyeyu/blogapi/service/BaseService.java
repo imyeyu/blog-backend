@@ -5,7 +5,7 @@ import net.imyeyu.blogapi.bean.ServiceException;
 import java.util.List;
 
 /**
- * 基本数据库交互接口，不必实现所有接口，如果不实现而调用将不会执行任何事情
+ * 基本数据库交互接口，不必实现所有接口。注意！如果不实现而调用将不会执行任何事情
  *
  * <p>夜雨 创建于 2021-02-23 21:32
  *

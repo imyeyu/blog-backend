@@ -1,8 +1,6 @@
 package net.imyeyu.blogapi.mapper;
 
-import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.Article;
-import net.imyeyu.blogapi.service.BaseService;
 
 import java.util.List;
 

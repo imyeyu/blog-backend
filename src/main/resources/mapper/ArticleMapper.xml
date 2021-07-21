@@ -29,6 +29,7 @@
 		<result property="reads" column="reads" />
 		<result property="likes" column="likes" />
 		<result property="canComment" column="can_comment" />
+		<result property="canRanking" column="can_ranking" />
 		<result property="createdAt" column="created_at" />
 		<result property="updatedAt" column="updated_at" />
 		<result property="deletedAt" column="deleted_at" />

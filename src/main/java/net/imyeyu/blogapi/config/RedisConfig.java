@@ -1,6 +1,6 @@
 package net.imyeyu.blogapi.config;
 
-import net.imyeyu.blogapi.entity.ArticleTopRanking;
+import net.imyeyu.blogapi.entity.ArticleRanking;
 import net.imyeyu.blogapi.util.Redis;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,8 +30,8 @@ import java.time.Duration;
 public class RedisConfig extends CachingConfigurerSupport {
 
 	// 数据库
-	@Value("${spring.redis.database.article-top-ranking}")
-	private int articleHotDB;
+	@Value("${spring.redis.database.article-ranking}")
+	private int articleRankingDB;
 
 	@Value("${spring.redis.database.article-read}")
 	private int articleReadDB;
@@ -106,13 +106,13 @@ public class RedisConfig extends CachingConfigurerSupport {
 	}
 
 	/**
-	 * 文章访问统计，文章 ID: ArticleTopRanking 对象
+	 * 文章访问统计，文章 ID: ArticleRanking 对象
 	 *
 	 * @return RedisTemplate
 	 */
-	@Bean("redisArticleHot")
-	public Redis<Long, ArticleTopRanking> getArticleHotRedisTemplate() {
-		return getRedis(articleHotDB, LONG_SERIALIZER);
+	@Bean("redisArticleRanking")
+	public Redis<Long, ArticleRanking> getArticleRankingRedisTemplate() {
+		return getRedis(articleRankingDB, LONG_SERIALIZER);
 	}
 
 	/**

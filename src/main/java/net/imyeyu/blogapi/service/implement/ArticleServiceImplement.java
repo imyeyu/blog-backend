@@ -4,7 +4,7 @@ import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.Article;
 import net.imyeyu.blogapi.entity.ArticleClass;
-import net.imyeyu.blogapi.entity.ArticleTopRanking;
+import net.imyeyu.blogapi.entity.ArticleRanking;
 import net.imyeyu.blogapi.entity.ArticleLabel;
 import net.imyeyu.blogapi.mapper.ArticleMapper;
 import net.imyeyu.blogapi.service.ArticleLabelService;
@@ -27,7 +27,7 @@ import java.util.List;
 public class ArticleServiceImplement implements ArticleService {
 
 	@Autowired
-	private Redis<Long, ArticleTopRanking> redisArticleHot;
+	private Redis<Long, ArticleRanking> redisArticleRanking;
 
 	@Autowired
 	private Redis<String, Long> redisArticleRead;
@@ -74,13 +74,13 @@ public class ArticleServiceImplement implements ArticleService {
 	}
 
 	@Override
-	public List<ArticleTopRanking> getTopRanking() throws ServiceException {
+	public List<ArticleRanking> getRanking() throws ServiceException {
 		try {
-			List<ArticleTopRanking> acs = redisArticleHot.values();
-			acs.sort(Comparator.comparing(ArticleTopRanking::getCount).reversed());
+			List<ArticleRanking> acs = redisArticleRanking.values();
+			acs.sort(Comparator.comparing(ArticleRanking::getCount).reversed());
 			return acs.subList(0, Math.min(10, acs.size()));
 		} catch (Exception e) {
-			redisArticleHot.flushAll();
+			redisArticleRanking.flushAll();
 			e.printStackTrace();
 			throw new ServiceException(ReturnCode.ERROR, e.getMessage());
 		}
@@ -96,16 +96,16 @@ public class ArticleServiceImplement implements ArticleService {
 			update(article);
 
 			// 每周访问计数
-			if (article.getId() != 1) {
-				ArticleTopRanking ah = redisArticleHot.get(article.getId());
+			if (article.isCanRanking()) {
+				ArticleRanking ah = redisArticleRanking.get(article.getId());
 				if (ah == null) {
-					ah = new ArticleTopRanking(article.getId(), article.getTitle(), article.getType());
+					ah = new ArticleRanking(article.getId(), article.getTitle(), article.getType());
 					ah.setRecentAt(System.currentTimeMillis());
-					redisArticleHot.set(article.getId(), ah, Duration.ofDays(7));
+					redisArticleRanking.set(article.getId(), ah, Duration.ofDays(7));
 				} else {
 					ah.increment();
 					ah.setRecentAt(System.currentTimeMillis());
-					redisArticleHot.set(article.getId(), ah, true);
+					redisArticleRanking.set(article.getId(), ah, true);
 				}
 			}
 		}

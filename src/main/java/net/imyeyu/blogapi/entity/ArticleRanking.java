@@ -13,14 +13,14 @@ import java.io.Serializable;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class ArticleTopRanking extends BaseEntity implements Serializable {
+public class ArticleRanking extends BaseEntity implements Serializable {
 
 	private String title;
 	private ArticleType type;
 	private int count = 1;
 	private Long recentAt; // 最近访问
 
-	public ArticleTopRanking(Long id, String title, ArticleType type) {
+	public ArticleRanking(Long id, String title, ArticleType type) {
 		setId(id);
 		this.title = title;
 		this.type = type;

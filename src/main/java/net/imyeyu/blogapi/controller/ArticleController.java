@@ -145,10 +145,10 @@ public class ArticleController extends BaseController {
 	}
 
 	/** @return 每周访问排行榜 */
-	@RequestMapping("/top-ranking")
-	public Response<?> getTopRanking() {
+	@RequestMapping("/ranking")
+	public Response<?> getRanking() {
 		try {
-			return new Response<>(ReturnCode.SUCCESS, service.getTopRanking());
+			return new Response<>(ReturnCode.SUCCESS, service.getRanking());
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		}

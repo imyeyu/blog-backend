@@ -4,7 +4,9 @@ import net.imyeyu.blogapi.bean.CaptchaData;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
+import net.imyeyu.blogapi.bean.SettingKey;
 import net.imyeyu.blogapi.entity.User;
+import net.imyeyu.blogapi.service.SettingService;
 import net.imyeyu.blogapi.service.UserService;
 import net.imyeyu.blogapi.util.Captcha;
 import org.apache.commons.lang3.ObjectUtils;
@@ -32,6 +34,9 @@ public class UserController extends BaseController {
 	@Autowired
 	private UserService service;
 
+	@Autowired
+	private SettingService settingService;
+
 	/**
 	 * 注册用户
 	 *
@@ -41,23 +46,27 @@ public class UserController extends BaseController {
 	 */
 	@PostMapping("/register")
 	public Response<?> register(@RequestBody CaptchaData<User> captchaData, HttpServletRequest request) {
-		// 用户
-		User user = captchaData.getData();
-		if (StringUtils.isEmpty(user.getName())) {
-			return new Response<>(ReturnCode.PARAMS_MISS, "请输入用户名");
-		}
-		// 密码
-		if (StringUtils.isEmpty(user.getPassword())) {
-			return new Response<>(ReturnCode.PARAMS_MISS, "请输入密码");
-		}
-		// 验证码
 		try {
-			Captcha.test(captchaData.getCaptcha(), "REGISTER");
-		} catch (ServiceException e) {
-			return new Response<>(e.getCode(), e);
-		}
-		// 创建用户
-		try {
+			// 功能状态
+			if (settingService.not(SettingKey.ENABLE_REGISTER)) {
+				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "注册服务未启用");
+			}
+			// 用户
+			User user = captchaData.getData();
+			if (StringUtils.isEmpty(user.getName())) {
+				return new Response<>(ReturnCode.PARAMS_MISS, "请输入用户名");
+			}
+			// 密码
+			if (StringUtils.isEmpty(user.getPassword())) {
+				return new Response<>(ReturnCode.PARAMS_MISS, "请输入密码");
+			}
+			// 验证码
+			try {
+				Captcha.test(captchaData.getCaptcha(), "REGISTER");
+			} catch (ServiceException e) {
+				return new Response<>(e.getCode(), e);
+			}
+			// 创建用户
 			return new Response<>(ReturnCode.SUCCESS, service.register(user));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
@@ -77,22 +86,26 @@ public class UserController extends BaseController {
 	 */
 	@PostMapping("/sign-in")
 	public Response<?> signIn(@RequestBody Map<String, String> params, HttpServletRequest request) {
-		// 用户
-		if (StringUtils.isEmpty(params.get("user"))) {
-			return new Response<>(ReturnCode.PARAMS_MISS, "请输入 UID、邮箱或用户名");
-		}
-		// 密码
-		if (StringUtils.isEmpty(params.get("password"))) {
-			return new Response<>(ReturnCode.PARAMS_MISS, "请输入密码");
-		}
-		// 验证码
 		try {
-			Captcha.test(params.get("captcha"), "SIGNIN");
-		} catch (ServiceException e) {
-			return new Response<>(e.getCode(), e);
-		}
-		// 执行登录
-		try {
+			// 功能状态
+			if (settingService.not(SettingKey.ENABLE_LOGIN)) {
+				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "登录服务未启用");
+			}
+			// 用户
+			if (StringUtils.isEmpty(params.get("user"))) {
+				return new Response<>(ReturnCode.PARAMS_MISS, "请输入 UID、邮箱或用户名");
+			}
+			// 密码
+			if (StringUtils.isEmpty(params.get("password"))) {
+				return new Response<>(ReturnCode.PARAMS_MISS, "请输入密码");
+			}
+			// 验证码
+			try {
+				Captcha.test(params.get("captcha"), "SIGNIN");
+			} catch (ServiceException e) {
+				return new Response<>(e.getCode(), e);
+			}
+			// 执行登录
 			return new Response<>(ReturnCode.SUCCESS, service.signIn(params.get("user"), params.get("password")));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);

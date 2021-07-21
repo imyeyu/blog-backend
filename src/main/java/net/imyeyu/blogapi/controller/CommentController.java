@@ -4,11 +4,15 @@ import net.imyeyu.blogapi.bean.CaptchaData;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
+import net.imyeyu.blogapi.bean.SettingKey;
 import net.imyeyu.blogapi.entity.Comment;
 import net.imyeyu.blogapi.entity.CommentReply;
 import net.imyeyu.blogapi.service.ArticleService;
 import net.imyeyu.blogapi.service.CommentService;
+import net.imyeyu.blogapi.service.SettingService;
 import net.imyeyu.blogapi.util.Captcha;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,6 +34,9 @@ public class CommentController extends BaseController {
 	@Autowired
 	private CommentService commentService;
 
+	@Autowired
+	private SettingService settingService;
+
 	/**
 	 * 获取评论
 	 *
@@ -48,48 +55,82 @@ public class CommentController extends BaseController {
 	}
 
 	/**
-	 * 提交评论
+	 * 提交评论，允许游客操作，不需要令牌
 	 *
 	 * @param cd 含验证评论
 	 * @return 评论结果
 	 */
 	@PostMapping("")
 	public Response<?> create(@RequestBody CaptchaData<Comment> cd) {
-		// 验证码
 		try {
-			Captcha.test(cd.getCaptcha(), "COMMENT");
-		} catch (ServiceException e) {
-			return new Response<>(e.getCode(), e);
-		}
-		try {
-			commentService.create(cd.getData());
-			return new Response<>(ReturnCode.SUCCESS, cd.getData());
+			// 功能状态
+			if (settingService.not(SettingKey.ENABLE_COMMENT)) {
+				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "评论服务未启用");
+			}
+			Comment comment = cd.getData();
+			// 评论数据
+			if (ObjectUtils.isEmpty(comment)) {
+				return new Response<>(ReturnCode.PARAMS_BAD, "无效的请求");
+			}
+			// 昵称
+			if (StringUtils.isEmpty(comment.getNick().trim())) {
+				return new Response<>(ReturnCode.PARAMS_MISS, "请输入昵称");
+			}
+			// 内容
+			if (StringUtils.isEmpty(comment.getData().trim())) {
+				return new Response<>(ReturnCode.PARAMS_MISS, "请输入评论内容");
+			}
+			// 验证码
+			try {
+				Captcha.test(cd.getCaptcha(), "COMMENT");
+			} catch (ServiceException e) {
+				return new Response<>(e.getCode(), e);
+			}
+			commentService.create(comment);
+			return new Response<>(ReturnCode.SUCCESS, comment);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new Response<>(ReturnCode.ERROR, "服务端异常：" + e);
+			return new Response<>(ReturnCode.ERROR, "服务异常：" + e);
 		}
 	}
 
 	/**
-	 * 提交回复
+	 * 提交回复，允许游客操作，不需要令牌
 	 *
 	 * @param cd 含验证评论回复
 	 * @return 回复结果
 	 */
 	@PostMapping("/reply")
 	public Response<?> createReply(@RequestBody CaptchaData<CommentReply> cd) {
-		// 验证码
 		try {
-			Captcha.test(cd.getCaptcha(), "COMMENT_REPLY");
-		} catch (ServiceException e) {
-			return new Response<>(e.getCode(), e);
-		}
-		try {
-			commentService.createReply(cd.getData());
-			return new Response<>(ReturnCode.SUCCESS, cd.getData());
+			// 功能状态
+			if (settingService.not(SettingKey.ENABLE_COMMENT)) {
+				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "评论服务未启用");
+			}
+			CommentReply cr = cd.getData();
+			// 回复数据
+			if (ObjectUtils.isEmpty(cr) || ObjectUtils.isEmpty(cr.getCommentId())) {
+				return new Response<>(ReturnCode.PARAMS_BAD, "无效的请求");
+			}
+			// 昵称
+			if (StringUtils.isEmpty(cr.getSenderNick().trim())) {
+				return new Response<>(ReturnCode.PARAMS_MISS, "请输入昵称");
+			}
+			// 内容
+			if (StringUtils.isEmpty(cr.getData().trim())) {
+				return new Response<>(ReturnCode.PARAMS_MISS, "请输入回复内容");
+			}
+			// 验证码
+			try {
+				Captcha.test(cd.getCaptcha(), "COMMENT_REPLY");
+			} catch (ServiceException e) {
+				return new Response<>(e.getCode(), e);
+			}
+			commentService.createReply(cr);
+			return new Response<>(ReturnCode.SUCCESS, cr);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new Response<>(ReturnCode.ERROR, "服务端异常：" + e);
+			return new Response<>(ReturnCode.ERROR, "服务异常：" + e);
 		}
 	}
 }

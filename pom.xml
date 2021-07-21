@@ -119,13 +119,10 @@
 	</dependencies>
 
 	<build>
-		<finalName>Blog</finalName>
+		<finalName>BlogAPI</finalName>
 		<defaultGoal>compile</defaultGoal>
 		<plugins>
 			<plugin>
-				<configuration>
-					<excludeDevtools>true</excludeDevtools>
-				</configuration>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<executions>
@@ -135,6 +132,10 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<excludeDevtools>true</excludeDevtools>
+					<mainClass>net.imyeyu.blogapi.BlogApiApplication</mainClass>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

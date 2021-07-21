@@ -229,7 +229,7 @@
 			SUM(r.cc + r.crc)
 		FROM (
 			SELECT
-				COUNT(c.id) AS cc,
+				COUNT(DISTINCT c.id) AS cc,
 				COUNT(cr.comment_id) AS crc
 			FROM
 				comments AS c

@@ -30,6 +30,12 @@ public interface CommentService extends BaseService<Comment> {
 	 */
 	List<CommentReply> findManyReplies(Long commentId, Long offset);
 
+	/**
+	 * 统计该文章的评论数量
+	 *
+	 * @param articleId 文章 ID
+	 * @return 评论数量
+	 */
 	int getLength(Long articleId);
 	
 	/** @param commentReply 回复评论对象 */

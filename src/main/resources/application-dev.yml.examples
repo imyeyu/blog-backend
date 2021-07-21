@@ -6,6 +6,10 @@ multiple:
     environment:
         configure: dev environment
 
+# 系统配置
+setting:
+    timeout: 0 # 配置缓存时长（分钟）
+
 # Spring
 spring:
     mvc:
@@ -30,9 +34,11 @@ spring:
         password:
         timeout: 8000
         database:
-            article-top-ranking: 0 # 热门文章缓存
-            article-read: 1        # IP 阅读记录缓存
-            user-token: 2          # 用户令牌缓存
+            article-top-ranking: 0 # 热门文章缓存，文章 ID: ArticleTopRanking 对象
+            article-read: 1        # IP 阅读记录缓存，IP: [文章ID]
+            user-token: 2          # 用户令牌缓存，UID: 令牌
+            access-limit: 3        # 接口访问频率控制，IP#方法: 上一次访问时间戳
+            setting: 4             # 系统配置，Setting 枚举: String 配置值
         lettuce: # 连接池配置
             pool:
                 max-wait: -1

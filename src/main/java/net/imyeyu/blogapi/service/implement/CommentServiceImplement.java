@@ -1,9 +1,11 @@
 package net.imyeyu.blogapi.service.implement;
 
+import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.Comment;
 import net.imyeyu.blogapi.entity.CommentReply;
 import net.imyeyu.blogapi.mapper.CommentMapper;
+import net.imyeyu.blogapi.service.ArticleService;
 import net.imyeyu.blogapi.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,12 +21,19 @@ import java.util.List;
 public class CommentServiceImplement implements CommentService {
 
 	@Autowired
+	private ArticleService articleService;
+
+	@Autowired
 	private CommentMapper mapper;
 
 	@Override
 	public void create(Comment comment) throws ServiceException {
-		comment.setCreatedAt(System.currentTimeMillis());
-		mapper.create(comment);
+		if (articleService.find(comment.getArticleId()).isCanComment()) {
+			comment.setCreatedAt(System.currentTimeMillis());
+			mapper.create(comment);
+		} else {
+			throw new ServiceException(ReturnCode.REQUEST_BAD, "该文章已关闭评论");
+		}
 	}
 
 	@Override

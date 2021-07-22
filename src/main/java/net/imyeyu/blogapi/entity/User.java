@@ -23,6 +23,9 @@ public class User extends BaseEntity implements Serializable {
 	private UserData data;
 
 	public UserSignedIn toToken(String token) {
-		return new UserSignedIn(id, name, token);
+		UserSignedIn usi = new UserSignedIn(name, token);
+		usi.setId(id);
+		usi.setCreatedAt(System.currentTimeMillis());
+		return usi;
 	}
 }

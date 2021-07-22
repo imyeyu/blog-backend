@@ -15,6 +15,10 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * AOP 切面日志
@@ -42,9 +46,11 @@ public class AOPLogHandler {
 		// 接收到请求，记录请求内容
 		ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 		if (sra != null) {
+			log.info("");
 			HttpServletRequest request = sra.getRequest();
-			log.info(request.getRemoteAddr() + " 请求接口 " + request.getRequestURI());
-			log.info("执行：" + joinPoint.getSignature().getDeclaringTypeName() + "." + joinPoint.getSignature().getName());
+			log.info("来自：" + request.getRemoteAddr());
+			log.info("请求：" + request.getRequestURI());
+			log.info("执行：" + joinPoint.getSignature().getDeclaringType().getSimpleName() + "." + joinPoint.getSignature().getName());
 			return;
 		}
 		throw new IllegalAccessException("异常请求");
@@ -60,11 +66,27 @@ public class AOPLogHandler {
 	public void doAfterReturning(Object response) throws Throwable {
 		if (response instanceof Response<?> resp) {
 			if (20000 < resp.getCode()) {
-				log.error("返回异常：" + resp.getMsg());
+				log.error("异常：" + resp.getCode() + "." + resp.getMsg());
 			} else {
+				String msg = "返回：" + resp.getCode() + ".";
 				if (resp.getData() instanceof BaseEntity entity) {
-					log.info("返回实体 ID：" + entity.getId());
+					// 返回实体
+					msg += entity.getClass().getSimpleName() + "." + entity.getId();
+				} else if (resp.getData() instanceof Boolean bool) {
+					// 返回布尔值
+					msg += bool;
+				} else if (resp.getData() instanceof List<?> list) {
+					// 返回数组
+					if (list.isEmpty()) {
+						msg += "List<?>.isEmpty";
+					} else {
+						msg += "List<" + list.get(0).getClass().getSimpleName() + ">." + list.size();
+					}
+				} else {
+					// 其他对象
+					msg += resp.getData().getClass().getSimpleName();
 				}
+				log.info(msg);
 			}
 		}
 	}

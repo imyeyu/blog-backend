@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * AOP 切面日志
+ * AOP 切面日志注解
  *
  * <p>夜雨 创建于 2021-07-21 23:34
  */

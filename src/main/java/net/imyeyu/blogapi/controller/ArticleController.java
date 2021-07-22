@@ -1,6 +1,7 @@
 package net.imyeyu.blogapi.controller;
 
-import net.imyeyu.blogapi.bean.AccessLimit;
+import net.imyeyu.blogapi.annotation.AOPLog;
+import net.imyeyu.blogapi.annotation.AccessLimit;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
@@ -37,11 +38,12 @@ public class ArticleController extends BaseController {
 	private ArticleLabelService labelService;
 
 	/**
-	 * 获取指定文章
+	 * 获取
 	 *
 	 * @param id 文章 ID
 	 * @return 文章
 	 */
+	@AOPLog
 	@RequestMapping("/{id}")
 	public Response<?> get(@PathVariable Long id, HttpServletRequest req) {
 		if (ObjectUtils.isEmpty(id)) {
@@ -66,6 +68,7 @@ public class ArticleController extends BaseController {
 	 * @param id 文章 ID
 	 * @return 最新喜欢数量
 	 */
+	@AOPLog
 	@AccessLimit(time = 1240, needLogin = false)
 	@RequestMapping("/like/{id}")
 	public Response<?> like(@PathVariable Long id) {
@@ -80,10 +83,10 @@ public class ArticleController extends BaseController {
 	}
 
 	/**
-	 * 获取文章列表（简要）
+	 * 获取列表（简要）
 	 *
 	 * @param offset 查询偏移
-	 * @return 文章列表
+	 * @return 列表
 	 */
 	@RequestMapping("/list")
 	public Response<?> getMany(@RequestParam Long offset) {
@@ -98,6 +101,13 @@ public class ArticleController extends BaseController {
 		}
 	}
 
+	/**
+	 * 根据分类获取列表
+	 *
+	 * @param cid    分类 ID
+	 * @param offset 查询偏移
+	 * @return 列表
+	 */
 	@RequestMapping("/list/class")
 	public Response<?> getManyByClass(@RequestParam Long cid, @RequestParam Long offset) {
 		if (ObjectUtils.isEmpty(cid)) {
@@ -116,6 +126,14 @@ public class ArticleController extends BaseController {
 		}
 	}
 
+
+	/**
+	 * 根据标签获取列表
+	 *
+	 * @param lid    标签 ID
+	 * @param offset 查询偏移
+	 * @return 列表
+	 */
 	@RequestMapping("/list/label")
 	public Response<?> getManyByLabel(@RequestParam Long lid, @RequestParam Long offset) {
 		if (ObjectUtils.isEmpty(lid)) {

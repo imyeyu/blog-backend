@@ -1,5 +1,6 @@
 package net.imyeyu.blogapi.controller;
 
+import net.imyeyu.blogapi.annotation.AOPLog;
 import net.imyeyu.blogapi.bean.CaptchaData;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
@@ -44,6 +45,7 @@ public class UserController extends BaseController {
 	 * @param captchaData 含数据体和验证码请求对象，数据体为 User，至少包含用户名和密码
 	 * @return true 为注册成功
 	 */
+	@AOPLog
 	@PostMapping("/register")
 	public Response<?> register(@RequestBody CaptchaData<User> captchaData, HttpServletRequest request) {
 		try {
@@ -84,6 +86,7 @@ public class UserController extends BaseController {
 	 * @param request 请求体
 	 * @return true 为登录成功
 	 */
+	@AOPLog
 	@PostMapping("/sign-in")
 	public Response<?> signIn(@RequestBody Map<String, String> params, HttpServletRequest request) {
 		try {
@@ -161,6 +164,7 @@ public class UserController extends BaseController {
 	 * @param params 含 uid 和 token
 	 * @return true 为退出成功
 	 */
+	@AOPLog
 	@PostMapping("/sign-out")
 	public Response<?> signOut(@RequestBody Map<String, String> params) {
 		if (StringUtils.isEmpty(params.get("token"))) {

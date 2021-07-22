@@ -1,6 +1,7 @@
 package net.imyeyu.blogapi.controller;
 
 import net.imyeyu.betterjava.Encode;
+import net.imyeyu.blogapi.annotation.AOPLog;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
@@ -121,6 +122,7 @@ public class MainController extends BaseController {
 	 * @param name 软件名称
 	 * @return 最新版本状态
 	 */
+	@AOPLog
 	@GetMapping("/versions/{name}")
 	public Response<?> getVersion(@PathVariable("name") String name) {
 		if (StringUtils.isEmpty(name)) {
@@ -139,6 +141,7 @@ public class MainController extends BaseController {
 	 * @param key 键
 	 * @return 动态数据
 	 */
+	@AOPLog
 	@GetMapping("/dynamic/{key}")
 	public Response<?> getDynamicData(@PathVariable("key") String key) {
 		if (StringUtils.isEmpty(key)) {

@@ -1,5 +1,6 @@
 package net.imyeyu.blogapi.controller;
 
+import net.imyeyu.blogapi.annotation.AOPLog;
 import net.imyeyu.blogapi.bean.CaptchaData;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
@@ -60,6 +61,7 @@ public class CommentController extends BaseController {
 	 * @param cd 含验证评论
 	 * @return 评论结果
 	 */
+	@AOPLog
 	@PostMapping("")
 	public Response<?> create(@RequestBody CaptchaData<Comment> cd) {
 		try {
@@ -100,6 +102,7 @@ public class CommentController extends BaseController {
 	 * @param cd 含验证评论回复
 	 * @return 回复结果
 	 */
+	@AOPLog
 	@PostMapping("/reply")
 	public Response<?> createReply(@RequestBody CaptchaData<CommentReply> cd) {
 		try {

@@ -2,6 +2,7 @@ package net.imyeyu.blogapi.handler;
 
 import lombok.extern.slf4j.Slf4j;
 import net.imyeyu.blogapi.bean.Response;
+import net.imyeyu.blogapi.entity.BaseEntity;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -31,7 +32,7 @@ public class AOPLogHandler {
 	}
 
 	/**
-	 * 指定当前执行方法在 logPointCut 之前执行
+	 * 执行前
 	 *
 	 * @param joinPoint  切入点
 	 * @throws Throwable 异常
@@ -50,7 +51,7 @@ public class AOPLogHandler {
 	}
 
 	/**
-	 * 指定在方法之后返回
+	 * 执行后
 	 *
 	 * @param response 返回内容
 	 * @throws Throwable 异常
@@ -60,6 +61,10 @@ public class AOPLogHandler {
 		if (response instanceof Response<?> resp) {
 			if (20000 < resp.getCode()) {
 				log.error("返回异常：" + resp.getMsg());
+			} else {
+				if (resp.getData() instanceof BaseEntity entity) {
+					log.info("返回实体 ID：" + entity.getId());
+				}
 			}
 		}
 	}

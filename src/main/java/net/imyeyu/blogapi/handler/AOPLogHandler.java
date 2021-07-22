@@ -60,12 +60,6 @@ public class AOPLogHandler {
 		if (response instanceof Response<?> resp) {
 			if (20000 < resp.getCode()) {
 				log.error("返回异常：" + resp.getMsg());
-			} else {
-				if (resp.getMsg() == null || resp.getMsg().equals("")) {
-					log.info("正常返回");
-				} else {
-					log.info("正常返回：" + resp.getMsg());
-				}
 			}
 		}
 	}

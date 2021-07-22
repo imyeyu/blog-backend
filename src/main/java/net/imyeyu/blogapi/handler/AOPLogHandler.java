@@ -43,8 +43,8 @@ public class AOPLogHandler {
 		// 接收到请求，记录请求内容
 		ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 		if (sra != null) {
-			log.info("");
 			HttpServletRequest request = sra.getRequest();
+			log.info("");
 			log.info("来自：" + request.getRemoteAddr());
 			log.info("请求：" + request.getRequestURI());
 			log.info("执行：" + joinPoint.getSignature().getDeclaringType().getSimpleName() + "." + joinPoint.getSignature().getName());
@@ -72,6 +72,9 @@ public class AOPLogHandler {
 				} else if (resp.getData() instanceof Boolean bool) {
 					// 返回布尔值
 					msg += bool;
+				} else if (resp.getData() instanceof Number number) {
+					// 返回数字
+					msg += resp.getData().getClass().getSimpleName() + "." + number.doubleValue();
 				} else if (resp.getData() instanceof List<?> list) {
 					// 返回数组
 					if (list.isEmpty()) {

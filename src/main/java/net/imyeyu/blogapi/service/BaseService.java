@@ -46,6 +46,16 @@ public interface BaseService<T> {
 	}
 
 	/**
+	 * 查询所有
+	 *
+	 * @return 所有数据
+	 * @throws ServiceException 服务异常
+	 */
+	default List<T> findAll() throws ServiceException {
+		return null;
+	}
+
+	/**
 	 * 修改数据
 	 *
 	 * @param t 数据对象

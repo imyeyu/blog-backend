@@ -16,6 +16,7 @@ public interface BaseMapper<T> extends BaseService<T> {
 	 *
 	 * @param t 数据对象
 	 */
+	@Override
 	void create(T t);
 
 	/**
@@ -24,6 +25,7 @@ public interface BaseMapper<T> extends BaseService<T> {
 	 * @param id 索引
 	 * @return 数据对象
 	 */
+	@Override
 	T find(Long id);
 
 	/**
@@ -33,13 +35,23 @@ public interface BaseMapper<T> extends BaseService<T> {
 	 * @param limit  数量
 	 * @return 原型类型 List 对象
 	 */
+	@Override
 	List<T> findMany(Long offset, int limit);
+
+	/**
+	 * 查询所有
+	 *
+	 * @return 原型类型 List 对象
+	 */
+	@Override
+	List<T> findAll();
 
 	/**
 	 * 修改数据
 	 *
 	 * @param t 数据对象
 	 */
+	@Override
 	void update(T t);
 
 	/**
@@ -48,5 +60,6 @@ public interface BaseMapper<T> extends BaseService<T> {
 	 * @param ids 索引数组
 	 * @return 成功删除数量
 	 */
+	@Override
 	Long delete(Long... ids);
 }

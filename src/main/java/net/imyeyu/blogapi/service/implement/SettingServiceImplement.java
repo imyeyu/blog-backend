@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.List;
 
 /**
  * 系统配置服务实现
@@ -34,7 +35,10 @@ public class SettingServiceImplement implements SettingService {
 	public String findByKey(SettingKey key) throws ServiceException {
 		String k = key.toString();
 		if (redisSetting.has(k)) {
-			return redisSetting.get(k);
+			String value = redisSetting.get(k);
+			// 续命
+			redisSetting.set(k, value, Duration.ofMinutes(timeout));
+			return value;
 		} else {
 			Setting setting = mapper.findByKey(k);
 			if (timeout != 0) {
@@ -52,6 +56,11 @@ public class SettingServiceImplement implements SettingService {
 			e.printStackTrace();
 			throw new ServiceException(ReturnCode.ERROR, "系统配置值类型转换异常");
 		}
+	}
+
+	@Override
+	public List<Setting> findAll() throws ServiceException {
+		return mapper.findAll();
 	}
 
 	@Override

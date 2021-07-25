@@ -63,7 +63,7 @@ public class AOPLogHandler {
 	public void doAfterReturning(Object response) throws Throwable {
 		if (response instanceof Response<?> resp) {
 			if (20000 < resp.getCode()) {
-				log.error("异常：" + resp.getCode() + "." + resp.getMsg());
+				log.warn("异常：" + resp.getCode() + "." + resp.getMsg());
 			} else {
 				String msg = "返回：" + resp.getCode() + ".";
 				if (resp.getData() instanceof BaseEntity entity) {

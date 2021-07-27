@@ -56,6 +56,15 @@ public class UserServiceImplement implements UserService {
 	@Transactional(rollbackFor = ServiceException.class)
 	@Override
 	public UserSignedIn register(User user) throws ServiceException {
+		if (ObjectUtils.isEmpty(user.getName())) {
+			throw new ServiceException(ReturnCode.PARAMS_MISS, "请输入用户名");
+		}
+		if (user.getName().contains("@")) {
+			throw new ServiceException(ReturnCode.PARAMS_MISS, "用户名不能含有 @");
+		}
+		if (Encode.isNumber(user.getName())) {
+			throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名不能是纯数字");
+		}
 		if (findByName(user.getName()) != null) {
 			throw new ServiceException(ReturnCode.DATA_EXIST, "该用户名已存在");
 		}
@@ -70,7 +79,9 @@ public class UserServiceImplement implements UserService {
 		// 注册账号
 		create(user);
 		// 创建资料
-		createData(new UserData(user.getId()));
+		UserData data = new UserData(user.getId());
+		data.setCreatedAt(user.getCreatedAt());
+		createData(data);
 		// 自动登录
 		return signIn(String.valueOf(user.getId()), plainPassword);
 	}
@@ -94,6 +105,7 @@ public class UserServiceImplement implements UserService {
 				// 生成并缓存 Token
 				String token = this.token.generate(result);
 				redisToken.set(result.getId(), token, 24);
+				result.setData(findData(result.getId()));
 				return result.toToken(token);
 			}
 			throw new ServiceException(ReturnCode.PARAMS_BAD, "密码错误");
@@ -142,17 +154,6 @@ public class UserServiceImplement implements UserService {
 	}
 
 	@Override
-	public void update(User user) {
-		// 更新用户
-		user.setPassword(Encode.md5(user.getCreatedAt() + "Nagiasu" + user.getPassword()));
-	}
-
-	@Override
-	public Long delete(Long... ids) {
-		return null;
-	}
-	
-	@Override
 	public void createData(UserData userData) {
 		mapper.createData(userData);
 	}
@@ -163,7 +164,6 @@ public class UserServiceImplement implements UserService {
 		if (result != null) {
 			return mapper.findData(userId);
 		} else {
-			new Exception("找不到该用户数据，UID = " + userId).printStackTrace();
 			throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该用户数据，UID = " + userId);
 		}
 	}

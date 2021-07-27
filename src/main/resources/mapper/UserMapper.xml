@@ -32,9 +32,40 @@
 		INSERT INTO `user_data` (`user_id`, `created_at`) VALUES (#{userId}, #{createdAt});
 	</insert>
 	<!-- 根据用户 ID 获取用户资料 -->
-	<select id="findData" resultType="net.imyeyu.blogapi.entity.UserData" parameterType="long">
-		SELECT * FROM `user_data` WHERE `user_id` = #{id}
+	<select id="findData" resultMap="findDataResult" parameterType="long">
+		SELECT
+			d.*,
+			u.name AS name,
+			u.email AS email
+		FROM
+			user_data AS d
+		LEFT JOIN
+			users AS u
+		ON
+			u.id = d.user_id
+		WHERE
+			u.id = #{id}
+			AND u.deleted_at IS NULL
 	</select>
+	<resultMap id="findDataResult" type="net.imyeyu.blogapi.entity.UserData">
+		<id property="id" column="id"/>
+		<result property="userId" column="user_id" />
+		<result property="hasWrapper" column="has_wrapper" />
+		<result property="hasAvatar" column="has_avatar" />
+		<result property="exp" column="exp" />
+		<result property="sex" column="sex" />
+		<result property="bitrh" column="birth" />
+		<result property="qq" column="qq" />
+		<result property="sign" column="sign" />
+		<result property="signedInIp" column="signed_in_ip" />
+		<result property="signedInAt" column="signed_in_at" />
+		<result property="createdAt" column="created_at"/>
+		<result property="updatedAt" column="updated_at"/>
+		<association property="user" javaType="net.imyeyu.blogapi.entity.User">
+			<result property="name" column="name"/>
+			<result property="email" column="email"/>
+		</association>
+	</resultMap>
 	<!-- 更新用户资料 -->
 	<update id="updateData" parameterType="net.imyeyu.blogapi.entity.UserData">
 		<if test="id != null">
@@ -50,9 +81,7 @@
 				`sign`         = #{sign},
 				`signed_in_ip` = #{signedInIp},
 				`signed_in_at` = #{signedInAt},
-				`created_at`   = #{createdAt},
-				`updated_at`   = #{updatedAt},
-				`deleted_at`   = #{deletedAt}
+				`updated_at`   = #{updatedAt}
 			</set>
 			WHERE `id` = #{id}
 		</if>

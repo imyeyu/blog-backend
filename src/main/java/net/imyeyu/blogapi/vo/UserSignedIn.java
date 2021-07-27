@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import net.imyeyu.blogapi.entity.BaseEntity;
+import net.imyeyu.blogapi.entity.UserData;
 
 /**
  * 用户令牌
@@ -19,4 +20,6 @@ public class UserSignedIn extends BaseEntity {
 
 	private String name;
 	private String token;
+
+	private UserData data;
 }

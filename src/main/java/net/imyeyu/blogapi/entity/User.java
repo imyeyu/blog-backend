@@ -18,12 +18,23 @@ public class User extends BaseEntity implements Serializable {
 	private String email;
 	private String name;
 	private String password;
-	private Long canceledAt;
+	private Long unmuteAt;
+	private Long unbanAt;
 
 	private UserData data;
 
+	/** @return true 为禁言中 */
+	public boolean isMuting() {
+		return unmuteAt != null && System.currentTimeMillis() < unmuteAt;
+	}
+
+	/** @return true 为封禁中 */
+	public boolean isBanning() {
+		return unbanAt != null && System.currentTimeMillis() < unbanAt;
+	}
+
 	public UserSignedIn toToken(String token) {
-		UserSignedIn usi = new UserSignedIn(name, token);
+		UserSignedIn usi = new UserSignedIn(name, token, data);
 		usi.setId(id);
 		usi.setCreatedAt(System.currentTimeMillis());
 		return usi;

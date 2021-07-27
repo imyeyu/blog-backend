@@ -1,5 +1,6 @@
 package net.imyeyu.blogapi.controller;
 
+import net.imyeyu.betterjava.BetterJava;
 import net.imyeyu.blogapi.annotation.AOPLog;
 import net.imyeyu.blogapi.bean.CaptchaData;
 import net.imyeyu.blogapi.bean.Response;
@@ -30,13 +31,69 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/user")
-public class UserController extends BaseController {
-	
+public class UserController extends BaseController implements BetterJava {
+
 	@Autowired
 	private UserService service;
 
 	@Autowired
 	private SettingService settingService;
+
+	/**
+	 * 测试用户名
+	 *
+	 * @param name 用户名
+	 * @throws ServiceException 不通过异常
+	 */
+	private void testName(String name) throws ServiceException {
+		if (StringUtils.isEmpty(name)) {
+			throw new ServiceException(ReturnCode.PARAMS_MISS, "请输入用户名");
+		} else {
+			if (32 < name.length()) {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名长度不可超过 32 位");
+			}
+			if (testReg("^[0-9]+.?[0-9]*$", name)) {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名不能是纯数字");
+			}
+			if (!testReg("^[A-Za-z0-9_\u4e00-\u9fa5]+$", name)) {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名只允许大小写字母、数字、中文");
+			}
+		}
+	}
+
+	/**
+	 * 测试密码
+	 *
+	 * @param passowrd 密码
+	 * @throws ServiceException 不通过异常
+	 */
+	private void testPassowrd(String passowrd) throws ServiceException {
+		if (StringUtils.isEmpty(passowrd)) {
+			throw new ServiceException(ReturnCode.PARAMS_MISS, "请输入密码");
+		} else {
+			if (passowrd.length() < 6) {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "密码长度至少需要 6 位");
+			}
+			if (20 < passowrd.length()) {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "密码长度不可超过 20 位");
+			}
+			if (!testReg("^[0-9a-zA-Z]*$", passowrd)) {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "密码只允许大小写字母、数字及基础符号");
+			}
+		}
+	}
+
+	/**
+	 * 测试密码
+	 *
+	 * @param email 邮箱
+	 * @throws ServiceException 不通过异常
+	 */
+	public void testEmail(String email) throws ServiceException {
+		if (!testReg("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$", email)) {
+			throw new ServiceException(ReturnCode.PARAMS_BAD, "请输入正确的邮箱");
+		}
+	}
 
 	/**
 	 * 注册用户
@@ -53,21 +110,17 @@ public class UserController extends BaseController {
 			if (settingService.not(SettingKey.ENABLE_REGISTER)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "注册服务未启用");
 			}
-			// 用户
 			User user = captchaData.getData();
-			if (StringUtils.isEmpty(user.getName())) {
-				return new Response<>(ReturnCode.PARAMS_MISS, "请输入用户名");
-			}
-			// 密码
-			if (StringUtils.isEmpty(user.getPassword())) {
-				return new Response<>(ReturnCode.PARAMS_MISS, "请输入密码");
+			// 校验用户名
+			testName(user.getName());
+			// 校验密码
+			testPassowrd(user.getPassword());
+			// 校验邮箱
+			if (!StringUtils.isEmpty(user.getEmail())) {
+				testEmail(user.getEmail());
 			}
 			// 验证码
-			try {
-				Captcha.test(captchaData.getCaptcha(), "REGISTER");
-			} catch (ServiceException e) {
-				return new Response<>(e.getCode(), e);
-			}
+			Captcha.test(captchaData.getCaptcha(), "REGISTER");
 			// 创建用户
 			return new Response<>(ReturnCode.SUCCESS, service.register(user));
 		} catch (ServiceException e) {
@@ -103,11 +156,7 @@ public class UserController extends BaseController {
 				return new Response<>(ReturnCode.PARAMS_MISS, "请输入密码");
 			}
 			// 验证码
-			try {
-				Captcha.test(params.get("captcha"), "SIGNIN");
-			} catch (ServiceException e) {
-				return new Response<>(e.getCode(), e);
-			}
+			Captcha.test(params.get("captcha"), "SIGNIN");
 			// 执行登录
 			return new Response<>(ReturnCode.SUCCESS, service.signIn(params.get("user"), params.get("password")));
 		} catch (ServiceException e) {

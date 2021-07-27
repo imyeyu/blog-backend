@@ -7,7 +7,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -234,9 +233,6 @@ public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializ
 			try (Cursor<byte[]> cursor = connection.scan(ScanOptions.scanOptions().count(Long.MAX_VALUE).match(pattern).build())) {
 				cursor.forEachRemaining(consumer);
 				return null;
-			} catch (IOException e) {
-				e.printStackTrace();
-				throw new RuntimeException(e);
 			}
 		});
 	}

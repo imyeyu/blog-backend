@@ -41,6 +41,6 @@ public class InitApplication implements ApplicationRunner {
 		for (Setting setting : settings) {
 			log.info("\t" + setting.getKey() + "\t: " + setting.getValue());
 		}
-		log.info("Init Application Finished");
+		log.info("Init Application Finished.");
 	}
 }

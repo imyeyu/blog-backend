@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * <p>携带登录令牌的请求数据
+ * <p>携带登录令牌的通信数据
  *
  * <p>夜雨 创建于 2021-07-14 10:46
  */

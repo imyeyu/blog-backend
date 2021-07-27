@@ -27,6 +27,8 @@ public class UserData extends BaseEntity implements Serializable {
 	private String signedInIp;
 	private Long signedInAt;
 
+	private User user;
+
 	public UserData(Long userId) {
 		this.userId = userId;
 	}

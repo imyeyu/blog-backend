@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="net.imyeyu.blogapi.mapper.UserMapper">
-	<!-- 新增账号 -->
+	<!-- 新增 -->
 	<insert id="create" parameterType="net.imyeyu.blogapi.entity.User" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
 		INSERT INTO `users` (
 			`email`,
@@ -15,75 +15,16 @@
 			#{createdAt}
 		);
 	</insert>
-	<!-- 根据 ID 获取账号 -->
+	<!-- 根据 ID 获取 -->
 	<select id="find" resultType="net.imyeyu.blogapi.entity.User" parameterType="long">
 		SELECT * FROM `users` WHERE `id` = #{id}
 	</select>
-	<!-- 根据用户名获取账号 -->
+	<!-- 根据用户名获取 -->
 	<select id="findByName" resultType="net.imyeyu.blogapi.entity.User" parameterType="String">
 		SELECT * FROM `users` WHERE `name` = #{name}
 	</select>
-	<!-- 根据邮箱获取账号 -->
+	<!-- 根据邮箱获取 -->
 	<select id="findByEmail" resultType="net.imyeyu.blogapi.entity.User" parameterType="String">
 		SELECT * FROM `users` WHERE `email` = #{email}
 	</select>
-	<!-- 新增用户资料（创建账号时同步调用，多数数据为空白） -->
-	<insert id="createData" parameterType="net.imyeyu.blogapi.entity.UserData" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-		INSERT INTO `user_data` (`user_id`, `created_at`) VALUES (#{userId}, #{createdAt});
-	</insert>
-	<!-- 根据用户 ID 获取用户资料 -->
-	<select id="findData" resultMap="findDataResult" parameterType="long">
-		SELECT
-			d.*,
-			u.name AS name,
-			u.email AS email
-		FROM
-			user_data AS d
-		LEFT JOIN
-			users AS u
-		ON
-			u.id = d.user_id
-		WHERE
-			u.id = #{id}
-			AND u.deleted_at IS NULL
-	</select>
-	<resultMap id="findDataResult" type="net.imyeyu.blogapi.entity.UserData">
-		<id property="id" column="id"/>
-		<result property="userId" column="user_id" />
-		<result property="hasWrapper" column="has_wrapper" />
-		<result property="hasAvatar" column="has_avatar" />
-		<result property="exp" column="exp" />
-		<result property="sex" column="sex" />
-		<result property="bitrh" column="birth" />
-		<result property="qq" column="qq" />
-		<result property="sign" column="sign" />
-		<result property="signedInIp" column="signed_in_ip" />
-		<result property="signedInAt" column="signed_in_at" />
-		<result property="createdAt" column="created_at"/>
-		<result property="updatedAt" column="updated_at"/>
-		<association property="user" javaType="net.imyeyu.blogapi.entity.User">
-			<result property="name" column="name"/>
-			<result property="email" column="email"/>
-		</association>
-	</resultMap>
-	<!-- 更新用户资料 -->
-	<update id="updateData" parameterType="net.imyeyu.blogapi.entity.UserData">
-		<if test="id != null">
-			UPDATE `user_data`
-			<set>
-				`user_id`      = #{userId},
-				`wrapper`      = ${wrapper},
-				`avatar`       = #{avatar},
-				`exp`          = #{exp},
-				`sex`          = #{sex},
-				`birth`        = #{birth},
-				`qq`           = #{qq},
-				`sign`         = #{sign},
-				`signed_in_ip` = #{signedInIp},
-				`signed_in_at` = #{signedInAt},
-				`updated_at`   = #{updatedAt}
-			</set>
-			WHERE `id` = #{id}
-		</if>
-	</update>
 </mapper>

@@ -64,34 +64,4 @@ public interface UserService extends BaseService<User> {
 	 * @return 账号数据
 	 */
 	User findByEmail(String email);
-
-	/**
-	 * 创建用户资料
-	 *
-	 * @param userData 数据体
-	 */
-	void createData(UserData userData);
-
-	/**
-	 * 查找用户资料
-	 *
-	 * @param userId uid
-	 * @return 用户资料
-	 * @throws ServiceException 服务异常
-	 */
-	UserData findData(Long userId) throws ServiceException;
-
-	/**
-	 * 更新用户资料
-	 *
-	 * @param userData 数据体
-	 */
-	void updateData(UserData userData);
-
-	/**
-	 * 删除用户资料
-	 *
-	 * @param userId uid
-	 */
-	void deleteData(Long userId);
 }

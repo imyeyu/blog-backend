@@ -54,7 +54,7 @@ public class UserController extends BaseController implements BetterJava {
 	 * @throws ServiceException 不通过异常
 	 */
 	private void testName(String name) throws ServiceException {
-		if (StringUtils.isEmpty(name)) {
+		if (StringUtils.isEmpty(name.trim())) {
 			throw new ServiceException(ReturnCode.PARAMS_MISS, "请输入用户名");
 		} else {
 			if (32 < name.length()) {
@@ -79,7 +79,7 @@ public class UserController extends BaseController implements BetterJava {
 	 * @throws ServiceException 不通过异常
 	 */
 	private void testPassowrd(String passowrd) throws ServiceException {
-		if (StringUtils.isEmpty(passowrd)) {
+		if (StringUtils.isEmpty(passowrd.trim())) {
 			throw new ServiceException(ReturnCode.PARAMS_MISS, "请输入密码");
 		} else {
 			if (passowrd.length() < 6) {
@@ -130,7 +130,7 @@ public class UserController extends BaseController implements BetterJava {
 			// 校验密码
 			testPassowrd(user.getPassword());
 			// 校验邮箱
-			if (!StringUtils.isEmpty(user.getEmail())) {
+			if (!StringUtils.isEmpty(user.getEmail().trim())) {
 				testEmail(user.getEmail());
 			}
 			// 验证码

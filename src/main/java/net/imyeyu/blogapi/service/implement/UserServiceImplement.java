@@ -6,7 +6,10 @@ import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserData;
+import net.imyeyu.blogapi.entity.UserPrivacy;
 import net.imyeyu.blogapi.mapper.UserMapper;
+import net.imyeyu.blogapi.service.UserDataService;
+import net.imyeyu.blogapi.service.UserPrivacyService;
 import net.imyeyu.blogapi.service.UserService;
 import net.imyeyu.blogapi.util.Redis;
 import net.imyeyu.blogapi.util.Token;
@@ -16,8 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 /**
  * 用户管理服务实现
@@ -31,6 +32,12 @@ public class UserServiceImplement implements UserService {
 	/** 用户密码盐值 */
 	@Value("${slat.user.password}")
 	private String salt;
+
+	@Autowired
+	private UserDataService dataService;
+
+	@Autowired
+	private UserPrivacyService privacyService;
 
 	@Autowired
 	private UserMapper mapper;
@@ -53,18 +60,9 @@ public class UserServiceImplement implements UserService {
 		return Encode.md5(name + createdAt + salt + password);
 	}
 
-	@Transactional(rollbackFor = ServiceException.class)
+	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
 	@Override
 	public UserSignedIn register(User user) throws ServiceException {
-		if (ObjectUtils.isEmpty(user.getName())) {
-			throw new ServiceException(ReturnCode.PARAMS_MISS, "请输入用户名");
-		}
-		if (user.getName().contains("@")) {
-			throw new ServiceException(ReturnCode.PARAMS_MISS, "用户名不能含有 @");
-		}
-		if (Encode.isNumber(user.getName())) {
-			throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名不能是纯数字");
-		}
 		if (findByName(user.getName()) != null) {
 			throw new ServiceException(ReturnCode.DATA_EXIST, "该用户名已存在");
 		}
@@ -78,10 +76,10 @@ public class UserServiceImplement implements UserService {
 		user.setPassword(generatePasswordDigest(user.getName(), user.getCreatedAt(), user.getPassword()));
 		// 注册账号
 		create(user);
-		// 创建资料
-		UserData data = new UserData(user.getId());
-		data.setCreatedAt(user.getCreatedAt());
-		createData(data);
+		// 初始化资料
+		dataService.create(new UserData(user.getId()));
+		// 初始化隐私控制
+		privacyService.create(new UserPrivacy(user.getId()));
 		// 自动登录
 		return signIn(String.valueOf(user.getId()), plainPassword);
 	}
@@ -100,17 +98,20 @@ public class UserServiceImplement implements UserService {
 			result = findByName(user);
 		}
 		if (!ObjectUtils.isEmpty(result)) {
-			// 密码摘要校验
-			if (result.getPassword().equals(generatePasswordDigest(result.getName(), result.getCreatedAt(), password))) {
-				// 生成并缓存 Token
-				String token = this.token.generate(result);
-				redisToken.set(result.getId(), token, 24);
-				result.setData(findData(result.getId()));
-				return result.toToken(token);
+			if (!result.isBanning()) {
+				// 密码摘要校验
+				if (result.getPassword().equals(generatePasswordDigest(result.getName(), result.getCreatedAt(), password))) {
+					// 生成并缓存 Token
+					String token = this.token.generate(result);
+					redisToken.set(result.getId(), token, 24);
+					result.setData(dataService.find(result.getId()));
+					return result.toToken(token);
+				}
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "密码错误");
 			}
-			throw new ServiceException(ReturnCode.PARAMS_BAD, "密码错误");
+			throw new ServiceException(ReturnCode.RESULT_BAN, "该账号被禁止登录");
 		} else {
-			throw new ServiceException(ReturnCode.RESULT_NULL, "用户不存在");
+			throw new ServiceException(ReturnCode.RESULT_NULL, "该用户不存在");
 		}
 	}
 
@@ -135,7 +136,11 @@ public class UserServiceImplement implements UserService {
 
 	@Override
 	public User find(Long id) throws ServiceException {
-		return mapper.find(id);
+		User user = mapper.find(id);
+		if (user != null) {
+			return user;
+		}
+		throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该 UID 用户：" + id);
 	}
 
 	@Override
@@ -146,34 +151,5 @@ public class UserServiceImplement implements UserService {
 	@Override
 	public User findByEmail(String email) {
 		return mapper.findByEmail(email);
-	}
-
-	@Override
-	public List<User> findMany(Long offset, int limit) {
-		return null;
-	}
-
-	@Override
-	public void createData(UserData userData) {
-		mapper.createData(userData);
-	}
-
-	@Override
-	public UserData findData(Long userId) throws ServiceException {
-		UserData result = mapper.findData(userId);
-		if (result != null) {
-			return mapper.findData(userId);
-		} else {
-			throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该用户数据，UID = " + userId);
-		}
-	}
-
-	@Override
-	public void updateData(UserData userData) {
-		mapper.updateData(userData);
-	}
-
-	@Override
-	public void deleteData(Long userId) {
 	}
 }

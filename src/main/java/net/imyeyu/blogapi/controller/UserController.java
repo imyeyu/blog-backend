@@ -8,13 +8,15 @@ import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.bean.SettingKey;
 import net.imyeyu.blogapi.entity.User;
+import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.service.SettingService;
+import net.imyeyu.blogapi.service.UserDataService;
+import net.imyeyu.blogapi.service.UserPrivacyService;
 import net.imyeyu.blogapi.service.UserService;
 import net.imyeyu.blogapi.util.Captcha;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +39,12 @@ public class UserController extends BaseController implements BetterJava {
 	private UserService service;
 
 	@Autowired
+	private UserDataService dataService;
+
+	@Autowired
+	private UserPrivacyService privacyService;
+
+	@Autowired
 	private SettingService settingService;
 
 	/**
@@ -51,6 +59,9 @@ public class UserController extends BaseController implements BetterJava {
 		} else {
 			if (32 < name.length()) {
 				throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名长度不可超过 32 位");
+			}
+			if (name.contains("@")) {
+				throw new ServiceException(ReturnCode.PARAMS_MISS, "用户名不能含有 @");
 			}
 			if (testReg("^[0-9]+.?[0-9]*$", name)) {
 				throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名不能是纯数字");
@@ -110,7 +121,10 @@ public class UserController extends BaseController implements BetterJava {
 			if (settingService.not(SettingKey.ENABLE_REGISTER)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "注册服务未启用");
 			}
-			User user = captchaData.getData();
+			User user = captchaData.getCaptchaData();
+			if (ObjectUtils.isEmpty(user)) {
+				return new Response<>(ReturnCode.PARAMS_BAD, "无效的请求");
+			}
 			// 校验用户名
 			testName(user.getName());
 			// 校验密码
@@ -170,7 +184,7 @@ public class UserController extends BaseController implements BetterJava {
 	/**
 	 * 返回该 ID 用户是否已登录
 	 *
-	 * @param params 含 uid 和 token
+	 * @param params 令牌
 	 * @return true 为已登录
 	 */
 	@PostMapping("/sign-in/status")
@@ -181,24 +195,39 @@ public class UserController extends BaseController implements BetterJava {
 		try {
 			return new Response<>(ReturnCode.SUCCESS, service.isSignedIn(params.get("token")));
 		} catch (ServiceException e) {
-			e.printStackTrace();
 			return new Response<>(e.getCode(), e);
+		} catch (Exception e) {
+			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
 
 	/**
 	 * 获取用户资料
+	 * <p>如果目标资料和令牌用户相同，不过滤用户资料
 	 *
-	 * @param id uid
+	 * @param id    目标用户资料
+	 * @param params 令牌
 	 * @return 用户资料
 	 */
+	@AOPLog
 	@PostMapping("/{id}")
-	public Response<?> getData(@PathVariable Long id) {
+	public Response<?> getData(@PathVariable Long id, @RequestBody Map<String, String> params) {
 		if (ObjectUtils.isEmpty(id)) {
 			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：id");
 		}
 		try {
-			return new Response<>(ReturnCode.SUCCESS, service.findData(id));
+			String token = params.get("token");
+			boolean needFilter = true;
+			if (!StringUtils.isEmpty(token)) {
+				// 已登录，并且获取的用户资料是自己的，不执行隐私控制过滤
+				Long fromUID = Long.parseLong(token.substring(0, token.indexOf("#")));
+				needFilter = !service.isSignedIn(token) || !id.equals(fromUID);
+			}
+			UserData data = dataService.find(id);
+			if (needFilter) {
+				data = data.filterPrivacy(privacyService.find(id));
+			}
+			return new Response<>(ReturnCode.SUCCESS, data);
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {
@@ -227,10 +256,5 @@ public class UserController extends BaseController implements BetterJava {
 			e.printStackTrace();
 			return new Response<>(ReturnCode.ERROR, e);
 		}
-	}
-	
-	@GetMapping("/delete")
-	public String doDelete() {
-		return "123";
 	}
 }

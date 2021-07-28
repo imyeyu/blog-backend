@@ -1,7 +1,6 @@
 package net.imyeyu.blogapi.entity;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
@@ -13,8 +12,9 @@ import java.io.Serializable;
  */
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public class UserData extends BaseEntity implements Serializable {
+public class UserData implements Serializable {
+
+	private Long id;
 
 	private Long userId;
 	private Boolean hasWrapper;
@@ -27,9 +27,27 @@ public class UserData extends BaseEntity implements Serializable {
 	private String signedInIp;
 	private Long signedInAt;
 
+	private Long updatedAt;
+
 	private User user;
 
 	public UserData(Long userId) {
 		this.userId = userId;
+	}
+
+	/**
+	 * 根据隐私控制过滤数据（暂定方案）
+	 *
+	 * @param privacy 隐私控制数据
+	 * @return 用户数据
+	 */
+	public UserData filterPrivacy(UserPrivacy privacy) {
+		if (!privacy.isSex())        sex        = null;
+		if (!privacy.isBirth())      birth      = null;
+		if (!privacy.isQq())         qq         = null;
+		if (!privacy.isSign())       sign       = null;
+		if (!privacy.isSignedInAt()) signedInAt = null;
+		if (!privacy.isCreatedAt())  user.setCreatedAt(null);
+		return this;
 	}
 }

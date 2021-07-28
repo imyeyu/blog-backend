@@ -95,7 +95,7 @@ public class UserController extends BaseController implements BetterJava {
 	}
 
 	/**
-	 * 测试密码
+	 * 测试邮箱
 	 *
 	 * @param email 邮箱
 	 * @throws ServiceException 不通过异常
@@ -121,7 +121,7 @@ public class UserController extends BaseController implements BetterJava {
 			if (settingService.not(SettingKey.ENABLE_REGISTER)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "注册服务未启用");
 			}
-			User user = captchaData.getCaptchaData();
+			User user = captchaData.getData();
 			if (ObjectUtils.isEmpty(user)) {
 				return new Response<>(ReturnCode.PARAMS_BAD, "无效的请求");
 			}

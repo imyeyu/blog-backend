@@ -23,7 +23,8 @@ public enum ReturnCode {
 	// 403 数据异常
 	DATA_EXIST        (40301, "数据已存在"),
 	// 404 资源异常
-	RESULT_NULL       (40400, "无结果"),
+	RESULT_NULL       (40400, "无数据"),
+	RESULT_BAN        (40401, "禁用的数据"),
 	// 500 致命异常
 	ERROR             (50000, "服务异常"),
 	ERROR_NPE_METHOD  (50001, "服务异常"),

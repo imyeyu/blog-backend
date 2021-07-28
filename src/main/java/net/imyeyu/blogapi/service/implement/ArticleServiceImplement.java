@@ -49,7 +49,7 @@ public class ArticleServiceImplement implements ArticleService {
 			article.setComments(commentService.getLength(id));
 			return article;
 		} else {
-			throw new ServiceException(ReturnCode.RESULT_NULL, "该文章不存在");
+			throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该文章");
 		}
 	}
 

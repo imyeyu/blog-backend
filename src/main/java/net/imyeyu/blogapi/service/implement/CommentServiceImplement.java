@@ -32,7 +32,7 @@ public class CommentServiceImplement implements CommentService {
 			comment.setCreatedAt(System.currentTimeMillis());
 			mapper.create(comment);
 		} else {
-			throw new ServiceException(ReturnCode.REQUEST_BAD, "该文章已关闭评论");
+			throw new ServiceException(ReturnCode.RESULT_BAN, "该文章已关闭评论");
 		}
 	}
 
@@ -41,7 +41,6 @@ public class CommentServiceImplement implements CommentService {
 		return mapper.findMany(articleId, offset);
 	}
 
-	// 子评论
 	@Override
 	public void createReply(CommentReply commentReply) {
 		commentReply.setCreatedAt(System.currentTimeMillis());

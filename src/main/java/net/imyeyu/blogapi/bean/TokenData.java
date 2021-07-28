@@ -16,4 +16,8 @@ public class TokenData<T> {
 
 	private String token;
 	private T data;
+
+	public TokenData(String token) {
+		this.token = token;
+	}
 }

@@ -61,7 +61,7 @@ public class UserController extends BaseController implements BetterJava {
 				throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名长度不可超过 32 位");
 			}
 			if (name.contains("@")) {
-				throw new ServiceException(ReturnCode.PARAMS_MISS, "用户名不能含有 @");
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名不能含有 @");
 			}
 			if (testReg("^[0-9]+.?[0-9]*$", name)) {
 				throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名不能是纯数字");
@@ -123,7 +123,7 @@ public class UserController extends BaseController implements BetterJava {
 			}
 			User user = captchaData.getData();
 			if (ObjectUtils.isEmpty(user)) {
-				return new Response<>(ReturnCode.PARAMS_BAD, "无效的请求");
+				return new Response<>(ReturnCode.REQUEST_BAD, "无效的请求");
 			}
 			// 校验用户名
 			testName(user.getName());
@@ -187,6 +187,7 @@ public class UserController extends BaseController implements BetterJava {
 	 * @param params 令牌
 	 * @return true 为已登录
 	 */
+	@AOPLog
 	@PostMapping("/sign-in/status")
 	public Response<?> isSignedIn(@RequestBody Map<String, String> params) {
 		if (StringUtils.isEmpty(params.get("token"))) {

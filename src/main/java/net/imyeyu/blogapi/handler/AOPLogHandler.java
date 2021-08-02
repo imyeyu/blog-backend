@@ -3,6 +3,7 @@ package net.imyeyu.blogapi.handler;
 import lombok.extern.slf4j.Slf4j;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.entity.BaseEntity;
+import org.apache.commons.lang3.ObjectUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -84,7 +85,11 @@ public class AOPLogHandler {
 					}
 				} else {
 					// 其他对象
-					msg += resp.getData().getClass().getSimpleName();
+					if (!ObjectUtils.isEmpty(resp.getData())) {
+						msg += resp.getData().getClass().getSimpleName();
+					} else {
+						msg += "NULL";
+					}
 				}
 				log.info(msg);
 			}

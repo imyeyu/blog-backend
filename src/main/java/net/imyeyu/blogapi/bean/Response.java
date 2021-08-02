@@ -1,5 +1,6 @@
 package net.imyeyu.blogapi.bean;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.imyeyu.betterjava.bean.BlogResponse;
@@ -27,5 +28,9 @@ public class Response<T> extends BlogResponse<T> {
 
 	public Response(ReturnCode code, T data) {
 		super(code.getCode(), null, data);
+	}
+
+	public Response(ReturnCode code, String msg, T data) {
+		super(code.getCode(), msg, data);
 	}
 }

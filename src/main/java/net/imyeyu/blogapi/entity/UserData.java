@@ -45,7 +45,7 @@ public class UserData implements Serializable {
 		if (!privacy.isSex())        sex        = null;
 		if (!privacy.isBirth())      birth      = null;
 		if (!privacy.isQq())         qq         = null;
-		if (!privacy.isSign())       sign       = null;
+		if (!privacy.isEmail())      user.setEmail(null);
 		if (!privacy.isSignedInAt()) signedInAt = null;
 		if (!privacy.isCreatedAt())  user.setCreatedAt(null);
 		return this;

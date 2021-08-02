@@ -21,7 +21,6 @@ public class UserPrivacy implements Serializable {
 	private boolean sex;
 	private boolean birth;
 	private boolean qq;
-	private boolean sign;
 	private boolean comment;
 	private boolean signedInAt;
 	private boolean createdAt;

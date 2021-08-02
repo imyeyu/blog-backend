@@ -9,6 +9,10 @@ multiple:
 # 系统配置
 setting:
     timeout: 0 # 配置缓存时长（分钟）
+    path: test # 文件资源位置（绝对磁盘位置，paths 依赖这个位置）
+    paths:
+        user-avatar: /user/avatar   # 用户头像位置
+        user-wrapper: /user/wrapper # 用户个人空间背景图位置
 
 # Spring
 spring:

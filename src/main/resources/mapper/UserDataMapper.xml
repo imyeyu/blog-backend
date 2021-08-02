@@ -16,7 +16,7 @@
 		<result property="hasAvatar" column="has_avatar" />
 		<result property="exp" column="exp" />
 		<result property="sex" column="sex" />
-		<result property="bitrh" column="birth" />
+		<result property="birth" column="birth" />
 		<result property="qq" column="qq" />
 		<result property="sign" column="sign" />
 		<result property="signedInIp" column="signed_in_ip" />

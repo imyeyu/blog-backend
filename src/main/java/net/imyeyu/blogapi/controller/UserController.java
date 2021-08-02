@@ -21,7 +21,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -203,6 +207,28 @@ public class UserController extends BaseController implements BetterJava {
 	}
 
 	/**
+	 * 退出登录
+	 *
+	 * @param params 含 uid 和 token
+	 * @return true 为退出成功
+	 */
+	@AOPLog
+	@PostMapping("/sign-out")
+	public Response<?> signOut(@RequestBody Map<String, String> params) {
+		if (StringUtils.isEmpty(params.get("token"))) {
+			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：token");
+		}
+		try {
+			return new Response<>(ReturnCode.SUCCESS, service.signOut(params.get("token")));
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(ReturnCode.ERROR, e);
+		}
+	}
+
+	/**
 	 * 获取用户资料
 	 * <p>如果目标资料和令牌用户相同，不过滤用户资料
 	 *
@@ -238,24 +264,67 @@ public class UserController extends BaseController implements BetterJava {
 	}
 
 	/**
-	 * 退出登录
+	 * 修改头像
 	 *
-	 * @param params 含 uid 和 token
-	 * @return true 为退出成功
+	 * @param file  文件
+	 * @param token 令牌
+	 * @return 头像资源路径
 	 */
 	@AOPLog
-	@PostMapping("/sign-out")
-	public Response<?> signOut(@RequestBody Map<String, String> params) {
-		if (StringUtils.isEmpty(params.get("token"))) {
-			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：token");
+	@PostMapping("/update/avatar")
+	public Response<?> updateAvatar(@RequestParam("file") MultipartFile file, @RequestParam("token") String token) {
+		if (StringUtils.isEmpty(token)) {
+			return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
 		}
 		try {
-			return new Response<>(ReturnCode.SUCCESS, service.signOut(params.get("token")));
+			if (!service.isSignedIn(token)) {
+				return new Response<>(ReturnCode.PERMISSION_MISS, "未登录，无权限操作");
+			}
+			if (file.isEmpty()) {
+				return new Response<>(ReturnCode.PARAMS_MISS, "缺少文件：file");
+			}
+			if (file.getOriginalFilename() != null && !file.getOriginalFilename().endsWith(".png")) {
+				return new Response<>(ReturnCode.PARAMS_BAD, "仅支持 PNG 图像文件");
+			}
+			Long id = Long.parseLong(token.split("#")[0]);
+			return new Response<>(ReturnCode.SUCCESS, dataService.updateAvatar(id, file));
 		} catch (ServiceException e) {
-			return new Response<>(e.getCode(), e);
+			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
-			e.printStackTrace();
-			return new Response<>(ReturnCode.ERROR, e);
+			return new Response<>(ReturnCode.ERROR, "服务异常：" + e.getMessage());
+		}
+	}
+
+	/**
+	 * 修改背景图
+	 *
+	 * @param file  文件
+	 * @param token 令牌
+	 * @return 背景图资源路径
+	 */
+	@AOPLog
+	@ResponseBody
+	@PostMapping("/update/wrapper")
+	public Response<?> updateWrapper(@RequestParam("file") MultipartFile file, @RequestParam("token") String token) {
+		if (StringUtils.isEmpty(token)) {
+			return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
+		}
+		try {
+			if (!service.isSignedIn(token)) {
+				return new Response<>(ReturnCode.PERMISSION_MISS, "未登录，无权限操作");
+			}
+			if (file.isEmpty()) {
+				return new Response<>(ReturnCode.PARAMS_MISS, "缺少文件：file");
+			}
+			if (file.getOriginalFilename() != null && !file.getOriginalFilename().endsWith(".png")) {
+				return new Response<>(ReturnCode.PARAMS_BAD, "仅支持 PNG 图像文件");
+			}
+			Long id = Long.parseLong(token.split("#")[0]);
+			return new Response<>(ReturnCode.SUCCESS, null, dataService.updateWrapper(id, file));
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e.getMessage());
+		} catch (Exception e) {
+			return new Response<>(ReturnCode.ERROR, "服务异常：" + e.getMessage());
 		}
 	}
 }

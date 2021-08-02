@@ -1,7 +1,5 @@
 package net.imyeyu.blogapi.controller;
 
-import com.google.gson.Gson;
-
 /**
  * 基本控制器
  *
@@ -9,5 +7,4 @@ import com.google.gson.Gson;
  */
 public class BaseController {
 
-	protected static final Gson GSON = new Gson();
 }

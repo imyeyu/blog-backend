@@ -232,7 +232,7 @@ public class UserController extends BaseController implements BetterJava {
 	 * 获取用户资料
 	 * <p>如果目标资料和令牌用户相同，不过滤用户资料
 	 *
-	 * @param id    目标用户资料
+	 * @param id     目标用户资料
 	 * @param params 令牌
 	 * @return 用户资料
 	 */

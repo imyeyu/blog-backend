@@ -114,4 +114,19 @@ public class Captcha {
 	public static void clear(HttpSession session, String from) {
 		session.removeAttribute(from + "_CAPTCHA");
 	}
+
+	/**
+	 * 清除验证码
+	 *
+	 * @param from 验证码标记
+	 * @throws ServiceException 服务异常
+	 */
+	public static void clear(String from) throws ServiceException {
+		ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+		if (sra != null) {
+			clear(sra.getRequest().getSession(), from);
+		} else {
+			throw new ServiceException(ReturnCode.REQUEST_BAD, "无效的请求");
+		}
+	}
 }

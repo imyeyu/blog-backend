@@ -11,6 +11,7 @@ import net.imyeyu.blogapi.mapper.UserMapper;
 import net.imyeyu.blogapi.service.UserDataService;
 import net.imyeyu.blogapi.service.UserPrivacyService;
 import net.imyeyu.blogapi.service.UserService;
+import net.imyeyu.blogapi.util.Captcha;
 import net.imyeyu.blogapi.util.Redis;
 import net.imyeyu.blogapi.util.Token;
 import net.imyeyu.blogapi.vo.UserSignedIn;
@@ -80,6 +81,8 @@ public class UserServiceImplement implements UserService {
 		dataService.create(new UserData(user.getId()));
 		// 初始化隐私控制
 		privacyService.create(new UserPrivacy(user.getId()));
+		// 清除验证码
+		Captcha.clear("REGISTER");
 		// 自动登录
 		return signIn(String.valueOf(user.getId()), plainPassword);
 	}
@@ -105,6 +108,7 @@ public class UserServiceImplement implements UserService {
 					String token = this.token.generate(result);
 					redisToken.set(result.getId(), token, 24);
 					result.setData(dataService.find(result.getId()));
+					Captcha.clear("SIGNIN");
 					return result.toToken(token);
 				}
 				throw new ServiceException(ReturnCode.PARAMS_BAD, "密码错误");

@@ -7,24 +7,10 @@
 	</insert>
 	<!-- 获取 -->
 	<select id="find" resultMap="findResult" parameterType="long">
-		SELECT
-			d.*,
-			u.name,
-			u.email,
-			u.unmute_at,
-			u.unban_at
-		FROM
-			user_data AS d
-		LEFT JOIN
-			users AS u
-		ON
-			u.id = d.user_id
-		WHERE
-			u.id = #{id}
-			AND u.deleted_at IS NULL
+		SELECT * FROM `user_data` WHERE `id` = #{id}
 	</select>
 	<resultMap id="findResult" type="net.imyeyu.blogapi.entity.UserData">
-		<id property="id" column="id"/>
+		<id property="id" column="id" />
 		<result property="userId" column="user_id" />
 		<result property="hasWrapper" column="has_wrapper" />
 		<result property="hasAvatar" column="has_avatar" />
@@ -35,14 +21,7 @@
 		<result property="sign" column="sign" />
 		<result property="signedInIp" column="signed_in_ip" />
 		<result property="signedInAt" column="signed_in_at" />
-		<result property="createdAt" column="created_at"/>
-		<result property="updatedAt" column="updated_at"/>
-		<association property="user" javaType="net.imyeyu.blogapi.entity.User">
-			<result property="name" column="name"/>
-			<result property="email" column="email"/>
-			<result property="unmuteAt" column="unmute_at"/>
-			<result property="unbanAt" column="unban_at"/>
-		</association>
+		<result property="updatedAt" column="updated_at" />
 	</resultMap>
 	<!-- 更新 -->
 	<update id="update" parameterType="net.imyeyu.blogapi.entity.UserData">
@@ -50,7 +29,7 @@
 			UPDATE `user_data`
 			<set>
 				`user_id`      = #{userId},
-				`wrapper`      = ${wrapper},
+				`wrapper`      = #{wrapper},
 				`avatar`       = #{avatar},
 				`exp`          = #{exp},
 				`sex`          = #{sex},

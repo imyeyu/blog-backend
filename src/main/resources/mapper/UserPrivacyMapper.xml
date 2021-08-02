@@ -6,21 +6,9 @@
 		INSERT INTO user_privacy (user_id) VALUES (#{userId});
 	</insert>
 	<!-- 获取 -->
-	<select id="find" resultMap="findResult" parameterType="long">
+	<select id="find" resultType="net.imyeyu.blogapi.entity.UserPrivacy" parameterType="long">
 		SELECT * FROM user_privacy WHERE user_privacy.user_id = #{id}
 	</select>
-	<resultMap id="findResult" type="net.imyeyu.blogapi.entity.UserPrivacy">
-		<id property="id" column="id"/>
-		<result property="userId" column="user_id" />
-		<result property="email" column="email" />
-		<result property="sex" column="sex" />
-		<result property="birth" column="birth" />
-		<result property="qq" column="qq" />
-		<result property="sign" column="sign" />
-		<result property="comment" column="comment" />
-		<result property="signedInAt" column="signed_in_at" />
-		<result property="createdAt" column="created_at"/>
-	</resultMap>
 	<!-- 更新 -->
 	<update id="update" parameterType="net.imyeyu.blogapi.entity.UserPrivacy">
 		<if test="id != null">
@@ -32,7 +20,6 @@
 				sex          = #{sex},
 				birth        = #{birth},
 				qq           = #{qq},
-				sign         = #{sign},
 				comment      = #{comment},
 				signed_in_at = #{signedInAt},
 				created_at   = #{createdAt},

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
  * <p>夜雨 创建于 2021-05-20 00:24
  */
 @RestController
-@RequestMapping("mc")
+@RequestMapping("/mc")
 public class MinecraftController extends BaseController {
 
 	@GetMapping("")

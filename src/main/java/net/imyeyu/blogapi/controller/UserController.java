@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -273,10 +272,13 @@ public class UserController extends BaseController implements BetterJava {
 	@AOPLog
 	@PostMapping("/update/avatar")
 	public Response<?> updateAvatar(@RequestParam("file") MultipartFile file, @RequestParam("token") String token) {
-		if (StringUtils.isEmpty(token)) {
-			return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
-		}
 		try {
+			if (settingService.not(SettingKey.ENABLE_USER_DATA_UPDATE)) {
+				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "用户资料更新服务未启用");
+			}
+			if (StringUtils.isEmpty(token)) {
+				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
+			}
 			if (!service.isSignedIn(token)) {
 				return new Response<>(ReturnCode.PERMISSION_MISS, "未登录，无权限操作");
 			}
@@ -306,10 +308,13 @@ public class UserController extends BaseController implements BetterJava {
 	@ResponseBody
 	@PostMapping("/update/wrapper")
 	public Response<?> updateWrapper(@RequestParam("file") MultipartFile file, @RequestParam("token") String token) {
-		if (StringUtils.isEmpty(token)) {
-			return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
-		}
 		try {
+			if (settingService.not(SettingKey.ENABLE_USER_DATA_UPDATE)) {
+				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "用户资料更新服务未启用");
+			}
+			if (StringUtils.isEmpty(token)) {
+				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
+			}
 			if (!service.isSignedIn(token)) {
 				return new Response<>(ReturnCode.PERMISSION_MISS, "未登录，无权限操作");
 			}

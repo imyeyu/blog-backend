@@ -14,8 +14,4 @@ public interface ArticleLabelMapper extends BaseMapper<ArticleLabel> {
 	ArticleLabel findByName(String name);
 
 	List<ArticleLabel> findManyByArticleId(long aid);
-
-	void clearLabels(long aid);
-
-	void addLabel(long aid, long lid);
 }

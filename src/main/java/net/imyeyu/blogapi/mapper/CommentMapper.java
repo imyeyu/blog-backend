@@ -1,11 +1,9 @@
 package net.imyeyu.blogapi.mapper;
 
-import java.util.List;
-
 import net.imyeyu.blogapi.entity.Comment;
 import net.imyeyu.blogapi.entity.CommentReply;
-import net.imyeyu.blogapi.service.BaseService;
-import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * 评论

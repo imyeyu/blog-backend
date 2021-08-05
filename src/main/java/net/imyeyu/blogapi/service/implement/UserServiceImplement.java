@@ -8,6 +8,7 @@ import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.entity.UserPrivacy;
 import net.imyeyu.blogapi.mapper.UserMapper;
+import net.imyeyu.blogapi.service.AbstractService;
 import net.imyeyu.blogapi.service.UserDataService;
 import net.imyeyu.blogapi.service.UserPrivacyService;
 import net.imyeyu.blogapi.service.UserService;
@@ -28,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Slf4j
 @Service
-public class UserServiceImplement implements UserService {
+public class UserServiceImplement extends AbstractService implements UserService {
 
 	/** 用户密码盐值 */
 	@Value("${slat.user.password}")
@@ -107,7 +108,12 @@ public class UserServiceImplement implements UserService {
 					// 生成并缓存 Token
 					String token = this.token.generate(result);
 					redisToken.set(result.getId(), token, 24);
-					result.setData(dataService.find(result.getId()));
+					// 用户数据
+					UserData data = dataService.find(result.getId());
+					data.setSignedInIp(getIP());
+					data.setSignedInAt(System.currentTimeMillis());
+					dataService.update(data);
+					result.setData(data);
 					Captcha.clear("SIGNIN");
 					return result.toToken(token);
 				}

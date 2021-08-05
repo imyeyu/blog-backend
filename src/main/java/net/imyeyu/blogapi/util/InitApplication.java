@@ -9,6 +9,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -19,6 +20,9 @@ import java.util.List;
 @Slf4j
 @Component
 public class InitApplication implements ApplicationRunner {
+
+	@Value("${setting.path}")
+	private String resPath;
 
 	@Value("${spring.datasource.url}")
 	private String jdbcURL;
@@ -37,6 +41,7 @@ public class InitApplication implements ApplicationRunner {
 		List<Setting> settings = service.findAll();
 		log.info("JDBC URL: " + jdbcURL);
 		log.info("Redis URL: " + redisURL + ':' + redisPort);
+		log.info("Resources Path: " + new File(resPath).getAbsolutePath());
 		log.info("System Settings:");
 		for (Setting setting : settings) {
 			log.info("\t" + setting.getKey() + "\t: " + setting.getValue());

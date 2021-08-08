@@ -88,6 +88,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 		return signIn(String.valueOf(user.getId()), plainPassword);
 	}
 
+	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
 	@Override
 	public UserSignedIn signIn(String user, String password) throws ServiceException {
 		User result;

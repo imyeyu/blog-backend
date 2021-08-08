@@ -29,8 +29,8 @@
 			UPDATE `user_data`
 			<set>
 				`user_id`      = #{userId},
-				`wrapper`      = #{wrapper},
-				`avatar`       = #{avatar},
+				`has_wrapper`  = #{hasWrapper},
+				`has_avatar`   = #{hasAvatar},
 				`exp`          = #{exp},
 				`sex`          = #{sex},
 				`birth`        = #{birth},

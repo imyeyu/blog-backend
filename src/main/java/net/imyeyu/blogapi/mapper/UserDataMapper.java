@@ -9,4 +9,5 @@ import net.imyeyu.blogapi.entity.UserData;
  */
 public interface UserDataMapper extends BaseMapper<UserData> {
 
+	void updateData(UserData data);
 }

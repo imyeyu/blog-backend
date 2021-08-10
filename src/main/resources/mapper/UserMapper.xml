@@ -34,9 +34,6 @@
 			<set>
 				`email`      = #{email},
 				`name`       = #{name},
-				`password`   = #{password},
-				`unmute_at`  = #{unmuteAt},
-				`unban_at`   = #{unbanAt},
 				`updated_at` = #{updatedAt},
 				`deleted_at` = #{deletedAt}
 			</set>

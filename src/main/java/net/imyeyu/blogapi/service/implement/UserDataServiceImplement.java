@@ -12,6 +12,7 @@ import net.imyeyu.blogapi.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -55,43 +56,50 @@ public class UserDataServiceImplement implements UserDataService {
 		return data;
 	}
 
+	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
 	@Override
 	public void update(UserData userData) throws ServiceException {
-		// 排除字段
-		userData.setUserId(null);
-		userData.setHasWrapper(null);
-		userData.setHasAvatar(null);
-		userData.setExp(null);
-		userData.setSignedInIp(null);
-		userData.setSignedInAt(null);
 		// 更新账号
 		userService.update(userData.getUser());
 		// 更新资料
-		mapper.update(userData);
+		userData.setUpdatedAt(System.currentTimeMillis());
+		mapper.updateData(userData);
 	}
 
+	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
 	@Override
 	public String updateAvatar(Long id, MultipartFile file) throws ServiceException {
 		try {
+			// 处理文件
 			ResourceFile res = new ResourceFile();
 			res.setName(id + ".png");
 			res.setPath(pathAvatar);
 			res.setInputStream(file.getInputStream());
 			fileService.upload(res);
+			// 更新数据库
+			UserData data = find(id);
+			data.setHasAvatar(true);
+			mapper.update(data);
 			return res.getFullPath();
 		} catch (IOException e) {
 			throw new ServiceException(ReturnCode.ERROR, "上传文件异常：" + e.getMessage());
 		}
 	}
 
+	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
 	@Override
 	public String updateWrapper(Long id, MultipartFile file) throws ServiceException {
 		try {
+			// 处理文件
 			ResourceFile res = new ResourceFile();
 			res.setName(id + ".png");
 			res.setPath(pathWrapper);
 			res.setInputStream(file.getInputStream());
 			fileService.upload(res);
+			// 更新数据库
+			UserData data = find(id);
+			data.setHasWrapper(true);
+			mapper.update(data);
 			return res.getFullPath();
 		} catch (IOException e) {
 			throw new ServiceException(ReturnCode.ERROR, "上传文件异常：" + e.getMessage());

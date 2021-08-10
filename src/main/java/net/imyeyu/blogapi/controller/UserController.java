@@ -203,10 +203,10 @@ public class UserController extends BaseController implements BetterJava {
 	 * @return true 为更新成功
 	 */
 	@AOPLog
-	@PostMapping("/update/{id}")
+	@PostMapping("/update/data")
 	public Response<?> updateData(@RequestBody TokenData<UserData> td) {
 		try {
-			if (settingService.not(SettingKey.ENABLE_USER_DATA_UPDATE)) {
+			if (settingService.not(SettingKey.ENABLE_USER_UPDATE) || settingService.not(SettingKey.ENABLE_USER_DATA_UPDATE)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "用户资料更新服务未启用");
 			}
 			String token = td.getToken();
@@ -222,7 +222,7 @@ public class UserController extends BaseController implements BetterJava {
 				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
 			}
 			dataService.update(data);
-			return null;
+			return new Response<>(ReturnCode.SUCCESS, true);
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {

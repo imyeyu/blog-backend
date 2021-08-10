@@ -174,23 +174,23 @@ public class UserServiceImplement extends AbstractService implements UserService
 		return mapper.findByEmail(email);
 	}
 
+	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
 	@Override
 	public void update(User user) throws ServiceException {
 		// 校验用户名
 		testName(user.getName());
-		if (findByName(user.getName()) != null) {
+		User userByName = findByName(user.getName());
+		if (userByName != null && !userByName.getId().equals(user.getId())) {
 			throw new ServiceException(ReturnCode.DATA_EXIST, "该用户名已存在");
 		}
 		// 校验邮箱
 		if (!StringUtils.isEmpty(user.getEmail().trim())) {
 			testEmail(user.getEmail());
 		}
-		if (findByEmail(user.getEmail()) != null) {
+		User userByEmail = findByEmail(user.getEmail());
+		if (userByEmail != null && !userByEmail.getId().equals(user.getId())) {
 			throw new ServiceException(ReturnCode.DATA_EXIST, "该邮箱已被使用");
 		}
-		user.setUnmuteAt(null);
-		user.setUnbanAt(null);
-		user.setDeletedAt(null);
 		user.setUpdatedAt(System.currentTimeMillis());
 		mapper.update(user);
 	}

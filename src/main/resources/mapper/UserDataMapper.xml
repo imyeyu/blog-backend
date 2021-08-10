@@ -43,4 +43,18 @@
 			WHERE `id` = #{id}
 		</if>
 	</update>
+	<!-- 更新（不包含系统操作字段） -->
+	<update id="updateData" parameterType="net.imyeyu.blogapi.entity.UserData">
+		<if test="id != null">
+			UPDATE `user_data`
+			<set>
+				`sex`          = #{sex},
+				`birth`        = #{birth},
+				`qq`           = #{qq},
+				`sign`         = #{sign},
+				`updated_at`   = #{updatedAt}
+			</set>
+			WHERE `id` = #{id}
+		</if>
+	</update>
 </mapper>

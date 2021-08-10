@@ -7,6 +7,7 @@ import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.bean.SettingKey;
+import net.imyeyu.blogapi.bean.TokenData;
 import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.service.SettingService;
@@ -51,65 +52,6 @@ public class UserController extends BaseController implements BetterJava {
 	private SettingService settingService;
 
 	/**
-	 * 测试用户名
-	 *
-	 * @param name 用户名
-	 * @throws ServiceException 不通过异常
-	 */
-	private void testName(String name) throws ServiceException {
-		if (StringUtils.isEmpty(name.trim())) {
-			throw new ServiceException(ReturnCode.PARAMS_MISS, "请输入用户名");
-		} else {
-			if (32 < name.length()) {
-				throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名长度不可超过 32 位");
-			}
-			if (name.contains("@")) {
-				throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名不能含有 @");
-			}
-			if (testReg("^[0-9]+.?[0-9]*$", name)) {
-				throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名不能是纯数字");
-			}
-			if (!testReg("^[A-Za-z0-9_\u4e00-\u9fa5]+$", name)) {
-				throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名只允许大小写字母、数字、中文");
-			}
-		}
-	}
-
-	/**
-	 * 测试密码
-	 *
-	 * @param passowrd 密码
-	 * @throws ServiceException 不通过异常
-	 */
-	private void testPassowrd(String passowrd) throws ServiceException {
-		if (StringUtils.isEmpty(passowrd.trim())) {
-			throw new ServiceException(ReturnCode.PARAMS_MISS, "请输入密码");
-		} else {
-			if (passowrd.length() < 6) {
-				throw new ServiceException(ReturnCode.PARAMS_BAD, "密码长度至少需要 6 位");
-			}
-			if (20 < passowrd.length()) {
-				throw new ServiceException(ReturnCode.PARAMS_BAD, "密码长度不可超过 20 位");
-			}
-			if (!testReg("^[0-9a-zA-Z]*$", passowrd)) {
-				throw new ServiceException(ReturnCode.PARAMS_BAD, "密码只允许大小写字母、数字及基础符号");
-			}
-		}
-	}
-
-	/**
-	 * 测试邮箱
-	 *
-	 * @param email 邮箱
-	 * @throws ServiceException 不通过异常
-	 */
-	public void testEmail(String email) throws ServiceException {
-		if (!testReg("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$", email)) {
-			throw new ServiceException(ReturnCode.PARAMS_BAD, "请输入正确的邮箱");
-		}
-	}
-
-	/**
 	 * 注册用户
 	 *
 	 * @param request     请求体
@@ -127,14 +69,6 @@ public class UserController extends BaseController implements BetterJava {
 			User user = captchaData.getData();
 			if (ObjectUtils.isEmpty(user)) {
 				return new Response<>(ReturnCode.REQUEST_BAD, "无效的请求");
-			}
-			// 校验用户名
-			testName(user.getName());
-			// 校验密码
-			testPassowrd(user.getPassword());
-			// 校验邮箱
-			if (!StringUtils.isEmpty(user.getEmail().trim())) {
-				testEmail(user.getEmail());
 			}
 			// 验证码
 			Captcha.test(captchaData.getCaptcha(), "REGISTER");
@@ -258,6 +192,40 @@ public class UserController extends BaseController implements BetterJava {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {
 			e.printStackTrace();
+			return new Response<>(ReturnCode.ERROR, e);
+		}
+	}
+
+	/**
+	 * 更新用户数据
+	 *
+	 * @param td 含令牌用户数据（包括账号数据）
+	 * @return true 为更新成功
+	 */
+	@AOPLog
+	@PostMapping("/update/{id}")
+	public Response<?> updateData(@RequestBody TokenData<UserData> td) {
+		try {
+			if (settingService.not(SettingKey.ENABLE_USER_DATA_UPDATE)) {
+				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "用户资料更新服务未启用");
+			}
+			String token = td.getToken();
+			UserData data = td.getData();
+			if (StringUtils.isEmpty(token)) {
+				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
+			}
+			if (!service.isSignedIn(token)) {
+				return new Response<>(ReturnCode.PERMISSION_MISS, "未登录，无权限操作");
+			}
+			Long tokenUID = Long.parseLong(token.substring(0, token.indexOf("#")));
+			if (!tokenUID.equals(data.getUserId())) {
+				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
+			}
+			dataService.update(data);
+			return null;
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e.getMessage());
+		} catch (Exception e) {
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}

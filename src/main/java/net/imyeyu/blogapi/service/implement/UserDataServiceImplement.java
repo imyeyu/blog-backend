@@ -3,6 +3,7 @@ package net.imyeyu.blogapi.service.implement;
 import net.imyeyu.blogapi.bean.ResourceFile;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
+import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.mapper.UserDataMapper;
 import net.imyeyu.blogapi.service.FileService;
@@ -48,12 +49,24 @@ public class UserDataServiceImplement implements UserDataService {
 	@Override
 	public UserData find(Long id) throws ServiceException {
 		UserData data = mapper.find(id);
-		data.setUser(userService.find(id));
+		User user = userService.find(id);
+		user.setPassword(null);
+		data.setUser(user);
 		return data;
 	}
 
 	@Override
 	public void update(UserData userData) throws ServiceException {
+		// 排除字段
+		userData.setUserId(null);
+		userData.setHasWrapper(null);
+		userData.setHasAvatar(null);
+		userData.setExp(null);
+		userData.setSignedInIp(null);
+		userData.setSignedInAt(null);
+		// 更新账号
+		userService.update(userData.getUser());
+		// 更新资料
 		mapper.update(userData);
 	}
 

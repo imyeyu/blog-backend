@@ -27,4 +27,20 @@
 	<select id="findByEmail" resultType="net.imyeyu.blogapi.entity.User" parameterType="String">
 		SELECT * FROM `users` WHERE `email` = #{email}
 	</select>
+	<!-- 更新 -->
+	<update id="update" parameterType="net.imyeyu.blogapi.entity.User">
+		<if test="id != null">
+			UPDATE `users`
+			<set>
+				`email`      = #{email},
+				`name`       = #{name},
+				`password`   = #{password},
+				`unmute_at`  = #{unmuteAt},
+				`unban_at`   = #{unbanAt},
+				`updated_at` = #{updatedAt},
+				`deleted_at` = #{deletedAt}
+			</set>
+			WHERE `id` = #{id}
+		</if>
+	</update>
 </mapper>

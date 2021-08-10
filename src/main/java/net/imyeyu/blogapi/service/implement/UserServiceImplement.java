@@ -1,6 +1,7 @@
 package net.imyeyu.blogapi.service.implement;
 
 import lombok.extern.slf4j.Slf4j;
+import net.imyeyu.betterjava.BetterJava;
 import net.imyeyu.betterjava.Encode;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
@@ -17,6 +18,7 @@ import net.imyeyu.blogapi.util.Redis;
 import net.imyeyu.blogapi.util.Token;
 import net.imyeyu.blogapi.vo.UserSignedIn;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Slf4j
 @Service
-public class UserServiceImplement extends AbstractService implements UserService {
+public class UserServiceImplement extends AbstractService implements UserService, BetterJava {
 
 	/** 用户密码盐值 */
 	@Value("${slat.user.password}")
@@ -65,8 +67,16 @@ public class UserServiceImplement extends AbstractService implements UserService
 	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
 	@Override
 	public UserSignedIn register(User user) throws ServiceException {
+		// 校验用户名
+		testName(user.getName());
 		if (findByName(user.getName()) != null) {
 			throw new ServiceException(ReturnCode.DATA_EXIST, "该用户名已存在");
+		}
+		// 校验密码
+		testPassowrd(user.getPassword());
+		// 校验邮箱
+		if (!StringUtils.isEmpty(user.getEmail().trim())) {
+			testEmail(user.getEmail());
 		}
 		if (findByEmail(user.getEmail()) != null) {
 			throw new ServiceException(ReturnCode.DATA_EXIST, "该邮箱已被使用");
@@ -162,5 +172,85 @@ public class UserServiceImplement extends AbstractService implements UserService
 	@Override
 	public User findByEmail(String email) {
 		return mapper.findByEmail(email);
+	}
+
+	@Override
+	public void update(User user) throws ServiceException {
+		// 校验用户名
+		testName(user.getName());
+		if (findByName(user.getName()) != null) {
+			throw new ServiceException(ReturnCode.DATA_EXIST, "该用户名已存在");
+		}
+		// 校验邮箱
+		if (!StringUtils.isEmpty(user.getEmail().trim())) {
+			testEmail(user.getEmail());
+		}
+		if (findByEmail(user.getEmail()) != null) {
+			throw new ServiceException(ReturnCode.DATA_EXIST, "该邮箱已被使用");
+		}
+		user.setUnmuteAt(null);
+		user.setUnbanAt(null);
+		user.setDeletedAt(null);
+		user.setUpdatedAt(System.currentTimeMillis());
+		mapper.update(user);
+	}
+
+	/**
+	 * 测试用户名
+	 *
+	 * @param name 用户名
+	 * @throws ServiceException 不通过异常
+	 */
+	private void testName(String name) throws ServiceException {
+		if (StringUtils.isEmpty(name.trim())) {
+			throw new ServiceException(ReturnCode.PARAMS_MISS, "请输入用户名");
+		} else {
+			if (32 < name.length()) {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名长度不可超过 32 位");
+			}
+			if (name.contains("@")) {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名不能含有 @");
+			}
+			if (testReg("^[0-9]+.?[0-9]*$", name)) {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名不能是纯数字");
+			}
+			if (!testReg("^[A-Za-z0-9_\u4e00-\u9fa5]+$", name)) {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "用户名只允许大小写字母、数字、中文");
+			}
+		}
+	}
+
+	/**
+	 * 测试密码
+	 *
+	 * @param passowrd 密码
+	 * @throws ServiceException 不通过异常
+	 */
+	private void testPassowrd(String passowrd) throws ServiceException {
+		if (StringUtils.isEmpty(passowrd.trim())) {
+			throw new ServiceException(ReturnCode.PARAMS_MISS, "请输入密码");
+		} else {
+			if (passowrd.length() < 6) {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "密码长度至少需要 6 位");
+			}
+			if (20 < passowrd.length()) {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "密码长度不可超过 20 位");
+			}
+			if (!testReg("^[0-9a-zA-Z]*$", passowrd)) {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "密码只允许大小写字母、数字及基础符号");
+			}
+		}
+	}
+
+	/**
+	 * 测试邮箱
+	 *
+	 * @param email 邮箱
+	 * @throws ServiceException 不通过异常
+	 */
+	private void testEmail(String email) throws ServiceException {
+		if (!testReg("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$", email)) {
+			throw new ServiceException(ReturnCode.PARAMS_BAD, "请输入正确的邮箱");
+		}
 	}
 }

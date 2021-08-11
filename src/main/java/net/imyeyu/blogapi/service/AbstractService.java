@@ -22,7 +22,7 @@ public abstract class AbstractService {
 		if (sra != null) {
 			return sra;
 		}
-		throw new ServiceException(ReturnCode.ERROR_NPE_VARIABLE, ReturnCode.ERROR_NPE_VARIABLE.getComment());
+		throw new ServiceException(ReturnCode.ERROR_NPE_VARIABLE, "异常请求，无法获取 SRA");
 	}
 
 	/** @return HttpServlet 请求 */

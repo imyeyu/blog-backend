@@ -13,6 +13,7 @@ import net.imyeyu.blogapi.service.AbstractService;
 import net.imyeyu.blogapi.service.UserDataService;
 import net.imyeyu.blogapi.service.UserPrivacyService;
 import net.imyeyu.blogapi.service.UserService;
+import net.imyeyu.blogapi.util.AES;
 import net.imyeyu.blogapi.util.Captcha;
 import net.imyeyu.blogapi.util.Redis;
 import net.imyeyu.blogapi.util.Token;
@@ -34,8 +35,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserServiceImplement extends AbstractService implements UserService, BetterJava {
 
 	/** 用户密码盐值 */
-	@Value("${slat.user.password}")
+	@Value("${setting.salt.password}")
 	private String salt;
+
+	@Autowired
+	private Token token;
+
+	@Autowired
+	private AES aes;
 
 	@Autowired
 	private UserDataService dataService;
@@ -49,19 +56,15 @@ public class UserServiceImplement extends AbstractService implements UserService
 	@Autowired
 	private Redis<Long, String> redisToken;
 
-	@Autowired
-	private Token token;
-
 	/**
 	 * 生成密码摘要（与 Token 并不同，Token 用于与前端交流，在 doSignIn 执行成功后才会生成 Token 回推前端）
 	 *
-	 * @param name      用户名
 	 * @param createdAt 创建时间
 	 * @param password  原始密码
 	 * @return 密码摘要
 	 */
-	private String generatePasswordDigest(String name, Long createdAt, String password) {
-		return Encode.md5(name + createdAt + salt + password);
+	private String generatePasswordDigest(Long createdAt, String password) throws Exception {
+		return Encode.md5(aes.encrypt(createdAt + salt + password));
 	}
 
 	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
@@ -85,7 +88,13 @@ public class UserServiceImplement extends AbstractService implements UserService
 		String plainPassword = user.getPassword();
 		user.setCreatedAt(System.currentTimeMillis());
 		// 摘要密码
-		user.setPassword(generatePasswordDigest(user.getName(), user.getCreatedAt(), user.getPassword()));
+		try {
+			user.setPassword(generatePasswordDigest(user.getCreatedAt(), user.getPassword()));
+		} catch (Exception e) {
+			log.error(user.toString());
+			e.printStackTrace();
+			throw new ServiceException(ReturnCode.ERROR, "编码错误");
+		}
 		// 注册账号
 		create(user);
 		// 初始化资料
@@ -114,19 +123,25 @@ public class UserServiceImplement extends AbstractService implements UserService
 		}
 		if (!ObjectUtils.isEmpty(result)) {
 			if (!result.isBanning()) {
-				// 密码摘要校验
-				if (result.getPassword().equals(generatePasswordDigest(result.getName(), result.getCreatedAt(), password))) {
-					// 生成并缓存 Token
-					String token = this.token.generate(result);
-					redisToken.set(result.getId(), token, 24);
-					// 用户数据
-					UserData data = dataService.find(result.getId());
-					data.setSignedInIp(getIP());
-					data.setSignedInAt(System.currentTimeMillis());
-					dataService.update(data);
-					result.setData(data);
-					Captcha.clear("SIGNIN");
-					return result.toToken(token);
+				try {
+					// 密码摘要校验
+					if (result.getPassword().equals(generatePasswordDigest(result.getCreatedAt(), password))) {
+						// 生成并缓存 Token
+						String token = this.token.generate(result);
+						redisToken.set(result.getId(), token, 24);
+						// 用户数据
+						UserData data = dataService.find(result.getId());
+						data.setSignedInIp(getIP());
+						data.setSignedInAt(System.currentTimeMillis());
+						dataService.update(data);
+						result.setData(data);
+						Captcha.clear("SIGNIN");
+						return result.toToken(token);
+					}
+				} catch (Exception e) {
+					log.error(result.toString());
+					e.printStackTrace();
+					throw new ServiceException(ReturnCode.ERROR, "编码错误");
 				}
 				throw new ServiceException(ReturnCode.PARAMS_BAD, "密码错误");
 			}

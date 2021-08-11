@@ -13,6 +13,10 @@ setting:
     paths:
         user-avatar: /user/avatar   # 用户头像位置
         user-wrapper: /user/wrapper # 用户个人空间背景图位置
+    aes-key-hex: 11ccc2bdbd60131fd9c410d0002f3432fdbeb27affae0802fd2fdc7d35e96958 # AES 加密密钥，可使用 AESTest.test() 生成
+    salt: # 盐值
+        token: tokenSalt
+        password: passwordSalt # 上线后不应再修改
 
 # Spring
 spring:
@@ -38,11 +42,11 @@ spring:
         password:
         timeout: 8000
         database:
-            article-ranking: 0 # 热门文章缓存，文章 ID: ArticleRanking 对象
-            article-read: 1    # IP 阅读记录缓存，IP: [文章ID]
-            user-token: 2      # 用户令牌缓存，UID: 令牌
-            access-limit: 3    # 接口访问频率控制，IP#方法: 上一次访问时间戳
-            setting: 4         # 系统配置，Setting 枚举: String 配置值
+            article-ranking: 0 #       AID: ArticleRanking   热门文章缓存
+            article-read: 1    #        IP: [AID..]          IP 阅读记录缓存
+            user-token: 2      #       UID: TOKEN            用户令牌缓存
+            access-limit: 3    # IP#method: PREV_UnixTime    接口访问频率控制
+            setting: 4         #   Setting: SettingValue     系统配置
         lettuce: # 连接池配置
             pool:
                 max-wait: -1
@@ -62,12 +66,5 @@ cors:
     # 允许访问的客户端域名，如：http://web.xxx.com，多个域名逗号分割，* 表示不做任何限制（不做任何限制时 allow-credentials 无效）
     allow-origin: 'http://localhost:8080'
     allow-methods: '*'      # 允许请求的方法名，多个方法名逗号分割，如：GET, POST, PUT, DELETE, OPTIONS。
-    allow-credentials: true # 是否允许请求带有验证信息，若要获取客户端域下的 Cookie 时，设置为 true。
+    allow-credentials: true # 是否允许请求带有验证信息，若要获取客户端域下的 Cookie 或 Session 时，设置为 true。
     allow-headers: '*'      # 允许服务端访问的客户端请求头，多个请求头逗号分割，如：Content-Type。
-
-# 盐值
-slat:
-    # 用户
-    user:
-        token: tokenSlat
-        password: passwordSlat # 上线后不应再修改

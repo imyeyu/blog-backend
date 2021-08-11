@@ -1,7 +1,6 @@
 package net.imyeyu.blogapi;
 
 import net.imyeyu.blogapi.bean.ServiceException;
-import net.imyeyu.blogapi.service.FriendChainService;
 import net.imyeyu.blogapi.service.UserService;
 import org.junit.Test;
 import org.junit.runner.RunWith;

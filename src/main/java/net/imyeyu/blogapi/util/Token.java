@@ -26,8 +26,11 @@ import java.security.SecureRandom;
 public class Token {
 
 	/** 用户令牌盐值 */
-	@Value("${slat.user.token}")
+	@Value("${setting.salt.token}")
 	private String salt;
+
+	@Autowired
+	private AES aes;
 
 	@Autowired
 	private Redis<Long, String> redisToken;
@@ -97,13 +100,13 @@ public class Token {
 	}
 	
 	/**
-	 * <p>随机生成令牌
+	 * 随机生成令牌
 	 * <p>结果示例：32#69290ea91da44cd76a595af2a447a7d8
 	 *
 	 * @param user 用户（含 ID、用户名）
 	 * @return 令牌
 	 */
-	public String generate(User user) {
-		return user.getId() + "#" + Encode.md5(user.getName() + salt + new SecureRandom().nextLong());
+	public String generate(User user) throws Exception {
+		return user.getId() + "#" + Encode.md5(aes.encrypt(user.getName() + salt + new SecureRandom().nextLong()));
 	}
 }

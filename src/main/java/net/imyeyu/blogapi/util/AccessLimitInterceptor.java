@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import net.imyeyu.blogapi.annotation.AccessLimit;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
@@ -44,8 +45,12 @@ public class AccessLimitInterceptor implements HandlerInterceptor {
 			boolean needLogin = accessLimit.needLogin();
 			// 需要登录
 			if (needLogin) {
-				boolean isLogin = this.token.isValid(req.getParameter("token"));
-				if (!isLogin) {
+				String token = req.getParameter("token");
+				if (StringUtils.isEmpty(token)) {
+					render(resp, new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：token"));
+					return false;
+				}
+				if (!this.token.isValid(token)) {
 					render(resp, new Response<>(ReturnCode.PERMISSION_MISS, "需要登陆"));
 					return false;
 				}

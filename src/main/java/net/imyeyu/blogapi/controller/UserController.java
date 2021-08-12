@@ -184,6 +184,9 @@ public class UserController extends BaseController implements BetterJava {
 				needFilter = !service.isSignedIn(token) || !id.equals(fromUID);
 			}
 			UserData data = dataService.find(id);
+			User user = service.find(id);
+			user.setPassword(null);
+			data.setUser(user);
 			if (needFilter) {
 				data = data.filterPrivacy(privacyService.find(id));
 			}
@@ -221,6 +224,9 @@ public class UserController extends BaseController implements BetterJava {
 			if (!tokenUID.equals(data.getUserId())) {
 				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
 			}
+			// 更新账号
+			service.update(data.getUser());
+			// 更新资料
 			dataService.update(data);
 			return new Response<>(ReturnCode.SUCCESS, true);
 		} catch (ServiceException e) {

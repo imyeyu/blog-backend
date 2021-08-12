@@ -49,19 +49,12 @@ public class UserDataServiceImplement implements UserDataService {
 
 	@Override
 	public UserData find(Long id) throws ServiceException {
-		UserData data = mapper.find(id);
-		User user = userService.find(id);
-		user.setPassword(null);
-		data.setUser(user);
-		return data;
+		return mapper.find(id);
 	}
 
 	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
 	@Override
 	public void update(UserData userData) throws ServiceException {
-		// 更新账号
-		userService.update(userData.getUser());
-		// 更新资料
 		userData.setUpdatedAt(System.currentTimeMillis());
 		mapper.updateData(userData);
 	}

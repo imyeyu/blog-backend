@@ -78,7 +78,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 		// 校验密码
 		testPassowrd(user.getPassword());
 		// 校验邮箱
-		if (!StringUtils.isEmpty(user.getEmail().trim())) {
+		if (!ObjectUtils.isEmpty(user.getEmail()) && !StringUtils.isEmpty(user.getEmail().trim())) {
 			testEmail(user.getEmail());
 		}
 		if (findByEmail(user.getEmail()) != null) {

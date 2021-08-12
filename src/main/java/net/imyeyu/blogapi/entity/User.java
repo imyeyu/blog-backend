@@ -13,7 +13,6 @@ import java.io.Serializable;
  * <p>夜雨 创建于 2021-03-01 17:11
  */
 @Data
-@ToString
 @EqualsAndHashCode(callSuper = true)
 public class User extends BaseEntity implements Serializable {
 

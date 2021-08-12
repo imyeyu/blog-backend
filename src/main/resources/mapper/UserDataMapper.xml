@@ -6,23 +6,9 @@
 		INSERT INTO `user_data` (`user_id`) VALUES (#{userId});
 	</insert>
 	<!-- 获取 -->
-	<select id="find" resultMap="findResult" parameterType="long">
-		SELECT * FROM `user_data` WHERE `id` = #{id}
+	<select id="findByUID" resultType="net.imyeyu.blogapi.entity.UserData" parameterType="long">
+		SELECT * FROM `user_data` WHERE `user_id` = #{uid}
 	</select>
-	<resultMap id="findResult" type="net.imyeyu.blogapi.entity.UserData">
-		<id property="id" column="id" />
-		<result property="userId" column="user_id" />
-		<result property="hasWrapper" column="has_wrapper" />
-		<result property="hasAvatar" column="has_avatar" />
-		<result property="exp" column="exp" />
-		<result property="sex" column="sex" />
-		<result property="birth" column="birth" />
-		<result property="qq" column="qq" />
-		<result property="sign" column="sign" />
-		<result property="signedInIp" column="signed_in_ip" />
-		<result property="signedInAt" column="signed_in_at" />
-		<result property="updatedAt" column="updated_at" />
-	</resultMap>
 	<!-- 更新 -->
 	<update id="update" parameterType="net.imyeyu.blogapi.entity.UserData">
 		<if test="id != null">

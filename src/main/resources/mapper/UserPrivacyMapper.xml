@@ -3,29 +3,29 @@
 <mapper namespace="net.imyeyu.blogapi.mapper.UserPrivacyMapper">
 	<!-- 新增 -->
 	<insert id="create" parameterType="net.imyeyu.blogapi.entity.UserPrivacy" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-		INSERT INTO user_privacy (user_id) VALUES (#{userId});
+		INSERT INTO `user_privacy` (`user_id`) VALUES (#{userId});
 	</insert>
 	<!-- 获取 -->
-	<select id="find" resultType="net.imyeyu.blogapi.entity.UserPrivacy" parameterType="long">
-		SELECT * FROM user_privacy WHERE user_privacy.user_id = #{id}
+	<select id="findByUID" resultType="net.imyeyu.blogapi.entity.UserPrivacy" parameterType="long">
+		SELECT * FROM `user_privacy` WHERE `user_id` = #{uid}
 	</select>
 	<!-- 更新 -->
 	<update id="update" parameterType="net.imyeyu.blogapi.entity.UserPrivacy">
 		<if test="id != null">
-			UPDATE user_privacy
+			UPDATE `user_privacy`
 			<set>
-				user_id      = #{userId},
-				email        = #{email},
-				exp          = #{exp},
-				sex          = #{sex},
-				birth        = #{birth},
-				qq           = #{qq},
-				comment      = #{comment},
-				signed_in_at = #{signedInAt},
-				created_at   = #{createdAt},
-				updated_at   = #{updatedAt}
+				`user_id`      = #{userId},
+				`email`        = #{email},
+				`exp`          = #{exp},
+				`sex`          = #{sex},
+				`birth`        = #{birth},
+				`qq`           = #{qq},
+				`comment`      = #{comment},
+				`signed_in_at` = #{signedInAt},
+				`created_at`   = #{createdAt},
+				`updated_at`   = #{updatedAt}
 			</set>
-			WHERE id = #{id}
+			WHERE `id` = #{id}
 		</if>
 	</update>
 </mapper>

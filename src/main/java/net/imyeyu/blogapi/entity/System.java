@@ -2,7 +2,7 @@ package net.imyeyu.blogapi.entity;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import net.imyeyu.blogapi.bean.SettingKey;
+import net.imyeyu.blogapi.bean.SystemKey;
 
 import java.io.Serializable;
 
@@ -13,8 +13,8 @@ import java.io.Serializable;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class Setting extends BaseEntity implements Serializable {
+public class System extends BaseEntity implements Serializable {
 
-	private SettingKey key;
+	private SystemKey key;
 	private String value;
 }

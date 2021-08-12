@@ -5,7 +5,7 @@ package net.imyeyu.blogapi.bean;
  *
  * <p>夜雨 创建于 2021-07-20 21:46
  */
-public enum SettingKey {
+public enum SystemKey {
 
 	ENABLE_REGISTER, // 启用注册
 	ENABLE_LOGIN,    // 启用登录

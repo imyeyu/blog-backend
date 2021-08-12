@@ -146,7 +146,7 @@ public class RedisConfig extends CachingConfigurerSupport {
 	}
 
 	/**
-	 * 系统配置，SettingKey 枚举: String 配置值
+	 * 系统配置，SystemKey 枚举: String 配置值
 	 *
 	 * @return RedisTemplate
 	 */

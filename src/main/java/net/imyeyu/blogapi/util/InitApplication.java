@@ -1,8 +1,8 @@
 package net.imyeyu.blogapi.util;
 
 import lombok.extern.slf4j.Slf4j;
-import net.imyeyu.blogapi.entity.Setting;
-import net.imyeyu.blogapi.service.SettingService;
+import net.imyeyu.blogapi.entity.System;
+import net.imyeyu.blogapi.service.SystemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
@@ -34,16 +34,16 @@ public class InitApplication implements ApplicationRunner {
 	private int redisPort;
 
 	@Autowired
-	private SettingService service;
+	private SystemService systemService;
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
-		List<Setting> settings = service.findAll();
+		List<System> settings = systemService.findAll();
 		log.info("JDBC URL: " + jdbcURL);
 		log.info("Redis URL: " + redisURL + ':' + redisPort);
 		log.info("Resources Path: " + new File(resPath).getAbsolutePath());
 		log.info("System Settings:");
-		for (Setting setting : settings) {
+		for (System setting : settings) {
 			log.info("\t" + setting.getKey() + "\t: " + setting.getValue());
 		}
 		log.info("Init Application Finished.");

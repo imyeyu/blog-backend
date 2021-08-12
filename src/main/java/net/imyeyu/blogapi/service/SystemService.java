@@ -1,15 +1,15 @@
 package net.imyeyu.blogapi.service;
 
 import net.imyeyu.blogapi.bean.ServiceException;
-import net.imyeyu.blogapi.bean.SettingKey;
-import net.imyeyu.blogapi.entity.Setting;
+import net.imyeyu.blogapi.bean.SystemKey;
+import net.imyeyu.blogapi.entity.System;
 
 /**
  * 系统配置服务
  *
  * <p>夜雨 创建于 2021-07-20 22:06
  */
-public interface SettingService extends BaseService<Setting> {
+public interface SystemService extends BaseService<System> {
 
 	/**
 	 * 获取指定类型配置值字符串
@@ -17,7 +17,7 @@ public interface SettingService extends BaseService<Setting> {
 	 * @param key   键
 	 * @return 配置值
 	 */
-	String findByKey(SettingKey key) throws ServiceException;
+	String findByKey(SystemKey key) throws ServiceException;
 
 	/**
 	 * 获取指定类型配置值
@@ -27,7 +27,7 @@ public interface SettingService extends BaseService<Setting> {
 	 * @param <T> 类型
 	 * @return 配置值
 	 */
-	<T> T findByKey(SettingKey key, Class<T> clazz) throws ServiceException;
+	<T> T findByKey(SystemKey key, Class<T> clazz) throws ServiceException;
 
 	/**
 	 * 获取为布尔值
@@ -36,7 +36,7 @@ public interface SettingService extends BaseService<Setting> {
 	 * @return 配置值
 	 * @throws ServiceException 服务异常
 	 */
-	boolean is(SettingKey key) throws ServiceException;
+	boolean is(SystemKey key) throws ServiceException;
 
 	/**
 	 * 获取为布尔值，并取反
@@ -45,5 +45,5 @@ public interface SettingService extends BaseService<Setting> {
 	 * @return 配置值
 	 * @throws ServiceException 服务异常
 	 */
-	boolean not(SettingKey key) throws ServiceException;
+	boolean not(SystemKey key) throws ServiceException;
 }

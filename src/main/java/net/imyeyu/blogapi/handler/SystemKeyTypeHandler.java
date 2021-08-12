@@ -1,6 +1,6 @@
 package net.imyeyu.blogapi.handler;
 
-import net.imyeyu.blogapi.bean.SettingKey;
+import net.imyeyu.blogapi.bean.SystemKey;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
@@ -14,40 +14,40 @@ import java.sql.SQLException;
  *
  * <p>夜雨 创建于 2021-07-20 22:29
  */
-public class SettingKeyTypeHandler extends BaseTypeHandler<SettingKey> {
+public class SystemKeyTypeHandler extends BaseTypeHandler<SystemKey> {
 
 	@Override
-	public void setNonNullParameter(PreparedStatement ps, int i, SettingKey parameter, JdbcType jdbcType) throws SQLException {
+	public void setNonNullParameter(PreparedStatement ps, int i, SystemKey parameter, JdbcType jdbcType) throws SQLException {
 		ps.setString(i, parameter.toString());
 	}
 
 	@Override
-	public SettingKey getNullableResult(ResultSet rs, String columnName) throws SQLException {
+	public SystemKey getNullableResult(ResultSet rs, String columnName) throws SQLException {
 		String expenseType = rs.getString(columnName);
 		if (rs.wasNull() || expenseType == null) {
 			return null;
 		} else {
-			return SettingKey.valueOf(expenseType);
+			return SystemKey.valueOf(expenseType);
 		}
 	}
 
 	@Override
-	public SettingKey getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+	public SystemKey getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
 		String expenseType = rs.getString(columnIndex);
 		if (rs.wasNull() || expenseType == null) {
 			return null;
 		} else {
-			return SettingKey.valueOf(expenseType);
+			return SystemKey.valueOf(expenseType);
 		}
 	}
 
 	@Override
-	public SettingKey getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+	public SystemKey getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
 		String expenseType = cs.getString(columnIndex);
 		if (cs.wasNull() || expenseType == null) {
 			return null;
 		} else {
-			return SettingKey.valueOf(expenseType);
+			return SystemKey.valueOf(expenseType);
 		}
 	}
 }

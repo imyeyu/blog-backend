@@ -11,6 +11,14 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface UserDataService extends BaseService<UserData> {
 
+	/**
+	 * 根据用户 ID 查找用户资料
+	 *
+	 * @param uid 用户 ID
+	 * @return 用户资料
+	 * @throws ServiceException 服务异常
+	 */
+	UserData findByUID(Long uid) throws ServiceException;
 
 	/**
 	 * 更新头像

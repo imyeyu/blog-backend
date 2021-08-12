@@ -24,8 +24,8 @@ public class UserPrivacyServiceImplement implements UserPrivacyService {
 	}
 
 	@Override
-	public UserPrivacy find(Long id) throws ServiceException {
-		return mapper.find(id);
+	public UserPrivacy findByUID(Long uid) throws ServiceException {
+		return mapper.findByUID(uid);
 	}
 
 	@Override

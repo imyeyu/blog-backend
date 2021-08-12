@@ -48,8 +48,8 @@ public class UserDataServiceImplement implements UserDataService {
 	}
 
 	@Override
-	public UserData find(Long id) throws ServiceException {
-		return mapper.find(id);
+	public UserData findByUID(Long uid) throws ServiceException {
+		return mapper.findByUID(uid);
 	}
 
 	@Transactional(rollbackFor = {ServiceException.class, Exception.class})

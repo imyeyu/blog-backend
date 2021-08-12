@@ -12,12 +12,12 @@ import net.imyeyu.blogapi.bean.TokenData;
 import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.entity.UserPrivacy;
-import net.imyeyu.blogapi.entity.UserSetting;
+import net.imyeyu.blogapi.entity.UserSettings;
 import net.imyeyu.blogapi.service.SystemService;
 import net.imyeyu.blogapi.service.UserDataService;
 import net.imyeyu.blogapi.service.UserPrivacyService;
 import net.imyeyu.blogapi.service.UserService;
-import net.imyeyu.blogapi.service.UserSettingService;
+import net.imyeyu.blogapi.service.UserSettingsService;
 import net.imyeyu.blogapi.util.Captcha;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -51,7 +51,7 @@ public class UserController extends BaseController implements BetterJava {
 	@Autowired
 	private UserPrivacyService privacyService;
 
-	private UserSettingService settingService;
+	private UserSettingsService settingService;
 
 	@Autowired
 	private SystemService systemService;
@@ -349,7 +349,7 @@ public class UserController extends BaseController implements BetterJava {
 	@AOPLog
 	@AccessLimit(time = 3000)
 	@PostMapping("/update/setting")
-	public Response<?> updateSetting(@RequestBody TokenData<UserSetting> td) {
+	public Response<?> updateSetting(@RequestBody TokenData<UserSettings> td) {
 		try {
 			String token = td.getToken();
 			if (StringUtils.isEmpty(token)) {
@@ -358,7 +358,7 @@ public class UserController extends BaseController implements BetterJava {
 			if (!service.isSignedIn(token)) {
 				return new Response<>(ReturnCode.PERMISSION_MISS, "未登录，无权限操作");
 			}
-			UserSetting setting = td.getData();
+			UserSettings setting = td.getData();
 			Long tokenUID = Long.parseLong(token.substring(0, token.indexOf("#")));
 			if (!tokenUID.equals(setting.getUserId())) {
 				return new Response<>(ReturnCode.PERMISSION_ERROR, "无权限操作");

@@ -45,7 +45,7 @@ public class AccessLimitInterceptor implements HandlerInterceptor {
 			boolean needLogin = accessLimit.needLogin();
 			// 需要登录
 			if (needLogin) {
-				String token = req.getParameter("token");
+				String token = req.getHeader("Token");
 				if (StringUtils.isEmpty(token)) {
 					render(resp, new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：token"));
 					return false;

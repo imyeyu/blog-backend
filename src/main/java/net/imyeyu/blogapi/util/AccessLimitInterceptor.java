@@ -1,6 +1,7 @@
 package net.imyeyu.blogapi.util;
 
 import com.google.gson.Gson;
+import lombok.extern.slf4j.Slf4j;
 import net.imyeyu.blogapi.annotation.AccessLimit;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
@@ -21,6 +22,7 @@ import java.time.Duration;
  *
  * <p>夜雨 创建于 2021-07-20 16:46
  */
+@Slf4j
 @Component
 public class AccessLimitInterceptor implements HandlerInterceptor {
 
@@ -58,7 +60,9 @@ public class AccessLimitInterceptor implements HandlerInterceptor {
 			// 键
 			String key = req.getRemoteAddr() + "#" + handlerMethod.getMethod().getName();
 			// 该 IP 限时内是否访问过该方法
-			if (redisAccessLimit.has(key) && 0D + System.currentTimeMillis() - redisAccessLimit.get(key) < ms) {
+			long cd;
+			if (redisAccessLimit.has(key) && 0D + (cd = System.currentTimeMillis() - redisAccessLimit.get(key)) < ms) {
+				log.warn("请求频率过高：" + key + "." + (ms - cd));
 				render(resp, new Response<>(ReturnCode.REQUEST_BAD, "请求频率过高"));
 				return false;
 			}

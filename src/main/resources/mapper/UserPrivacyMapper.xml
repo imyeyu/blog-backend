@@ -14,9 +14,7 @@
 		<if test="id != null">
 			UPDATE `user_privacy`
 			<set>
-				`user_id`      = #{userId},
 				`email`        = #{email},
-				`exp`          = #{exp},
 				`sex`          = #{sex},
 				`birth`        = #{birth},
 				`qq`           = #{qq},

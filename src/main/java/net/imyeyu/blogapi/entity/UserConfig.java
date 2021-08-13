@@ -10,12 +10,12 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class UserSettings extends BaseEntity {
+public class UserConfig extends BaseEntity {
 
 	private Long userId;
 	private Boolean emailNotifyReply;
 
-	public UserSettings(Long userId) {
+	public UserConfig(Long userId) {
 		this.userId = userId;
 		emailNotifyReply = true;
 	}

@@ -9,13 +9,13 @@ import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.entity.UserPrivacy;
-import net.imyeyu.blogapi.entity.UserSettings;
+import net.imyeyu.blogapi.entity.UserConfig;
 import net.imyeyu.blogapi.mapper.UserMapper;
 import net.imyeyu.blogapi.service.AbstractService;
 import net.imyeyu.blogapi.service.UserDataService;
 import net.imyeyu.blogapi.service.UserPrivacyService;
 import net.imyeyu.blogapi.service.UserService;
-import net.imyeyu.blogapi.service.UserSettingsService;
+import net.imyeyu.blogapi.service.UserConfigService;
 import net.imyeyu.blogapi.util.AES;
 import net.imyeyu.blogapi.util.Captcha;
 import net.imyeyu.blogapi.util.Redis;
@@ -54,7 +54,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 	private UserPrivacyService privacyService;
 
 	@Autowired
-	private UserSettingsService settingsService;
+	private UserConfigService configService;
 
 	@Autowired
 	private UserMapper mapper;
@@ -111,7 +111,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 		// 初始化隐私控制
 		privacyService.create(new UserPrivacy(user.getId()));
 		// 初始化设置
-		settingsService.create(new UserSettings(user.getId()));
+		configService.create(new UserConfig(user.getId()));
 		// 清除验证码
 		Captcha.clear("REGISTER");
 		// 自动登录

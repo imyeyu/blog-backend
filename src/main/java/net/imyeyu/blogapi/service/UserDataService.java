@@ -12,31 +12,39 @@ import org.springframework.web.multipart.MultipartFile;
 public interface UserDataService extends BaseService<UserData> {
 
 	/**
-	 * 根据用户 ID 查找用户资料
+	 * 根据 UID 查找
 	 *
-	 * @param uid 用户 ID
-	 * @return 用户资料
+	 * @param uid UID
+	 * @return 资料
 	 * @throws ServiceException 服务异常
 	 */
 	UserData findByUID(Long uid) throws ServiceException;
 
 	/**
+	 * 更新（不包括系统操作数据）
+	 *
+	 * @param data 资料
+	 * @throws ServiceException 服务异常
+	 */
+	void updateData(UserData data) throws ServiceException;
+
+	/**
 	 * 更新头像
 	 *
-	 * @param id   用户 ID
+	 * @param uid  UID
 	 * @param file 上传文件对象
 	 * @return 回调该资源路径
 	 * @throws ServiceException 服务异常
 	 */
-	String updateAvatar(Long id, MultipartFile file) throws ServiceException;
+	String updateAvatar(Long uid, MultipartFile file) throws ServiceException;
 
 	/**
 	 * 更新背景图
 	 *
-	 * @param id   用户 ID
+	 * @param uid  UID
 	 * @param file 上传文件对象
 	 * @return 回调该资源路径
 	 * @throws ServiceException 服务异常
 	 */
-	String updateWrapper(Long id, MultipartFile file) throws ServiceException;
+	String updateWrapper(Long uid, MultipartFile file) throws ServiceException;
 }

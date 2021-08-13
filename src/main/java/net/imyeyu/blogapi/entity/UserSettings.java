@@ -14,4 +14,9 @@ public class UserSettings extends BaseEntity {
 
 	private Long userId;
 	private Boolean emailNotifyReply;
+
+	public UserSettings(Long userId) {
+		this.userId = userId;
+		emailNotifyReply = true;
+	}
 }

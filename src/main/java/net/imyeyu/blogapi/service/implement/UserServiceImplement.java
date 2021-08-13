@@ -3,16 +3,19 @@ package net.imyeyu.blogapi.service.implement;
 import lombok.extern.slf4j.Slf4j;
 import net.imyeyu.betterjava.BetterJava;
 import net.imyeyu.betterjava.Encode;
+import net.imyeyu.betterjava.Time;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.entity.UserPrivacy;
+import net.imyeyu.blogapi.entity.UserSettings;
 import net.imyeyu.blogapi.mapper.UserMapper;
 import net.imyeyu.blogapi.service.AbstractService;
 import net.imyeyu.blogapi.service.UserDataService;
 import net.imyeyu.blogapi.service.UserPrivacyService;
 import net.imyeyu.blogapi.service.UserService;
+import net.imyeyu.blogapi.service.UserSettingsService;
 import net.imyeyu.blogapi.util.AES;
 import net.imyeyu.blogapi.util.Captcha;
 import net.imyeyu.blogapi.util.Redis;
@@ -51,10 +54,16 @@ public class UserServiceImplement extends AbstractService implements UserService
 	private UserPrivacyService privacyService;
 
 	@Autowired
+	private UserSettingsService settingsService;
+
+	@Autowired
 	private UserMapper mapper;
 
 	@Autowired
 	private Redis<Long, String> redisToken;
+
+	@Autowired
+	private Redis<Long, String> userExpFlag;
 
 	/**
 	 * 生成密码摘要（与 Token 并不同，Token 用于与前端交流，在 doSignIn 执行成功后才会生成 Token 回推前端）
@@ -101,6 +110,8 @@ public class UserServiceImplement extends AbstractService implements UserService
 		dataService.create(new UserData(user.getId()));
 		// 初始化隐私控制
 		privacyService.create(new UserPrivacy(user.getId()));
+		// 初始化设置
+		settingsService.create(new UserSettings(user.getId()));
 		// 清除验证码
 		Captcha.clear("REGISTER");
 		// 自动登录
@@ -130,7 +141,13 @@ public class UserServiceImplement extends AbstractService implements UserService
 						String token = this.token.generate(result);
 						redisToken.set(result.getId(), token, 24);
 						// 用户数据
-						UserData data = dataService.find(result.getId());
+						UserData data = dataService.findByUID(result.getId());
+						System.out.println(userExpFlag.has(result.getId()));
+						if (!userExpFlag.has(result.getId())) {
+							// 当天无登录标记，加经验
+							data.setExp(data.getExp() + 2);
+							userExpFlag.set(result.getId(), "", (Time.tomorrow() - System.currentTimeMillis()) / 1000);
+						}
 						data.setSignedInIp(getIP());
 						data.setSignedInAt(System.currentTimeMillis());
 						dataService.update(data);
@@ -151,9 +168,21 @@ public class UserServiceImplement extends AbstractService implements UserService
 		}
 	}
 
+	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
 	@Override
 	public boolean isSignedIn(String token) throws ServiceException {
-		return this.token.isValid(token);
+		if (this.token.isValid(token)) {
+			Long uid = Long.parseLong(token.substring(0, token.indexOf("#")));
+			if (!userExpFlag.has(uid)) {
+				// 当天无登录标记，加经验
+				UserData data = dataService.findByUID(uid);
+				data.setExp(data.getExp() + 2);
+				userExpFlag.set(uid, "", (Time.tomorrow() - System.currentTimeMillis()) / 1000);
+				dataService.update(data);
+			}
+			return true;
+		}
+		return false;
 	}
 
 	@Override

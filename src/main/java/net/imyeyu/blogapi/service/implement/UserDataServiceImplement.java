@@ -3,7 +3,6 @@ package net.imyeyu.blogapi.service.implement;
 import net.imyeyu.blogapi.bean.ResourceFile;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
-import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.mapper.UserDataMapper;
 import net.imyeyu.blogapi.service.FileService;
@@ -54,9 +53,15 @@ public class UserDataServiceImplement implements UserDataService {
 
 	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
 	@Override
-	public void update(UserData userData) throws ServiceException {
-		userData.setUpdatedAt(System.currentTimeMillis());
-		mapper.updateData(userData);
+	public void update(UserData data) throws ServiceException {
+		mapper.update(data);
+	}
+
+	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
+	@Override
+	public void updateData(UserData data) throws ServiceException {
+		data.setUpdatedAt(System.currentTimeMillis());
+		mapper.updateData(data);
 	}
 
 	@Transactional(rollbackFor = {ServiceException.class, Exception.class})

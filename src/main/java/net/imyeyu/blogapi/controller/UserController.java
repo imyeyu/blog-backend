@@ -236,7 +236,7 @@ public class UserController extends BaseController implements BetterJava {
 			// 更新账号
 			service.update(data.getUser());
 			// 更新资料
-			dataService.update(data);
+			dataService.updateData(data);
 			return new Response<>(ReturnCode.SUCCESS, true);
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());

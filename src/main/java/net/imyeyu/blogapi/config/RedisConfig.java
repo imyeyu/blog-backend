@@ -39,11 +39,14 @@ public class RedisConfig extends CachingConfigurerSupport {
 	@Value("${spring.redis.database.user-token}")
 	private int userTokenDB;
 
+	@Value("${spring.redis.database.user-exp-flag}")
+	private int userExpFlagDB;
+
 	@Value("${spring.redis.database.access-limit}")
-	private int accessLimit;
+	private int accessLimitDB;
 
 	@Value("${spring.redis.database.setting}")
-	private int setting;
+	private int settingDB;
 
 	// 连接配置
 	@Value("${spring.redis.host}")
@@ -136,13 +139,23 @@ public class RedisConfig extends CachingConfigurerSupport {
 	}
 
 	/**
+	 * 用户登录经验标记，暂时没有值，数据死亡时间为次日零时
+	 *
+	 * @return RedisTemplate
+	 */
+	@Bean("userExpFlag")
+	public Redis<Long, String> getUserExpFlagTemplate() {
+		return getRedis(userExpFlagDB, LONG_SERIALIZER);
+	}
+
+	/**
 	 * 接口访问控制，IP#方法: 上一次访问时间戳
 	 *
 	 * @return RedisTemplate
 	 */
 	@Bean("redisAccessLimit")
 	public Redis<String, Long> getAccessLimitRedisTemplate() {
-		return getRedis(accessLimit, STRING_SERIALIZER);
+		return getRedis(accessLimitDB, STRING_SERIALIZER);
 	}
 
 	/**
@@ -152,7 +165,7 @@ public class RedisConfig extends CachingConfigurerSupport {
 	 */
 	@Bean("redisSetting")
 	public Redis<String, String> getSettingRedisTemplate() {
-		return getRedis(setting, STRING_SERIALIZER);
+		return getRedis(settingDB, STRING_SERIALIZER);
 	}
 
 	/**

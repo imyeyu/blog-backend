@@ -2,7 +2,6 @@ package net.imyeyu.blogapi.entity;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import net.imyeyu.blogapi.vo.UserSignedIn;
 
 import java.io.Serializable;

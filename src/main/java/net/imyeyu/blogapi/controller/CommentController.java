@@ -5,13 +5,13 @@ import net.imyeyu.blogapi.bean.CaptchaData;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
-import net.imyeyu.blogapi.bean.SystemKey;
+import net.imyeyu.blogapi.bean.SettingsKey;
 import net.imyeyu.blogapi.bean.TokenData;
 import net.imyeyu.blogapi.entity.Comment;
 import net.imyeyu.blogapi.entity.CommentReply;
 import net.imyeyu.blogapi.service.ArticleService;
 import net.imyeyu.blogapi.service.CommentService;
-import net.imyeyu.blogapi.service.SystemService;
+import net.imyeyu.blogapi.service.SettingsService;
 import net.imyeyu.blogapi.service.UserService;
 import net.imyeyu.blogapi.util.Captcha;
 import org.apache.commons.lang3.ObjectUtils;
@@ -41,7 +41,7 @@ public class CommentController extends BaseController {
 	private CommentService commentService;
 
 	@Autowired
-	private SystemService systemService;
+	private SettingsService settingsService;
 
 	/**
 	 * 获取评论
@@ -71,7 +71,7 @@ public class CommentController extends BaseController {
 	public Response<?> create(@RequestBody TokenData<CaptchaData<Comment>> td) {
 		try {
 			// 功能状态
-			if (systemService.not(SystemKey.ENABLE_COMMENT)) {
+			if (settingsService.not(SettingsKey.ENABLE_COMMENT)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "评论服务未启用");
 			}
 			Comment comment = td.getData().getData();
@@ -123,7 +123,7 @@ public class CommentController extends BaseController {
 	public Response<?> createReply(@RequestBody TokenData<CaptchaData<CommentReply>> td) {
 		try {
 			// 功能状态
-			if (systemService.not(SystemKey.ENABLE_COMMENT)) {
+			if (settingsService.not(SettingsKey.ENABLE_COMMENT)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "评论服务未启用");
 			}
 			CommentReply cr = td.getData().getData();

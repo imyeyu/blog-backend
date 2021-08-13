@@ -7,13 +7,13 @@ import net.imyeyu.blogapi.bean.CaptchaData;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
-import net.imyeyu.blogapi.bean.SystemKey;
+import net.imyeyu.blogapi.bean.SettingsKey;
 import net.imyeyu.blogapi.bean.TokenData;
 import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.entity.UserPrivacy;
 import net.imyeyu.blogapi.entity.UserSettings;
-import net.imyeyu.blogapi.service.SystemService;
+import net.imyeyu.blogapi.service.SettingsService;
 import net.imyeyu.blogapi.service.UserDataService;
 import net.imyeyu.blogapi.service.UserPrivacyService;
 import net.imyeyu.blogapi.service.UserService;
@@ -54,7 +54,7 @@ public class UserController extends BaseController implements BetterJava {
 	private UserSettingsService settingService;
 
 	@Autowired
-	private SystemService systemService;
+	private SettingsService settingsService;
 
 	/**
 	 * 注册用户
@@ -69,7 +69,7 @@ public class UserController extends BaseController implements BetterJava {
 	public Response<?> register(@RequestBody CaptchaData<User> captchaData, HttpServletRequest request) {
 		try {
 			// 功能状态
-			if (systemService.not(SystemKey.ENABLE_REGISTER)) {
+			if (settingsService.not(SettingsKey.ENABLE_REGISTER)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "注册服务未启用");
 			}
 			User user = captchaData.getData();
@@ -102,7 +102,7 @@ public class UserController extends BaseController implements BetterJava {
 	public Response<?> signIn(@RequestBody Map<String, String> params, HttpServletRequest request) {
 		try {
 			// 功能状态
-			if (systemService.not(SystemKey.ENABLE_LOGIN)) {
+			if (settingsService.not(SettingsKey.ENABLE_LOGIN)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "登录服务未启用");
 			}
 			// 用户
@@ -218,7 +218,7 @@ public class UserController extends BaseController implements BetterJava {
 	@PostMapping("/update/data")
 	public Response<?> updateData(@RequestBody TokenData<UserData> td) {
 		try {
-			if (systemService.not(SystemKey.ENABLE_USER_UPDATE) || systemService.not(SystemKey.ENABLE_USER_DATA_UPDATE)) {
+			if (settingsService.not(SettingsKey.ENABLE_USER_UPDATE) || settingsService.not(SettingsKey.ENABLE_USER_DATA_UPDATE)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "用户资料更新服务未启用");
 			}
 			String token = td.getToken();
@@ -385,7 +385,7 @@ public class UserController extends BaseController implements BetterJava {
 	@PostMapping("/update/avatar")
 	public Response<?> updateAvatar(@RequestParam("file") MultipartFile file, @RequestParam("token") String token) {
 		try {
-			if (systemService.not(SystemKey.ENABLE_USER_DATA_UPDATE)) {
+			if (settingsService.not(SettingsKey.ENABLE_USER_DATA_UPDATE)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "用户资料更新服务未启用");
 			}
 			if (StringUtils.isEmpty(token)) {
@@ -421,7 +421,7 @@ public class UserController extends BaseController implements BetterJava {
 	@PostMapping("/update/wrapper")
 	public Response<?> updateWrapper(@RequestParam("file") MultipartFile file, @RequestParam("token") String token) {
 		try {
-			if (systemService.not(SystemKey.ENABLE_USER_DATA_UPDATE)) {
+			if (settingsService.not(SettingsKey.ENABLE_USER_DATA_UPDATE)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "用户资料更新服务未启用");
 			}
 			if (StringUtils.isEmpty(token)) {

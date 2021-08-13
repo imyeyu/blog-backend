@@ -142,7 +142,6 @@ public class UserServiceImplement extends AbstractService implements UserService
 						redisToken.set(result.getId(), token, 24);
 						// 用户数据
 						UserData data = dataService.findByUID(result.getId());
-						System.out.println(userExpFlag.has(result.getId()));
 						if (!userExpFlag.has(result.getId())) {
 							// 当天无登录标记，加经验
 							data.setExp(data.getExp() + 2);

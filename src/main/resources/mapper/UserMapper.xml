@@ -17,15 +17,15 @@
 	</insert>
 	<!-- 根据 ID 获取 -->
 	<select id="find" resultType="net.imyeyu.blogapi.entity.User" parameterType="long">
-		SELECT * FROM `users` WHERE `id` = #{id}
+		SELECT * FROM `users` WHERE `id` = #{id} AND `deleted_at` IS NULL
 	</select>
 	<!-- 根据用户名获取 -->
 	<select id="findByName" resultType="net.imyeyu.blogapi.entity.User" parameterType="String">
-		SELECT * FROM `users` WHERE `name` = #{name}
+		SELECT * FROM `users` WHERE `name` = #{name} AND `deleted_at` IS NULL
 	</select>
 	<!-- 根据邮箱获取 -->
 	<select id="findByEmail" resultType="net.imyeyu.blogapi.entity.User" parameterType="String">
-		SELECT * FROM `users` WHERE `email` = #{email}
+		SELECT * FROM `users` WHERE `email` = #{email} AND `deleted_at` IS NULL
 	</select>
 	<!-- 更新 -->
 	<update id="update" parameterType="net.imyeyu.blogapi.entity.User">
@@ -34,8 +34,7 @@
 			<set>
 				`email`      = #{email},
 				`name`       = #{name},
-				`updated_at` = #{updatedAt},
-				`deleted_at` = #{deletedAt}
+				`updated_at` = #{updatedAt}
 			</set>
 			WHERE `id` = #{id}
 		</if>

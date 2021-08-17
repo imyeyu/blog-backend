@@ -1,6 +1,7 @@
 package net.imyeyu.blogapi.config;
 
-import net.imyeyu.blogapi.util.AccessLimitInterceptor;
+import net.imyeyu.blogapi.annotation.QPSLimitInterceptor;
+import net.imyeyu.blogapi.annotation.RequiredTokenInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -21,7 +22,10 @@ import java.util.List;
 public class WebConfig implements WebMvcConfigurer {
 
 	@Autowired
-	private AccessLimitInterceptor accessLimitInterceptor;
+	private QPSLimitInterceptor qpsLimitInterceptor;
+
+	@Autowired
+	private RequiredTokenInterceptor requiredTokenInterceptor;
 
 	/**
 	 * 过滤器
@@ -30,8 +34,10 @@ public class WebConfig implements WebMvcConfigurer {
 	 */
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		// 访问控制
-		registry.addInterceptor(accessLimitInterceptor).addPathPatterns("/**");
+		// 访问频率控制
+		registry.addInterceptor(qpsLimitInterceptor).addPathPatterns("/**");
+		// 访问令牌控制
+		registry.addInterceptor(requiredTokenInterceptor).addPathPatterns("/**");
 	}
 
 	/**

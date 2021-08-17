@@ -1,4 +1,4 @@
-package net.imyeyu.blogapi.handler;
+package net.imyeyu.blogapi.annotation;
 
 import lombok.extern.slf4j.Slf4j;
 import net.imyeyu.blogapi.bean.Response;
@@ -21,12 +21,12 @@ import java.util.List;
 /**
  * AOP 切面日志
  *
- * <p>夜雨 创建于 2021-07-21 23:48
+ * <p>夜雨 创建于 2021-08-17 16:26
  */
 @Slf4j
 @Aspect
 @Component
-public class AOPLogHandler {
+public class AOPLogInterceptor {
 
 	/** 注入注解 */
 	@Pointcut("@annotation(net.imyeyu.blogapi.annotation.AOPLog)")

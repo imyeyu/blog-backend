@@ -1,6 +1,5 @@
 package net.imyeyu.blogapi.bean;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.imyeyu.betterjava.bean.BlogResponse;

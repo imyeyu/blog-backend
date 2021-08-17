@@ -148,7 +148,7 @@
         </collection>
 	</resultMap>
 	<!-- 根据用户获取所有评论 -->
-	<select id="findAllByUID" resultMap="net.imyeyu.blogapi.entity.Comment">
+	<select id="findAllByUID" resultType="net.imyeyu.blogapi.entity.Comment">
 		SELECT * FROM comments WHERE user_id = #{uid} AND deleted_at IS NULL
 	</select>
 	<!-- 新增子评论 -->
@@ -227,10 +227,6 @@
             <result property="name" column="receiver_name"/>
         </association>
 	</resultMap>
-	<!-- 根据评论获取所有子评论 -->
-	<select id="findAllByUID" resultMap="net.imyeyu.blogapi.entity.CommentReply">
-		SELECT * FROM comment_replies WHERE comment_id = #{cid} AND deleted_at IS NULL
-	</select>
 	<!-- 统计该文章的所有评论和子评论 -->
 	<select id="getLength" parameterType="long" resultType="int">
 		SELECT

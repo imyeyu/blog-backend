@@ -1,7 +1,7 @@
 package net.imyeyu.blogapi.controller;
 
 import net.imyeyu.blogapi.annotation.AOPLog;
-import net.imyeyu.blogapi.annotation.AccessLimit;
+import net.imyeyu.blogapi.annotation.QPSLimit;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
@@ -69,7 +69,7 @@ public class ArticleController extends BaseController {
 	 * @return 最新喜欢数量
 	 */
 	@AOPLog
-	@AccessLimit(time = 1240, needLogin = false)
+	@QPSLimit
 	@RequestMapping("/like/{id}")
 	public Response<?> like(@PathVariable Long id) {
 		if (ObjectUtils.isEmpty(id)) {

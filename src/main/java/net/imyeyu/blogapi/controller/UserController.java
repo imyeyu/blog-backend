@@ -2,7 +2,8 @@ package net.imyeyu.blogapi.controller;
 
 import net.imyeyu.betterjava.BetterJava;
 import net.imyeyu.blogapi.annotation.AOPLog;
-import net.imyeyu.blogapi.annotation.AccessLimit;
+import net.imyeyu.blogapi.annotation.QPSLimit;
+import net.imyeyu.blogapi.annotation.RequiredToken;
 import net.imyeyu.blogapi.bean.CaptchaData;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
@@ -10,14 +11,14 @@ import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.bean.SettingsKey;
 import net.imyeyu.blogapi.bean.TokenData;
 import net.imyeyu.blogapi.entity.User;
+import net.imyeyu.blogapi.entity.UserConfig;
 import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.entity.UserPrivacy;
-import net.imyeyu.blogapi.entity.UserConfig;
 import net.imyeyu.blogapi.service.SettingsService;
+import net.imyeyu.blogapi.service.UserConfigService;
 import net.imyeyu.blogapi.service.UserDataService;
 import net.imyeyu.blogapi.service.UserPrivacyService;
 import net.imyeyu.blogapi.service.UserService;
-import net.imyeyu.blogapi.service.UserConfigService;
 import net.imyeyu.blogapi.util.Captcha;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -51,6 +52,7 @@ public class UserController extends BaseController implements BetterJava {
 	@Autowired
 	private UserPrivacyService privacyService;
 
+	@Autowired
 	private UserConfigService settingService;
 
 	@Autowired
@@ -64,7 +66,7 @@ public class UserController extends BaseController implements BetterJava {
 	 * @return true 为注册成功
 	 */
 	@AOPLog
-	@AccessLimit(time = 3000, needLogin = false)
+	@QPSLimit
 	@PostMapping("/register")
 	public Response<?> register(@RequestBody CaptchaData<User> captchaData, HttpServletRequest request) {
 		try {
@@ -97,7 +99,7 @@ public class UserController extends BaseController implements BetterJava {
 	 * @return true 为登录成功
 	 */
 	@AOPLog
-	@AccessLimit(time = 3000, needLogin = false)
+	@QPSLimit
 	@PostMapping("/sign-in")
 	public Response<?> signIn(@RequestBody Map<String, String> params, HttpServletRequest request) {
 		try {
@@ -132,7 +134,8 @@ public class UserController extends BaseController implements BetterJava {
 	 * @return true 为已登录
 	 */
 	@AOPLog
-	@AccessLimit(time = 3000, needLogin = false)
+	@QPSLimit
+	@RequiredToken
 	@PostMapping("/sign-in/status")
 	public Response<?> isSignedIn(@RequestBody Map<String, String> params) {
 		if (StringUtils.isEmpty(params.get("token"))) {
@@ -154,13 +157,62 @@ public class UserController extends BaseController implements BetterJava {
 	 * @return true 为退出成功
 	 */
 	@AOPLog
+	@RequiredToken
 	@PostMapping("/sign-out")
 	public Response<?> signOut(@RequestBody Map<String, String> params) {
-		if (StringUtils.isEmpty(params.get("token"))) {
-			return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
-		}
 		try {
 			return new Response<>(ReturnCode.SUCCESS, service.signOut(params.get("token")));
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(ReturnCode.ERROR, e);
+		}
+	}
+
+	/**
+	 * 修改密码（会清除登录会话）
+	 *
+	 * @param params oldPW 旧密码，newPW 新密码，token 令牌
+	 * @return true 为修改成功
+	 */
+	@AOPLog
+	@QPSLimit
+	@RequiredToken
+	@PostMapping("/update/password")
+	public Response<?> updatePassword(@RequestBody Map<String, String> params) {
+		try {
+			String oldPW = params.get("oldPW");
+			if (StringUtils.isEmpty(oldPW)) {
+				return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：oldPW");
+			}
+			String newPW = params.get("newPW");
+			if (StringUtils.isEmpty(newPW)){
+				return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：newPW");
+			}
+			return new Response<>(ReturnCode.SUCCESS, service.updatePassword(token2UID(params.get("token")), oldPW, newPW));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(ReturnCode.ERROR, e);
+		}
+	}
+
+	/**
+	 * 注销用户
+	 *
+	 * @param params 含令牌和明文密码
+	 * @return true 为成功
+	 */
+	@AOPLog
+	@QPSLimit
+	@RequiredToken
+	@PostMapping("/cancel")
+	public Response<?> cancel(@RequestBody Map<String, String> params) {
+		try {
+			if (StringUtils.isEmpty(params.get("password"))) {
+				return new Response<>(ReturnCode.PERMISSION_ERROR, "请输入密码");
+			}
+			return new Response<>(ReturnCode.SUCCESS, service.cancel(token2UID(params.get("token")), params.get("password")));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {
@@ -174,10 +226,11 @@ public class UserController extends BaseController implements BetterJava {
 	 * <p>如果目标资料和令牌用户相同，不过滤用户资料
 	 *
 	 * @param id     目标用户 ID
-	 * @param params 令牌
+	 * @param params 令牌（可选）
 	 * @return 用户资料
 	 */
 	@AOPLog
+	@QPSLimit
 	@PostMapping("/{id}")
 	public Response<?> getData(@PathVariable Long id, @RequestBody Map<String, String> params) {
 		if (ObjectUtils.isEmpty(id)) {
@@ -188,13 +241,9 @@ public class UserController extends BaseController implements BetterJava {
 			boolean needFilter = true;
 			if (!StringUtils.isEmpty(token)) {
 				// 已登录，并且获取的用户资料是自己的，不执行隐私控制过滤
-				Long fromUID = Long.parseLong(token.substring(0, token.indexOf("#")));
-				needFilter = !service.isSignedIn(token) || !id.equals(fromUID);
+				needFilter = !service.isSignedIn(token) || !id.equals(token2UID(token));
 			}
 			UserData data = dataService.findByUID(id);
-			User user = service.find(id);
-			user.setPassword(null);
-			data.setUser(user);
 			if (needFilter) {
 				data = data.filterPrivacy(privacyService.findByUID(id));
 			}
@@ -214,23 +263,16 @@ public class UserController extends BaseController implements BetterJava {
 	 * @return true 为更新成功
 	 */
 	@AOPLog
-	@AccessLimit(time = 3000)
+	@QPSLimit
+	@RequiredToken
 	@PostMapping("/update/data")
 	public Response<?> updateData(@RequestBody TokenData<UserData> td) {
 		try {
 			if (settingsService.not(SettingsKey.ENABLE_USER_UPDATE) || settingsService.not(SettingsKey.ENABLE_USER_DATA_UPDATE)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "用户资料更新服务未启用");
 			}
-			String token = td.getToken();
-			if (StringUtils.isEmpty(token)) {
-				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
-			}
-			if (!service.isSignedIn(token)) {
-				return new Response<>(ReturnCode.PERMISSION_MISS, "未登录，无权限操作");
-			}
 			UserData data = td.getData();
-			Long tokenUID = Long.parseLong(token.substring(0, token.indexOf("#")));
-			if (!tokenUID.equals(data.getUserId())) {
+			if (!token2UID(td.getToken()).equals(data.getUserId())) {
 				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
 			}
 			// 更新账号
@@ -248,17 +290,13 @@ public class UserController extends BaseController implements BetterJava {
 	/**
 	 * 获取用户隐私控制
 	 *
-	 * @param id     目标用户 ID
 	 * @param params 令牌
 	 * @return 用户资料
 	 */
 	@AOPLog
-	@AccessLimit(time = 3000)
-	@PostMapping("/privacy/{id}")
-	public Response<?> getPrivacy(@PathVariable Long id, @RequestBody Map<String, String> params) {
-		if (ObjectUtils.isEmpty(id)) {
-			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：id");
-		}
+	@QPSLimit
+	@PostMapping("/privacy")
+	public Response<?> getPrivacy(@RequestBody Map<String, String> params) {
 		try {
 			String token = params.get("token");
 			if (StringUtils.isEmpty(token)) {
@@ -267,7 +305,7 @@ public class UserController extends BaseController implements BetterJava {
 			if (!service.isSignedIn(token)) {
 				return new Response<>(ReturnCode.PERMISSION_MISS, "未登录，无权限操作");
 			}
-			return new Response<>(ReturnCode.SUCCESS, privacyService.findByUID(id));
+			return new Response<>(ReturnCode.SUCCESS, privacyService.findByUID(token2UID(token)));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {
@@ -283,20 +321,13 @@ public class UserController extends BaseController implements BetterJava {
 	 * @return true 为更新成功
 	 */
 	@AOPLog
-	@AccessLimit(time = 3000)
+	@QPSLimit
+	@RequiredToken
 	@PostMapping("/update/privacy")
 	public Response<?> updatePrivacy(@RequestBody TokenData<UserPrivacy> td) {
 		try {
-			String token = td.getToken();
-			if (StringUtils.isEmpty(token)) {
-				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
-			}
-			if (!service.isSignedIn(token)) {
-				return new Response<>(ReturnCode.PERMISSION_MISS, "未登录，无权限操作");
-			}
 			UserPrivacy privacy = td.getData();
-			Long tokenUID = Long.parseLong(token.substring(0, token.indexOf("#")));
-			if (!tokenUID.equals(privacy.getUserId())) {
+			if (!token2UID(td.getToken()).equals(privacy.getUserId())) {
 				return new Response<>(ReturnCode.PERMISSION_ERROR, "无权限操作");
 			}
 			// 更新资料
@@ -312,26 +343,16 @@ public class UserController extends BaseController implements BetterJava {
 	/**
 	 * 获取用户设置
 	 *
-	 * @param id     目标用户设置
 	 * @param params 令牌
 	 * @return 用户设置
 	 */
 	@AOPLog
-	@AccessLimit(time = 3000)
-	@PostMapping("/setting/{id}")
-	public Response<?> getSetting(@PathVariable Long id, @RequestBody Map<String, String> params) {
-		if (ObjectUtils.isEmpty(id)) {
-			return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：id");
-		}
+	@QPSLimit
+	@RequiredToken
+	@PostMapping("/setting")
+	public Response<?> getSetting(@RequestBody Map<String, String> params) {
 		try {
-			String token = params.get("token");
-			if (StringUtils.isEmpty(token)) {
-				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
-			}
-			if (!service.isSignedIn(token)) {
-				return new Response<>(ReturnCode.PERMISSION_MISS, "未登录，无权限操作");
-			}
-			return new Response<>(ReturnCode.SUCCESS, settingService.findByUID(id));
+			return new Response<>(ReturnCode.SUCCESS, settingService.findByUID(token2UID(params.get("token"))));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {
@@ -347,20 +368,13 @@ public class UserController extends BaseController implements BetterJava {
 	 * @return true 为更新成功
 	 */
 	@AOPLog
-	@AccessLimit(time = 3000)
+	@QPSLimit
+	@RequiredToken
 	@PostMapping("/update/setting")
 	public Response<?> updateSetting(@RequestBody TokenData<UserConfig> td) {
 		try {
-			String token = td.getToken();
-			if (StringUtils.isEmpty(token)) {
-				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
-			}
-			if (!service.isSignedIn(token)) {
-				return new Response<>(ReturnCode.PERMISSION_MISS, "未登录，无权限操作");
-			}
 			UserConfig setting = td.getData();
-			Long tokenUID = Long.parseLong(token.substring(0, token.indexOf("#")));
-			if (!tokenUID.equals(setting.getUserId())) {
+			if (!token2UID(td.getToken()).equals(setting.getUserId())) {
 				return new Response<>(ReturnCode.PERMISSION_ERROR, "无权限操作");
 			}
 			// 更新资料
@@ -381,18 +395,13 @@ public class UserController extends BaseController implements BetterJava {
 	 * @return 头像资源路径
 	 */
 	@AOPLog
-	@AccessLimit(time = 3000)
+	@QPSLimit
+	@RequiredToken
 	@PostMapping("/update/avatar")
 	public Response<?> updateAvatar(@RequestParam("file") MultipartFile file, @RequestParam("token") String token) {
 		try {
 			if (settingsService.not(SettingsKey.ENABLE_USER_DATA_UPDATE)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "用户资料更新服务未启用");
-			}
-			if (StringUtils.isEmpty(token)) {
-				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
-			}
-			if (!service.isSignedIn(token)) {
-				return new Response<>(ReturnCode.PERMISSION_MISS, "未登录，无权限操作");
 			}
 			if (file.isEmpty()) {
 				return new Response<>(ReturnCode.PARAMS_MISS, "缺少文件：file");
@@ -400,8 +409,7 @@ public class UserController extends BaseController implements BetterJava {
 			if (file.getOriginalFilename() != null && !file.getOriginalFilename().endsWith(".png")) {
 				return new Response<>(ReturnCode.PARAMS_BAD, "仅支持 PNG 图像文件");
 			}
-			Long id = Long.parseLong(token.split("#")[0]);
-			return new Response<>(ReturnCode.SUCCESS, dataService.updateAvatar(id, file));
+			return new Response<>(ReturnCode.SUCCESS, dataService.updateAvatar(token2UID(token), file));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
@@ -417,18 +425,13 @@ public class UserController extends BaseController implements BetterJava {
 	 * @return 背景图资源路径
 	 */
 	@AOPLog
-	@AccessLimit(time = 3000)
+	@QPSLimit
+	@RequiredToken
 	@PostMapping("/update/wrapper")
 	public Response<?> updateWrapper(@RequestParam("file") MultipartFile file, @RequestParam("token") String token) {
 		try {
 			if (settingsService.not(SettingsKey.ENABLE_USER_DATA_UPDATE)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "用户资料更新服务未启用");
-			}
-			if (StringUtils.isEmpty(token)) {
-				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
-			}
-			if (!service.isSignedIn(token)) {
-				return new Response<>(ReturnCode.PERMISSION_MISS, "未登录，无权限操作");
 			}
 			if (file.isEmpty()) {
 				return new Response<>(ReturnCode.PARAMS_MISS, "缺少文件：file");
@@ -436,12 +439,26 @@ public class UserController extends BaseController implements BetterJava {
 			if (file.getOriginalFilename() != null && !file.getOriginalFilename().endsWith(".png")) {
 				return new Response<>(ReturnCode.PARAMS_BAD, "仅支持 PNG 图像文件");
 			}
-			Long id = Long.parseLong(token.split("#")[0]);
-			return new Response<>(ReturnCode.SUCCESS, null, dataService.updateWrapper(id, file));
+			return new Response<>(ReturnCode.SUCCESS, null, dataService.updateWrapper(token2UID(token), file));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
 			return new Response<>(ReturnCode.ERROR, "服务异常：" + e.getMessage());
+		}
+	}
+
+	/**
+	 * 提取令牌 UID
+	 *
+	 * @param token 令牌
+	 * @return UID
+	 * @throws ServiceException 服务异常
+	 */
+	private Long token2UID(String token) throws ServiceException {
+		try {
+			return Long.parseLong(token.substring(0, token.indexOf("#")));
+		} catch (Exception e) {
+			throw new ServiceException(ReturnCode.PARAMS_BAD, "无效的令牌");
 		}
 	}
 }

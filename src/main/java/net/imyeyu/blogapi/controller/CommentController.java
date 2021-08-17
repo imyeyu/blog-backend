@@ -1,6 +1,7 @@
 package net.imyeyu.blogapi.controller;
 
 import net.imyeyu.blogapi.annotation.AOPLog;
+import net.imyeyu.blogapi.annotation.QPSLimit;
 import net.imyeyu.blogapi.bean.CaptchaData;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
@@ -50,11 +51,20 @@ public class CommentController extends BaseController {
 	 * @param offset    偏移
 	 * @return 文章评论
 	 */
+	@QPSLimit
 	@RequestMapping("")
 	public Response<?> getByArticleId(Long articleId, long offset) {
 		return new Response<>(ReturnCode.SUCCESS, commentService.findMany(articleId, offset));
 	}
 
+	/**
+	 * 获取子评论
+	 *
+	 * @param commentId 评论 ID
+	 * @param offset    偏移
+	 * @return 子评论
+	 */
+	@QPSLimit
 	@RequestMapping("/reply")
 	public Response<?> getRepliesByCommentId(Long commentId, Long offset) {
 		return new Response<>(ReturnCode.SUCCESS, commentService.findManyReplies(commentId, offset));
@@ -67,6 +77,7 @@ public class CommentController extends BaseController {
 	 * @return 评论结果
 	 */
 	@AOPLog
+	@QPSLimit
 	@PostMapping("")
 	public Response<?> create(@RequestBody TokenData<CaptchaData<Comment>> td) {
 		try {
@@ -119,6 +130,7 @@ public class CommentController extends BaseController {
 	 * @return 回复结果
 	 */
 	@AOPLog
+	@QPSLimit
 	@PostMapping("/reply")
 	public Response<?> createReply(@RequestBody TokenData<CaptchaData<CommentReply>> td) {
 		try {

@@ -214,23 +214,17 @@ public class UserServiceImplement extends AbstractService implements UserService
 	@Override
 	public boolean updatePassword(Long id, String oldPW, String newPW) throws ServiceException {
 		User user = find(id);
-		try {
-			// 校验旧密码
-			if (user.getPassword().equals(generatePasswordDigest(user.getCreatedAt(), oldPW))) {
-				// 校验新密码
-				testPassowrd(newPW);
-				// 更新密码
-				user.setPassword(generatePasswordDigest(user.getCreatedAt(), newPW));
-				user.setUpdatedAt(System.currentTimeMillis());
-				// 清除登录会话
-				return token.clear(id);
-			} else {
-				throw new ServiceException(ReturnCode.PARAMS_BAD, "旧密码错误");
-			}
-		} catch (Exception e) {
-			log.error(user.toString());
-			e.printStackTrace();
-			throw new ServiceException(ReturnCode.ERROR, "编码错误");
+		// 校验旧密码
+		if (user.getPassword().equals(generatePasswordDigest(user.getCreatedAt(), oldPW))) {
+			// 校验新密码
+			testPassowrd(newPW);
+			// 更新密码
+			user.setPassword(generatePasswordDigest(user.getCreatedAt(), newPW));
+			user.setUpdatedAt(System.currentTimeMillis());
+			// 清除登录会话
+			return token.clear(id);
+		} else {
+			throw new ServiceException(ReturnCode.PARAMS_BAD, "旧密码错误");
 		}
 	}
 
@@ -241,7 +235,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 		if (user == null) {
 			throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该 UID 用户：" + id);
 		}
-		// 校验旧密码
+		// 校验密码
 		if (user.getPassword().equals(generatePasswordDigest(user.getCreatedAt(), password))) {
 			// 删除评论
 			commentService.deleteByUID(user.getId());
@@ -252,7 +246,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 			// 清除登录会话
 			return token.clear(id);
 		} else {
-			throw new ServiceException(ReturnCode.PARAMS_BAD, "旧密码错误");
+			throw new ServiceException(ReturnCode.PARAMS_BAD, "密码错误");
 		}
 	}
 

@@ -1,5 +1,6 @@
 package net.imyeyu.blogapi.service;
 
+import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.Comment;
 import net.imyeyu.blogapi.entity.CommentReply;
 
@@ -20,7 +21,7 @@ public interface CommentService extends BaseService<Comment> {
 	 * @return 评论列表
 	 */
 	List<Comment> findMany(Long articleId, Long offset);
-	
+
 	/**
 	 * 获取子评论
 	 * 
@@ -40,4 +41,28 @@ public interface CommentService extends BaseService<Comment> {
 	
 	/** @param commentReply 回复评论对象 */
 	void createReply(CommentReply commentReply);
+
+	/**
+	 * 删除用户评论，包括关联回复（账号注销调用）
+	 *
+	 * @param uid 用户 ID
+	 * @throws ServiceException 服务异常
+	 */
+	void deleteByUID(Long uid) throws ServiceException;
+
+	/**
+	 * 删除指定回复（用户调用、账号注销调用）
+	 *
+	 * @param id 索引
+	 * @throws ServiceException 服务异常
+	 */
+	void deleteReply(Long id) throws ServiceException;
+
+	/**
+	 * 删除该用户所有回复和被回复（账号注销调用）
+	 *
+	 * @param uid 用户 ID
+	 * @throws ServiceException 服务异常
+	 */
+	void deleteReplyByUID(Long uid) throws ServiceException;
 }

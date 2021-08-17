@@ -83,8 +83,21 @@ public class Token {
 	 */
 	public boolean clear(String token) throws ServiceException {
 		try {
-			// 截取 UID
-			Long uid = Long.parseLong(token.substring(0, token.indexOf("#")));
+			return clear(Long.parseLong(token.substring(0, token.indexOf("#"))));
+		} catch (Exception e) {
+			throw new ServiceException(ReturnCode.PARAMS_BAD, "无效的令牌");
+		}
+	}
+
+	/**
+	 * 清除缓存
+	 *
+	 * @param uid 用户 ID
+	 * @return true 为清除成功
+	 * @throws ServiceException 异常
+	 */
+	public boolean clear(Long uid) throws ServiceException {
+		try {
 			ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 			if (sra != null) {
 				// Session
@@ -106,7 +119,12 @@ public class Token {
 	 * @param user 用户（含 ID、用户名）
 	 * @return 令牌
 	 */
-	public String generate(User user) throws Exception {
-		return user.getId() + "#" + Encode.md5(aes.encrypt(user.getName() + salt + new SecureRandom().nextLong()));
+	public String generate(User user) throws ServiceException {
+		try {
+			return user.getId() + "#" + Encode.md5(aes.encrypt(user.getName() + salt + new SecureRandom().nextLong()));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new ServiceException(ReturnCode.ERROR, "编码错误");
+		}
 	}
 }

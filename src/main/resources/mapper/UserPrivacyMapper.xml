@@ -3,11 +3,11 @@
 <mapper namespace="net.imyeyu.blogapi.mapper.UserPrivacyMapper">
 	<!-- 新增 -->
 	<insert id="create" parameterType="net.imyeyu.blogapi.entity.UserPrivacy" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-		INSERT INTO `user_privacy` (`user_id`) VALUES (#{userId});
+		INSERT INTO `user_privacy` (`user_id`) VALUES (#{userId})
 	</insert>
 	<!-- 获取 -->
 	<select id="findByUID" resultType="net.imyeyu.blogapi.entity.UserPrivacy" parameterType="long">
-		SELECT * FROM `user_privacy` WHERE `user_id` = #{uid}
+		SELECT * FROM `user_privacy` WHERE `user_id` = #{uid} LIMIT 1
 	</select>
 	<!-- 更新 -->
 	<update id="update" parameterType="net.imyeyu.blogapi.entity.UserPrivacy">

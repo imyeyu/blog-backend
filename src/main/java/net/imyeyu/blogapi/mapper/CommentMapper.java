@@ -12,11 +12,27 @@ import java.util.List;
  */
 public interface CommentMapper extends BaseMapper<Comment> {
 
-	List<Comment> findMany(Long articleId, Long offset);
-	
-	List<CommentReply> findManyReplies(Long commentId, Long offset);
+	/**
+	 * 统计文章评论和回复
+	 *
+	 * @param aid 文章 ID
+	 * @return 数量
+	 */
+	int getLength(Long aid);
 
-	int getLength(Long articleId);
+	List<Comment> findMany(Long articleId, Long offset);
+
+	List<Comment> findAllByUID(Long uid);
 
 	void createReply(CommentReply commentReply);
+
+	List<CommentReply> findManyReplies(Long commentId, Long offset);
+
+	List<CommentReply> findAllRepliesByCID(Long cid);
+
+	void deleteByUID(Long uid);
+
+	void deleteReply(Long id);
+
+	void deleteReplyByUID(Long uid);
 }

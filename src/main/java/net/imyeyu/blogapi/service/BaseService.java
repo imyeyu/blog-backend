@@ -5,7 +5,12 @@ import net.imyeyu.blogapi.bean.ServiceException;
 import java.util.List;
 
 /**
- * 基本数据库交互接口，不必实现所有接口。注意！如果不实现而调用将不会执行任何事情
+ * 基本数据库交互接口
+ * <p>规范：
+ * <ul>
+ *     <li>不必实现所有接口。注意！如果不实现而调用将不会执行任何事情</li>
+ *     <li>实现类方法顺序：自定义接口（CRUD）、基本交互接口（CRUD）、内部方法</li>
+ * </ul>
  *
  * <p>夜雨 创建于 2021-02-23 21:32
  *
@@ -65,13 +70,13 @@ public interface BaseService<T> {
 	}
 
 	/**
-	 * 批量删除
+	 * 软删除
 	 *
-	 * @param ids 索引数组
-	 * @return 成功删除数量
+	 * @param id 索引
+	 * @return true 为成功删除
 	 * @throws ServiceException 服务异常
 	 */
-	default Long delete(Long... ids) throws ServiceException {
-		return null;
+	default boolean delete(Long id) throws ServiceException {
+		return false;
 	}
 }

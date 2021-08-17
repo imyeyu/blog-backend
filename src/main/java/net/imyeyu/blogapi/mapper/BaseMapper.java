@@ -55,11 +55,11 @@ public interface BaseMapper<T> extends BaseService<T> {
 	void update(T t);
 
 	/**
-	 * 批量删除
+	 * 软删除
 	 *
-	 * @param ids 索引数组
+	 * @param id 索引
 	 * @return 成功删除数量
 	 */
 	@Override
-	Long delete(Long... ids);
+	boolean delete(Long id);
 }

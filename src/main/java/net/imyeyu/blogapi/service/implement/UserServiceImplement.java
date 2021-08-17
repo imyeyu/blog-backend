@@ -12,6 +12,7 @@ import net.imyeyu.blogapi.entity.UserPrivacy;
 import net.imyeyu.blogapi.entity.UserConfig;
 import net.imyeyu.blogapi.mapper.UserMapper;
 import net.imyeyu.blogapi.service.AbstractService;
+import net.imyeyu.blogapi.service.CommentService;
 import net.imyeyu.blogapi.service.UserDataService;
 import net.imyeyu.blogapi.service.UserPrivacyService;
 import net.imyeyu.blogapi.service.UserService;
@@ -48,6 +49,9 @@ public class UserServiceImplement extends AbstractService implements UserService
 	private AES aes;
 
 	@Autowired
+	private CommentService commentService;
+
+	@Autowired
 	private UserDataService dataService;
 
 	@Autowired
@@ -72,8 +76,13 @@ public class UserServiceImplement extends AbstractService implements UserService
 	 * @param password  原始密码
 	 * @return 密码摘要
 	 */
-	private String generatePasswordDigest(Long createdAt, String password) throws Exception {
-		return Encode.md5(aes.encrypt(createdAt + salt + password));
+	private String generatePasswordDigest(Long createdAt, String password) throws ServiceException {
+		try {
+			return Encode.md5(aes.encrypt(createdAt + salt + password));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new ServiceException(ReturnCode.ERROR, "编码错误");
+		}
 	}
 
 	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
@@ -134,30 +143,24 @@ public class UserServiceImplement extends AbstractService implements UserService
 		}
 		if (!ObjectUtils.isEmpty(result)) {
 			if (!result.isBanning()) {
-				try {
-					// 密码摘要校验
-					if (result.getPassword().equals(generatePasswordDigest(result.getCreatedAt(), password))) {
-						// 生成并缓存 Token
-						String token = this.token.generate(result);
-						redisToken.set(result.getId(), token, 24);
-						// 用户数据
-						UserData data = dataService.findByUID(result.getId());
-						if (!userExpFlag.has(result.getId())) {
-							// 当天无登录标记，加经验
-							data.setExp(data.getExp() + 2);
-							userExpFlag.set(result.getId(), "", (Time.tomorrow() - System.currentTimeMillis()) / 1000);
-						}
-						data.setSignedInIp(getIP());
-						data.setSignedInAt(System.currentTimeMillis());
-						dataService.update(data);
-						result.setData(data);
-						Captcha.clear("SIGNIN");
-						return result.toToken(token);
+				// 密码摘要校验
+				if (result.getPassword().equals(generatePasswordDigest(result.getCreatedAt(), password))) {
+					// 生成并缓存 Token
+					String token = this.token.generate(result);
+					redisToken.set(result.getId(), token, 24);
+					// 用户数据
+					UserData data = dataService.findByUID(result.getId());
+					if (!userExpFlag.has(result.getId())) {
+						// 当天无登录标记，加经验
+						data.setExp(data.getExp() + 2);
+						userExpFlag.set(result.getId(), "", (Time.tomorrow() - System.currentTimeMillis()) / 1000);
 					}
-				} catch (Exception e) {
-					log.error(result.toString());
-					e.printStackTrace();
-					throw new ServiceException(ReturnCode.ERROR, "编码错误");
+					data.setSignedInIp(getIP());
+					data.setSignedInAt(System.currentTimeMillis());
+					dataService.update(data);
+					result.setData(data);
+					Captcha.clear("SIGNIN");
+					return result.toToken(token);
 				}
 				throw new ServiceException(ReturnCode.PARAMS_BAD, "密码错误");
 			}
@@ -186,11 +189,76 @@ public class UserServiceImplement extends AbstractService implements UserService
 
 	@Override
 	public boolean signOut(String token) throws ServiceException {
-		if (isSignedIn(token)) {
-			return this.token.clear(token);
-		} else {
-			throw new ServiceException(ReturnCode.PERMISSION_ERROR, "无权限操作");
+		return this.token.clear(token);
+	}
+
+	@Override
+	public User findByName(String name) throws ServiceException {
+		User user = mapper.findByName(name);
+		if (user != null) {
+			return user;
 		}
+		throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该昵称的用户：" + name);
+	}
+
+	@Override
+	public User findByEmail(String email) throws ServiceException {
+		User user = mapper.findByEmail(email);
+		if (user != null) {
+			return user;
+		}
+		throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该邮箱的用户：" + email);
+	}
+
+	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
+	@Override
+	public boolean updatePassword(Long id, String oldPW, String newPW) throws ServiceException {
+		User user = find(id);
+		try {
+			// 校验旧密码
+			if (user.getPassword().equals(generatePasswordDigest(user.getCreatedAt(), oldPW))) {
+				// 校验新密码
+				testPassowrd(newPW);
+				// 更新密码
+				user.setPassword(generatePasswordDigest(user.getCreatedAt(), newPW));
+				user.setUpdatedAt(System.currentTimeMillis());
+				// 清除登录会话
+				return token.clear(id);
+			} else {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "旧密码错误");
+			}
+		} catch (Exception e) {
+			log.error(user.toString());
+			e.printStackTrace();
+			throw new ServiceException(ReturnCode.ERROR, "编码错误");
+		}
+	}
+
+	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
+	@Override
+	public boolean cancel(Long id, String password) throws ServiceException {
+		User user = mapper.find(id);
+		if (user == null) {
+			throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该 UID 用户：" + id);
+		}
+		// 校验旧密码
+		if (user.getPassword().equals(generatePasswordDigest(user.getCreatedAt(), password))) {
+			// 删除评论
+			commentService.deleteByUID(user.getId());
+			// 删除回复
+			commentService.deleteReplyByUID(user.getId());
+			// 删除账号
+			delete(user.getId());
+			// 清除登录会话
+			return token.clear(id);
+		} else {
+			throw new ServiceException(ReturnCode.PARAMS_BAD, "旧密码错误");
+		}
+	}
+
+	@Override
+	public void exist(Long id) throws ServiceException {
+		find(id);
 	}
 
 	@Override
@@ -205,16 +273,6 @@ public class UserServiceImplement extends AbstractService implements UserService
 			return user;
 		}
 		throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该 UID 用户：" + id);
-	}
-
-	@Override
-	public User findByName(String name) {
-		return mapper.findByName(name);
-	}
-
-	@Override
-	public User findByEmail(String email) {
-		return mapper.findByEmail(email);
 	}
 
 	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
@@ -236,6 +294,11 @@ public class UserServiceImplement extends AbstractService implements UserService
 		}
 		user.setUpdatedAt(System.currentTimeMillis());
 		mapper.update(user);
+	}
+
+	@Override
+	public boolean delete(Long id) throws ServiceException {
+		return mapper.delete(id);
 	}
 
 	/**

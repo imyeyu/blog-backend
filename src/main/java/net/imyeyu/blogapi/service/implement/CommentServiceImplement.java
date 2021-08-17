@@ -27,6 +27,11 @@ public class CommentServiceImplement implements CommentService {
 	private CommentMapper mapper;
 
 	@Override
+	public int getLength(Long articleId) {
+		return mapper.getLength(articleId);
+	}
+
+	@Override
 	public void create(Comment comment) throws ServiceException {
 		if (articleService.find(comment.getArticleId()).isCanComment()) {
 			comment.setCreatedAt(System.currentTimeMillis());
@@ -53,7 +58,30 @@ public class CommentServiceImplement implements CommentService {
 	}
 
 	@Override
-	public int getLength(Long articleId) {
-		return mapper.getLength(articleId);
+	public boolean delete(Long id) throws ServiceException {
+		List<CommentReply> replies = mapper.findAllRepliesByCID(id);
+		for (int i = 0; i < replies.size(); i++) {
+			deleteReply(replies.get(i).getId());
+		}
+		return mapper.delete(id);
+	}
+
+	@Override
+	public void deleteByUID(Long uid) throws ServiceException {
+		List<Comment> comments = mapper.findAllByUID(uid);
+		for (int i = 0; i < comments.size(); i++) {
+			delete(comments.get(i).getId());
+		}
+		mapper.deleteByUID(uid);
+	}
+
+	@Override
+	public void deleteReply(Long id) throws ServiceException {
+		mapper.deleteReply(id);
+	}
+
+	@Override
+	public void deleteReplyByUID(Long uid) throws ServiceException {
+		mapper.deleteReplyByUID(uid);
 	}
 }

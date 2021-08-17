@@ -3,11 +3,11 @@
 <mapper namespace="net.imyeyu.blogapi.mapper.UserConfigMapper">
 	<!-- 新增 -->
 	<insert id="create" parameterType="net.imyeyu.blogapi.entity.UserConfig" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-		INSERT INTO `user_config` (`user_id`) VALUES (#{userId});
+		INSERT INTO `user_config` (`user_id`) VALUES (#{userId})
 	</insert>
 	<!-- 获取 -->
 	<select id="find" resultType="net.imyeyu.blogapi.entity.UserConfig" parameterType="long">
-		SELECT * FROM `user_config` WHERE `user_id` = #{id}
+		SELECT * FROM `user_config` WHERE `user_id` = #{id} LIMIT 1
 	</select>
 	<!-- 更新 -->
 	<update id="update" parameterType="net.imyeyu.blogapi.entity.UserConfig">

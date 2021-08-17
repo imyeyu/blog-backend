@@ -3,6 +3,7 @@ package net.imyeyu.blogapi.service.implement;
 import net.imyeyu.blogapi.bean.ResourceFile;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
+import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.mapper.UserDataMapper;
 import net.imyeyu.blogapi.service.FileService;
@@ -42,19 +43,12 @@ public class UserDataServiceImplement implements UserDataService {
 	private UserDataMapper mapper;
 
 	@Override
-	public void create(UserData userData) throws ServiceException {
-		mapper.create(userData);
-	}
-
-	@Override
 	public UserData findByUID(Long uid) throws ServiceException {
-		return mapper.findByUID(uid);
-	}
-
-	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
-	@Override
-	public void update(UserData data) throws ServiceException {
-		mapper.update(data);
+		User user = userService.find(uid);
+		UserData data = mapper.findByUID(uid);
+		user.setPassword(null);
+		data.setUser(user);
+		return data;
 	}
 
 	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
@@ -102,5 +96,21 @@ public class UserDataServiceImplement implements UserDataService {
 		} catch (IOException e) {
 			throw new ServiceException(ReturnCode.ERROR, "上传文件异常：" + e.getMessage());
 		}
+	}
+
+	@Override
+	public void create(UserData userData) throws ServiceException {
+		mapper.create(userData);
+	}
+
+	@Override
+	public UserData find(Long id) throws ServiceException {
+		return mapper.find(id);
+	}
+
+	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
+	@Override
+	public void update(UserData data) throws ServiceException {
+		mapper.update(data);
 	}
 }

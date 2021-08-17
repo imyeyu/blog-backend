@@ -3,12 +3,12 @@
 <mapper namespace="net.imyeyu.blogapi.mapper.CommentMapper">
 	<!-- 新增评论 -->
 	<insert id="create" parameterType="net.imyeyu.blogapi.entity.Comment" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-		INSERT INTO `comments` (
-			`article_id`,
-			`user_id`,
-			`nick`,
-			`data`,
-			`created_at`
+		INSERT INTO comments (
+			article_id,
+			user_id,
+			nick,
+			data,
+			created_at
 		) VALUES (
 			#{articleId},
 			#{userId},
@@ -75,7 +75,7 @@
 					urd.has_avatar AS sender_has_avatar,
 					ROW_NUMBER() OVER (PARTITION BY comment_id) AS seq
 				FROM
-					comment_reply AS crt
+					comment_replies AS crt
 				LEFT JOIN
 					user_data AS urd
 				ON
@@ -103,7 +103,7 @@
 				ANY_VALUE(comment_id) AS crc_id,
 				COUNT(comment_id) AS cr_length
 			FROM
-				comment_reply
+				comment_replies
 			GROUP BY
 				comment_id
 		) AS crc
@@ -147,16 +147,20 @@
 	        </association>
         </collection>
 	</resultMap>
+	<!-- 根据用户获取所有评论 -->
+	<select id="findAllByUID" resultMap="net.imyeyu.blogapi.entity.Comment">
+		SELECT * FROM comments WHERE user_id = #{uid} AND deleted_at IS NULL
+	</select>
 	<!-- 新增子评论 -->
 	<insert id="createReply" parameterType="net.imyeyu.blogapi.entity.CommentReply" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-		INSERT INTO `comment_reply` (
-			`comment_id`,
-			`sender_id`,
-			`receiver_id`,
-			`sender_nick`,
-			`receiver_nick`,
-			`data`,
-			`created_at`
+		INSERT INTO comment_replies (
+			comment_id,
+			sender_id,
+			receiver_id,
+			sender_nick,
+			receiver_nick,
+			data,
+			created_at
 		) VALUES (
 			#{commentId},
 			#{senderId},
@@ -189,7 +193,7 @@
 				data,
 				created_at
 			FROM
-				comment_reply AS c
+				comment_replies AS c
 			WHERE
 				comment_id = #{commentId}
 				AND deleted_at IS NULL
@@ -223,6 +227,10 @@
             <result property="name" column="receiver_name"/>
         </association>
 	</resultMap>
+	<!-- 根据评论获取所有子评论 -->
+	<select id="findAllByUID" resultMap="net.imyeyu.blogapi.entity.CommentReply">
+		SELECT * FROM comment_replies WHERE comment_id = #{cid} AND deleted_at IS NULL
+	</select>
 	<!-- 统计该文章的所有评论和子评论 -->
 	<select id="getLength" parameterType="long" resultType="int">
 		SELECT
@@ -234,13 +242,53 @@
 			FROM
 				comments AS c
 			LEFT JOIN
-				comment_reply AS cr
+				comment_replies AS cr
 			ON
 				cr.comment_id = c.id
 			WHERE
-				c.article_id = #{articleId}
+				c.article_id = #{aid}
 				AND c.deleted_at IS NULL
 				AND cr.deleted_at IS NULL
 		) AS r
 	</select>
+	<!-- 删除 -->
+	<update id="delete">
+		<if test="id != null">
+			UPDATE comments
+			<set>
+				deleted_at = FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000)
+			</set>
+			WHERE id = #{id}
+		</if>
+	</update>
+	<update id="deleteByUID">
+		<if test="id != null">
+			UPDATE comments
+			<set>
+				deleted_at = FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000)
+			</set>
+			WHERE user_id = #{uid}
+		</if>
+	</update>
+	<!-- 删除回复 -->
+	<update id="deleteReply">
+		<if test="id != null">
+			UPDATE comment_replies
+			<set>
+				deleted_at = FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000)
+			</set>
+			WHERE id = #{id}
+		</if>
+	</update>
+	<update id="deleteReplyByUID">
+		<if test="id != null">
+			UPDATE comment_replies
+			<set>
+				deleted_at = FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000)
+			</set>
+			WHERE
+				sender_id = #{uid}
+				OR receiver_id = #{uid}
+		</if>
+	</update>
 </mapper>

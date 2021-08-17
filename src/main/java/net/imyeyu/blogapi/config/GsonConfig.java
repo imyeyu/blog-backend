@@ -20,8 +20,7 @@ public class GsonConfig {
 	@Bean
 	public HttpMessageConverters customConverters() {
 		Collection<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
-		GsonHttpMessageConverter gsonHttpMessageConverter = new GsonHttpMessageConverter();
-		messageConverters.add(gsonHttpMessageConverter);
+		messageConverters.add(new GsonHttpMessageConverter());
 		return new HttpMessageConverters(true, messageConverters);
 	}
 }

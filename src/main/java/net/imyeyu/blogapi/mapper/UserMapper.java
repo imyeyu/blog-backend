@@ -1,7 +1,6 @@
 package net.imyeyu.blogapi.mapper;
 
 import net.imyeyu.blogapi.entity.User;
-import org.apache.ibatis.annotations.Param;
 
 /**
  * 用户
@@ -10,7 +9,9 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface UserMapper extends BaseMapper<User> {
 
-	User findByName(@Param("name") String name);
+	User findByName(String name);
 
-	User findByEmail(@Param("email") String email);
+	User findByEmail(String email);
+
+	void updatePassword(Long id, String password);
 }

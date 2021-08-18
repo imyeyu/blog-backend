@@ -39,12 +39,16 @@
 			WHERE `id` = #{id}
 		</if>
 	</update>
+	<!-- 更新密码 -->
+	<update id="updatePassword">
+		UPDATE users SET password = #{password}, updated_at = FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000) WHERE id = #{id}
+	</update>
 	<!-- 删除 -->
 	<update id="delete">
 		<if test="id != null">
 			UPDATE `users`
 			<set>
-				`deleted_at` = FLOOR(UNIX_TIMESTAMP(NOW(3))*1000)
+				`deleted_at` = FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000)
 			</set>
 			WHERE `id` = #{id}
 		</if>

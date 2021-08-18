@@ -182,15 +182,17 @@ public class UserController extends BaseController implements BetterJava {
 	@PostMapping("/update/password")
 	public Response<?> updatePassword(@RequestBody Map<String, String> params) {
 		try {
-			String oldPW = params.get("oldPW");
-			if (StringUtils.isEmpty(oldPW)) {
-				return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：oldPW");
+			String oldPassword = params.get("oldPassword");
+			if (StringUtils.isEmpty(oldPassword)) {
+				return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：oldPassword");
 			}
-			String newPW = params.get("newPW");
-			if (StringUtils.isEmpty(newPW)){
-				return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：newPW");
+			String newPassword = params.get("newPassword");
+			if (StringUtils.isEmpty(newPassword)) {
+				return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：newPassword");
 			}
-			return new Response<>(ReturnCode.SUCCESS, service.updatePassword(token2UID(params.get("token")), oldPW, newPW));
+			return new Response<>(ReturnCode.SUCCESS, service.updatePassword(token2UID(params.get("token")), oldPassword, newPassword));
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new Response<>(ReturnCode.ERROR, e);
@@ -243,7 +245,7 @@ public class UserController extends BaseController implements BetterJava {
 				// 已登录，并且获取的用户资料是自己的，不执行隐私控制过滤
 				needFilter = !service.isSignedIn(token) || !id.equals(token2UID(token));
 			}
-			UserData data = dataService.findByUID(id);
+			UserData data = dataService.findByUID(id).withUser();
 			if (needFilter) {
 				data = data.filterPrivacy(privacyService.findByUID(id));
 			}
@@ -295,17 +297,11 @@ public class UserController extends BaseController implements BetterJava {
 	 */
 	@AOPLog
 	@QPSLimit
+	@RequiredToken
 	@PostMapping("/privacy")
 	public Response<?> getPrivacy(@RequestBody Map<String, String> params) {
 		try {
-			String token = params.get("token");
-			if (StringUtils.isEmpty(token)) {
-				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
-			}
-			if (!service.isSignedIn(token)) {
-				return new Response<>(ReturnCode.PERMISSION_MISS, "未登录，无权限操作");
-			}
-			return new Response<>(ReturnCode.SUCCESS, privacyService.findByUID(token2UID(token)));
+			return new Response<>(ReturnCode.SUCCESS, privacyService.findByUID(token2UID(params.get("token"))));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {

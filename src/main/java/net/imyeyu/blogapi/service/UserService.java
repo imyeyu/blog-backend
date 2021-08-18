@@ -54,13 +54,13 @@ public interface UserService extends BaseService<User> {
 	/**
 	 * 修改密码
 	 *
-	 * @param id    用户 ID
-	 * @param oldPW 旧密码
-	 * @param newPW 新密码
+	 * @param id          用户 ID
+	 * @param oldPassword 旧密码
+	 * @param newPassword 新密码
 	 * @return true 为修改成功
 	 * @throws ServiceException 服务异常
 	 */
-	boolean updatePassword(Long id, String oldPW, String newPW) throws ServiceException;
+	boolean updatePassword(Long id, String oldPassword, String newPassword) throws ServiceException;
 
 	/**
 	 * 根据用户名查找

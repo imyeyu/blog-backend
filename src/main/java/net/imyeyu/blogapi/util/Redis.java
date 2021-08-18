@@ -1,5 +1,8 @@
 package net.imyeyu.blogapi.util;
 
+import io.lettuce.core.RedisCommandTimeoutException;
+import net.imyeyu.blogapi.bean.ReturnCode;
+import net.imyeyu.blogapi.bean.ServiceException;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.Cursor;
@@ -69,7 +72,7 @@ public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializ
 	 * @param v           值
 	 * @param keepTimeout 是否保持剩余生存时间
 	 */
-	public void set(K key, T v, boolean keepTimeout) {
+	public void set(K key, T v, boolean keepTimeout) throws ServiceException {
 		if (keepTimeout) {
 			set(key, v, null);
 		} else {
@@ -84,7 +87,7 @@ public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializ
 	 * @param v   值
 	 * @param s   存活秒数
 	 */
-	public void set(K key, T v, long s) {
+	public void set(K key, T v, long s) throws ServiceException {
 		set(key, v, Duration.ofSeconds(s));
 	}
 
@@ -95,7 +98,7 @@ public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializ
 	 * @param v   值
 	 * @param h   存活小时
 	 */
-	public void set(K key, T v, int h) {
+	public void set(K key, T v, int h) throws ServiceException {
 		set(key, v, Duration.ofHours(h));
 	}
 
@@ -106,17 +109,21 @@ public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializ
 	 * @param v       值
 	 * @param timeout 存活时间（为 null 时保持剩余生存时间）
 	 */
-	public void set(K key, T v, Duration timeout) {
-		if (timeout == null) {
-			Long expire = redis.getExpire(key, TimeUnit.SECONDS);
-			// 存在剩余生存时间并且没有死亡
-			if (expire != null && 0 < expire) {
-				redis.opsForValue().set(key, v, Duration.ofSeconds(expire));
+	public void set(K key, T v, Duration timeout) throws ServiceException {
+		try {
+			if (timeout == null) {
+				Long expire = redis.getExpire(key, TimeUnit.SECONDS);
+				// 存在剩余生存时间并且没有死亡
+				if (expire != null && 0 < expire) {
+					redis.opsForValue().set(key, v, Duration.ofSeconds(expire));
+				} else {
+					redis.opsForValue().set(key, v);
+				}
 			} else {
-				redis.opsForValue().set(key, v);
+				redis.opsForValue().set(key, v, timeout);
 			}
-		} else {
-			redis.opsForValue().set(key, v, timeout);
+		} catch (RedisCommandTimeoutException e) {
+			throw new ServiceException(ReturnCode.RESULT_TIMEOUT, "Redis 连接超时");
 		}
 	}
 
@@ -126,8 +133,12 @@ public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializ
 	 * @param key 键
 	 * @return 值
 	 */
-	public T get(K key) {
-		return redis.opsForValue().get(key);
+	public T get(K key) throws ServiceException {
+		try {
+			return redis.opsForValue().get(key);
+		} catch (RedisCommandTimeoutException e) {
+			throw new ServiceException(ReturnCode.RESULT_TIMEOUT, "Redis 连接超时");
+		}
 	}
 
 	/**
@@ -136,7 +147,7 @@ public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializ
 	 * @param key 键
 	 * @return 值
 	 */
-	public String getString(K key) {
+	public String getString(K key) throws ServiceException {
 		return get(key).toString();
 	}
 
@@ -146,7 +157,7 @@ public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializ
 	 * @param key 键
 	 * @return 值
 	 */
-	public Boolean is(K key) {
+	public Boolean is(K key) throws ServiceException {
 		return Boolean.parseBoolean(getString(key));
 	}
 
@@ -156,7 +167,7 @@ public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializ
 	 * @param key 键
 	 * @return 值
 	 */
-	public Boolean not(K key) {
+	public Boolean not(K key) throws ServiceException {
 		return !is(key);
 	}
 
@@ -166,7 +177,7 @@ public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializ
 	 * @param key 键
 	 * @return true 为存在
 	 */
-	public boolean has(K key) {
+	public boolean has(K key) throws ServiceException {
 		return get(key) != null;
 	}
 
@@ -213,7 +224,7 @@ public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializ
 	}
 
 	/** @return 所有值 */
-	public List<T> values() {
+	public List<T> values() throws ServiceException {
 		List<T> r = new ArrayList<>();
 		List<K> keys = keys("*");
 		for (K key : keys) {
@@ -259,7 +270,7 @@ public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializ
 	 * @param k 键
 	 * @return true 为成功
 	 */
-	public boolean destroy(K k) {
+	public boolean destroy(K k) throws ServiceException {
 		if (!ObjectUtils.isEmpty(k) && has(k)) {
 			Boolean b = redis.delete(k);
 			return b != null && b;

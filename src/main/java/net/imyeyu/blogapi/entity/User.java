@@ -2,7 +2,13 @@ package net.imyeyu.blogapi.entity;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import net.imyeyu.blogapi.annotation.Entity;
+import net.imyeyu.blogapi.bean.ServiceException;
+import net.imyeyu.blogapi.service.UserDataService;
 import net.imyeyu.blogapi.vo.UserSignedIn;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.annotation.Transient;
 
 import java.io.Serializable;
 
@@ -12,8 +18,13 @@ import java.io.Serializable;
  * <p>夜雨 创建于 2021-03-01 17:11
  */
 @Data
+@Entity
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class User extends BaseEntity implements Serializable {
+
+	@Transient
+	private transient static UserDataService dataService;
 
 	private String email;
 	private String name;
@@ -22,6 +33,11 @@ public class User extends BaseEntity implements Serializable {
 	private Long unbanAt;
 
 	private UserData data;
+
+	@Autowired
+	public User(UserDataService dataService) {
+		User.dataService = dataService;
+	}
 
 	/** @return true 为禁言中 */
 	public boolean isMuting() {
@@ -33,6 +49,23 @@ public class User extends BaseEntity implements Serializable {
 		return unbanAt != null && System.currentTimeMillis() < unbanAt;
 	}
 
+	/**
+	 * 携带用户数据
+	 *
+	 * @return 本实体
+	 * @throws ServiceException 服务异常
+	 */
+	public User withData() throws ServiceException {
+		data = dataService.findByUID(getId());
+		return this;
+	}
+
+	/**
+	 * 转为前端登录用户对象
+	 *
+	 * @param token 通信令牌
+	 * @return 前端登录对象
+	 */
 	public UserSignedIn toToken(String token) {
 		UserSignedIn usi = new UserSignedIn(name, token, data);
 		usi.setId(id);

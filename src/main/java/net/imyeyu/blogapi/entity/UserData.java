@@ -2,6 +2,13 @@ package net.imyeyu.blogapi.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.imyeyu.blogapi.annotation.Entity;
+import net.imyeyu.blogapi.bean.ServiceException;
+import net.imyeyu.blogapi.service.UserDataService;
+import net.imyeyu.blogapi.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.annotation.Transient;
+import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 
@@ -11,8 +18,12 @@ import java.io.Serializable;
  * <p>夜雨 创建于 2021-05-29 15:58
  */
 @Data
+@Entity
 @NoArgsConstructor
 public class UserData implements Serializable {
+
+	@Transient
+	private transient static UserService userService;
 
 	private Long id;
 
@@ -31,8 +42,24 @@ public class UserData implements Serializable {
 
 	private User user;
 
+	@Autowired
+	public UserData(UserService userService) {
+		UserData.userService = userService;
+	}
+
 	public UserData(Long userId) {
 		this.userId = userId;
+	}
+
+	/**
+	 * 携带账号数据
+	 *
+	 * @return 本实体
+	 * @throws ServiceException 服务异常
+	 */
+	public UserData withUser() throws ServiceException {
+		user = userService.find(userId);
+		return this;
 	}
 
 	/**

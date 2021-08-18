@@ -85,7 +85,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 		}
 	}
 
-	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public UserSignedIn register(User user) throws ServiceException {
 		// 校验用户名
@@ -106,13 +106,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 		String plainPassword = user.getPassword();
 		user.setCreatedAt(System.currentTimeMillis());
 		// 摘要密码
-		try {
-			user.setPassword(generatePasswordDigest(user.getCreatedAt(), user.getPassword()));
-		} catch (Exception e) {
-			log.error(user.toString());
-			e.printStackTrace();
-			throw new ServiceException(ReturnCode.ERROR, "编码错误");
-		}
+		user.setPassword(generatePasswordDigest(user.getCreatedAt(), user.getPassword()));
 		// 注册账号
 		create(user);
 		// 初始化资料
@@ -127,7 +121,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 		return signIn(String.valueOf(user.getId()), plainPassword);
 	}
 
-	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public UserSignedIn signIn(String user, String password) throws ServiceException {
 		User result;
@@ -158,9 +152,8 @@ public class UserServiceImplement extends AbstractService implements UserService
 					data.setSignedInIp(getIP());
 					data.setSignedInAt(System.currentTimeMillis());
 					dataService.update(data);
-					result.setData(data);
 					Captcha.clear("SIGNIN");
-					return result.toToken(token);
+					return result.withData().toToken(token);
 				}
 				throw new ServiceException(ReturnCode.PARAMS_BAD, "密码错误");
 			}
@@ -170,7 +163,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 		}
 	}
 
-	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public boolean isSignedIn(String token) throws ServiceException {
 		if (this.token.isValid(token)) {
@@ -194,33 +187,24 @@ public class UserServiceImplement extends AbstractService implements UserService
 
 	@Override
 	public User findByName(String name) throws ServiceException {
-		User user = mapper.findByName(name);
-		if (user != null) {
-			return user;
-		}
-		throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该昵称的用户：" + name);
+		return mapper.findByName(name);
 	}
 
 	@Override
 	public User findByEmail(String email) throws ServiceException {
-		User user = mapper.findByEmail(email);
-		if (user != null) {
-			return user;
-		}
-		throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该邮箱的用户：" + email);
+		return mapper.findByEmail(email);
 	}
 
-	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
-	public boolean updatePassword(Long id, String oldPW, String newPW) throws ServiceException {
+	public boolean updatePassword(Long id, String oldPassword, String newPassword) throws ServiceException {
 		User user = find(id);
 		// 校验旧密码
-		if (user.getPassword().equals(generatePasswordDigest(user.getCreatedAt(), oldPW))) {
+		if (user.getPassword().equals(generatePasswordDigest(user.getCreatedAt(), oldPassword))) {
 			// 校验新密码
-			testPassowrd(newPW);
+			testPassowrd(newPassword);
 			// 更新密码
-			user.setPassword(generatePasswordDigest(user.getCreatedAt(), newPW));
-			user.setUpdatedAt(System.currentTimeMillis());
+			mapper.updatePassword(id, generatePasswordDigest(user.getCreatedAt(), newPassword));
 			// 清除登录会话
 			return token.clear(id);
 		} else {
@@ -228,7 +212,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 		}
 	}
 
-	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public boolean cancel(Long id, String password) throws ServiceException {
 		User user = mapper.find(id);
@@ -269,7 +253,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 		throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该 UID 用户：" + id);
 	}
 
-	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public void update(User user) throws ServiceException {
 		// 校验用户名

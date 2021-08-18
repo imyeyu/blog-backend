@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
-import net.imyeyu.blogapi.util.Redis;
 import net.imyeyu.blogapi.util.Token;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +30,6 @@ public class RequiredTokenInterceptor implements HandlerInterceptor {
 
 	@Autowired
 	private Token token;
-
-	@Autowired
-	private Redis<String, Long> redisAccessLimit;
 
 	@Override
 	public boolean preHandle(HttpServletRequest req, HttpServletResponse resp, Object handler) throws Exception {

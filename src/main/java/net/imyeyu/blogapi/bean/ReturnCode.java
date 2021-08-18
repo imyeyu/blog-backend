@@ -11,7 +11,7 @@ import lombok.Getter;
 public enum ReturnCode {
 
 	// 200 正常
-	SUCCESS           (20000, "执行成功"),
+	SUCCESS            (20000, "执行成功"),
 	// 400 参数异常
 	PARAMS_MISS        (40000, "缺少参数"),
 	PARAMS_BAD         (40001, "不合法的参数"),
@@ -25,6 +25,7 @@ public enum ReturnCode {
 	// 404 资源异常
 	RESULT_NULL        (40400, "无数据"),
 	RESULT_BAN         (40401, "禁用的数据"),
+	RESULT_TIMEOUT     (40402, "上游服务器连接超时"),
 	// 500 致命异常
 	ERROR              (50000, "服务异常"),
 	ERROR_NPE_METHOD   (50001, "服务异常"),

@@ -46,7 +46,7 @@ spring:
             article-read: 1    #        IP: [AID..]         IP 阅读记录缓存
             user-token: 2      #       UID: TOKEN           用户令牌缓存
             user-exp-flag: 3   #       UID: NULL            用户登录经验标记，暂时没有值，数据死亡时间为次日零时
-            access-limit: 4    # IP#method: PREV_UnixTime   接口访问频率控制
+            qps-limit: 4       # IP#method: PREV_UnixTime   接口访问频率控制
             setting: 5         #   Setting: SettingValue    系统配置
         lettuce: # 连接池配置
             pool:

@@ -3,7 +3,6 @@ package net.imyeyu.blogapi.service.implement;
 import net.imyeyu.blogapi.bean.ResourceFile;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
-import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.mapper.UserDataMapper;
 import net.imyeyu.blogapi.service.FileService;
@@ -22,7 +21,7 @@ import java.io.IOException;
  *
  * <p>夜雨 创建于 2021-07-27 17:08
  */
-@Service
+@Service("dataService")
 public class UserDataServiceImplement implements UserDataService {
 
 	/** 头像储存位置 */
@@ -44,21 +43,17 @@ public class UserDataServiceImplement implements UserDataService {
 
 	@Override
 	public UserData findByUID(Long uid) throws ServiceException {
-		User user = userService.find(uid);
-		UserData data = mapper.findByUID(uid);
-		user.setPassword(null);
-		data.setUser(user);
-		return data;
+		return mapper.findByUID(uid);
 	}
 
-	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public void updateData(UserData data) throws ServiceException {
 		data.setUpdatedAt(System.currentTimeMillis());
 		mapper.updateData(data);
 	}
 
-	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public String updateAvatar(Long id, MultipartFile file) throws ServiceException {
 		try {
@@ -78,7 +73,7 @@ public class UserDataServiceImplement implements UserDataService {
 		}
 	}
 
-	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public String updateWrapper(Long id, MultipartFile file) throws ServiceException {
 		try {
@@ -108,7 +103,7 @@ public class UserDataServiceImplement implements UserDataService {
 		return mapper.find(id);
 	}
 
-	@Transactional(rollbackFor = {ServiceException.class, Exception.class})
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public void update(UserData data) throws ServiceException {
 		mapper.update(data);

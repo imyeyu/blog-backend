@@ -42,8 +42,8 @@ public class RedisConfig extends CachingConfigurerSupport {
 	@Value("${spring.redis.database.user-exp-flag}")
 	private int userExpFlagDB;
 
-	@Value("${spring.redis.database.access-limit}")
-	private int accessLimitDB;
+	@Value("${spring.redis.database.qps-limit}")
+	private int qpsLimitDB;
 
 	@Value("${spring.redis.database.setting}")
 	private int settingDB;
@@ -153,9 +153,9 @@ public class RedisConfig extends CachingConfigurerSupport {
 	 *
 	 * @return RedisTemplate
 	 */
-	@Bean("redisAccessLimit")
-	public Redis<String, Long> getAccessLimitRedisTemplate() {
-		return getRedis(accessLimitDB, STRING_SERIALIZER);
+	@Bean("redisQPSLimit")
+	public Redis<String, Long> getQPSLimitRedisTemplate() {
+		return getRedis(qpsLimitDB, STRING_SERIALIZER);
 	}
 
 	/**

@@ -4,8 +4,8 @@ import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
+import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.util.Redis;
-import net.imyeyu.blogapi.util.Token;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
@@ -30,10 +30,7 @@ public class QPSLimitInterceptor implements HandlerInterceptor {
 	private Gson gson;
 
 	@Autowired
-	private Token token;
-
-	@Autowired
-	private Redis<String, Long> redisAccessLimit;
+	private Redis<String, Long> redisQPSLimit;
 
 	@Override
 	public boolean preHandle(HttpServletRequest req, HttpServletResponse resp, Object handler) throws Exception {
@@ -46,17 +43,22 @@ public class QPSLimitInterceptor implements HandlerInterceptor {
 			// 频率限制
 			int ms = qpsLimit.value();
 			if (0 < ms) {
-				// 键
-				String key = req.getRemoteAddr() + "#" + handlerMethod.getMethod().getName();
-				// 该 IP 限时内是否访问过该方法
-				long cd;
-				if (redisAccessLimit.has(key) && 0D + (cd = System.currentTimeMillis() - redisAccessLimit.get(key)) < ms) {
-					log.warn("请求频率过高：" + key + ".CDMS" + (ms - cd));
-					render(resp, new Response<>(ReturnCode.REQUEST_BAD, "请求频率过高"));
+				try {
+					// 键
+					String key = req.getRemoteAddr() + "#" + handlerMethod.getMethod().getName();
+					// 该 IP 限时内是否访问过该方法
+					long cd;
+					if (redisQPSLimit.has(key) && 0D + (cd = System.currentTimeMillis() - redisQPSLimit.get(key)) < ms) {
+						log.warn("请求频率过高：" + key + ".CDMS" + (ms - cd));
+						render(resp, new Response<>(ReturnCode.REQUEST_BAD, "请求频率过高"));
+						return false;
+					}
+					// 缓存记录
+					redisQPSLimit.set(key, System.currentTimeMillis(), Duration.ofMillis(ms));
+				} catch (ServiceException e) {
+					render(resp, new Response<>(e.getCode(), e.getMessage()));
 					return false;
 				}
-				// 缓存记录
-				redisAccessLimit.set(key, System.currentTimeMillis(), Duration.ofMillis(ms));
 			}
 			return true;
 		}

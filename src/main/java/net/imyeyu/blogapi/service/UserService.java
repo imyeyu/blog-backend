@@ -1,8 +1,9 @@
 package net.imyeyu.blogapi.service;
 
 import net.imyeyu.blogapi.bean.ServiceException;
+import net.imyeyu.blogapi.bean.TokenData;
 import net.imyeyu.blogapi.entity.User;
-import net.imyeyu.blogapi.vo.UserSignedIn;
+import net.imyeyu.blogapi.entity.UserData;
 
 /**
  * 用户管理服务
@@ -21,7 +22,7 @@ public interface UserService extends BaseService<User> {
 	 * @return 自动登录数据
 	 * @throws ServiceException 服务异常
 	 */
-	UserSignedIn register(User user) throws ServiceException;
+	TokenData<UserData> register(User user) throws ServiceException;
 
 	/**
 	 * 执行登录
@@ -31,7 +32,7 @@ public interface UserService extends BaseService<User> {
 	 * @return 该账号数据
 	 * @throws ServiceException 服务异常
 	 */
-	UserSignedIn signIn(String user, String password) throws ServiceException;
+	TokenData<UserData> signIn(String user, String password) throws ServiceException;
 
 	/**
 	 * 校验该令牌是否已登录（令牌有 UID，不需要传）

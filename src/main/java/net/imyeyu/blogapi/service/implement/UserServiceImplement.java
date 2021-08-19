@@ -6,22 +6,22 @@ import net.imyeyu.betterjava.Encode;
 import net.imyeyu.betterjava.Time;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
+import net.imyeyu.blogapi.bean.TokenData;
 import net.imyeyu.blogapi.entity.User;
+import net.imyeyu.blogapi.entity.UserConfig;
 import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.entity.UserPrivacy;
-import net.imyeyu.blogapi.entity.UserConfig;
 import net.imyeyu.blogapi.mapper.UserMapper;
 import net.imyeyu.blogapi.service.AbstractService;
 import net.imyeyu.blogapi.service.CommentService;
+import net.imyeyu.blogapi.service.UserConfigService;
 import net.imyeyu.blogapi.service.UserDataService;
 import net.imyeyu.blogapi.service.UserPrivacyService;
 import net.imyeyu.blogapi.service.UserService;
-import net.imyeyu.blogapi.service.UserConfigService;
 import net.imyeyu.blogapi.util.AES;
 import net.imyeyu.blogapi.util.Captcha;
 import net.imyeyu.blogapi.util.Redis;
 import net.imyeyu.blogapi.util.Token;
-import net.imyeyu.blogapi.vo.UserSignedIn;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,7 +87,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
-	public UserSignedIn register(User user) throws ServiceException {
+	public TokenData<UserData> register(User user) throws ServiceException {
 		// 校验用户名
 		testName(user.getName());
 		if (findByName(user.getName()) != null) {
@@ -123,7 +123,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
-	public UserSignedIn signIn(String user, String password) throws ServiceException {
+	public TokenData<UserData> signIn(String user, String password) throws ServiceException {
 		User result;
 		if (Encode.isNumber(user)) {
 			// UID 登录
@@ -153,7 +153,15 @@ public class UserServiceImplement extends AbstractService implements UserService
 					data.setSignedInAt(System.currentTimeMillis());
 					dataService.update(data);
 					Captcha.clear("SIGNIN");
-					return result.withData().toToken(token);
+
+					// 令牌数据
+					result.setPassword(null);
+					result.setUpdatedAt(null);
+					data.setUser(result);
+
+					TokenData<UserData> td = new TokenData<>(token);
+					td.setData(data);
+					return td;
 				}
 				throw new ServiceException(ReturnCode.PARAMS_BAD, "密码错误");
 			}
@@ -263,7 +271,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 			throw new ServiceException(ReturnCode.DATA_EXIST, "该用户名已存在");
 		}
 		// 校验邮箱
-		if (!StringUtils.isEmpty(user.getEmail().trim())) {
+		if (!StringUtils.isEmpty(user.getEmail())) {
 			testEmail(user.getEmail());
 		}
 		User userByEmail = findByEmail(user.getEmail());

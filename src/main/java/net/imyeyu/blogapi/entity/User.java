@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import net.imyeyu.blogapi.annotation.Entity;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.service.UserDataService;
-import net.imyeyu.blogapi.vo.UserSignedIn;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Transient;
 
@@ -58,21 +57,5 @@ public class User extends BaseEntity implements Serializable {
 	public User withData() throws ServiceException {
 		data = dataService.findByUID(getId());
 		return this;
-	}
-
-	/**
-	 * 转为前端登录用户对象
-	 *
-	 * @param token 通信令牌
-	 * @return 前端登录对象
-	 */
-	public UserSignedIn toToken(String token) throws ServiceException {
-		UserData data = this.data.withUser();
-		data.getUser().setPassword(null);
-		data.getUser().setUpdatedAt(null);
-		UserSignedIn usi = new UserSignedIn(name, token, data);
-		usi.setId(id);
-		usi.setCreatedAt(System.currentTimeMillis());
-		return usi;
 	}
 }

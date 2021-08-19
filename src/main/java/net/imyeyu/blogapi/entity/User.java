@@ -66,7 +66,10 @@ public class User extends BaseEntity implements Serializable {
 	 * @param token 通信令牌
 	 * @return 前端登录对象
 	 */
-	public UserSignedIn toToken(String token) {
+	public UserSignedIn toToken(String token) throws ServiceException {
+		UserData data = this.data.withUser();
+		data.getUser().setPassword(null);
+		data.getUser().setUpdatedAt(null);
 		UserSignedIn usi = new UserSignedIn(name, token, data);
 		usi.setId(id);
 		usi.setCreatedAt(System.currentTimeMillis());

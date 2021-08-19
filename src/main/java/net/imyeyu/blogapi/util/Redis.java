@@ -4,6 +4,7 @@ import io.lettuce.core.RedisCommandTimeoutException;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.dao.QueryTimeoutException;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -122,7 +123,7 @@ public record Redis<K, T>(RedisTemplate<K, T> redis, RedisSerializer<K> serializ
 			} else {
 				redis.opsForValue().set(key, v, timeout);
 			}
-		} catch (RedisCommandTimeoutException e) {
+		} catch (RedisCommandTimeoutException | QueryTimeoutException e) {
 			throw new ServiceException(ReturnCode.RESULT_TIMEOUT, "Redis 连接超时");
 		}
 	}

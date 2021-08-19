@@ -46,12 +46,15 @@ public class QPSLimitInterceptor implements HandlerInterceptor {
 				try {
 					// 键
 					String key = req.getRemoteAddr() + "#" + handlerMethod.getMethod().getName();
-					// 该 IP 限时内是否访问过该方法
+					// 该 IP 限时内是否访问过该接口
 					long cd;
-					if (redisQPSLimit.has(key) && 0D + (cd = System.currentTimeMillis() - redisQPSLimit.get(key)) < ms) {
-						log.warn("请求频率过高：" + key + ".CDMS" + (ms - cd));
-						render(resp, new Response<>(ReturnCode.REQUEST_BAD, "请求频率过高"));
-						return false;
+					if (redisQPSLimit.has(key)) {
+						cd = System.currentTimeMillis() - redisQPSLimit.get(key);
+						if (cd < ms) {
+							log.warn("请求频率过高：" + key + ".CDMS" + (ms - cd));
+							render(resp, new Response<>(ReturnCode.REQUEST_BAD, "请求频率过高"));
+							return false;
+						}
 					}
 					// 缓存记录
 					redisQPSLimit.set(key, System.currentTimeMillis(), Duration.ofMillis(ms));
@@ -60,7 +63,6 @@ public class QPSLimitInterceptor implements HandlerInterceptor {
 					return false;
 				}
 			}
-			return true;
 		}
 		return true;
 	}

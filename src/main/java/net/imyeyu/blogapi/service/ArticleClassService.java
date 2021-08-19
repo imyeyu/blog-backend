@@ -2,7 +2,9 @@ package net.imyeyu.blogapi.service;
 
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.ArticleClass;
-import net.imyeyu.blogapi.vo.ArticleClassSide;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 文章分类服务
@@ -11,5 +13,5 @@ import net.imyeyu.blogapi.vo.ArticleClassSide;
  */
 public interface ArticleClassService extends BaseService<ArticleClass> {
 
-	ArticleClassSide findBySide() throws ServiceException;
+	Map<String, List<ArticleClass>> findBySide() throws ServiceException;
 }

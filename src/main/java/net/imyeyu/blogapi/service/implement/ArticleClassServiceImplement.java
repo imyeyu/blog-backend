@@ -5,9 +5,12 @@ import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.ArticleClass;
 import net.imyeyu.blogapi.mapper.ArticleClassMapper;
 import net.imyeyu.blogapi.service.ArticleClassService;
-import net.imyeyu.blogapi.vo.ArticleClassSide;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 文章分类服务实现
@@ -31,10 +34,10 @@ public class ArticleClassServiceImplement implements ArticleClassService {
 	}
 
 	@Override
-	public ArticleClassSide findBySide() {
-		ArticleClassSide ac = new ArticleClassSide();
-		ac.setMain(mapper.findMain());
-		ac.setOther(mapper.findOther());
-		return ac;
+	public Map<String, List<ArticleClass>> findBySide() {
+		Map<String, List<ArticleClass>> map = new HashMap<>();
+		map.put("main", mapper.findMain());
+		map.put("other", mapper.findOther());
+		return map;
 	}
 }

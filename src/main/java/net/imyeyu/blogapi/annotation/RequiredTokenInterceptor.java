@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
+import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.util.Token;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,14 +42,18 @@ public class RequiredTokenInterceptor implements HandlerInterceptor {
 			}
 			// 需要令牌
 			if (requiredToken.value()) {
-				String token = req.getHeader("Token");
-				if (StringUtils.isEmpty(token)) {
-					render(resp, new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：Token"));
-					return false;
-				}
-				if (!this.token.isValid(token)) {
-					render(resp, new Response<>(ReturnCode.PERMISSION_MISS, "未登录，无权限操作"));
-					return false;
+				try {
+					String token = req.getHeader("Token");
+					if (StringUtils.isEmpty(token)) {
+						render(resp, new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：Token"));
+						return false;
+					}
+					if (!this.token.isValid(token)) {
+						render(resp, new Response<>(ReturnCode.PERMISSION_MISS, "未登录，无权限操作"));
+						return false;
+					}
+				} catch (ServiceException e) {
+					render(resp, new Response<>(e.getCode(), e.getMessage()));
 				}
 			}
 			return true;

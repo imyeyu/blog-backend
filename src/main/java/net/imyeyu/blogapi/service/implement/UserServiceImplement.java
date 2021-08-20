@@ -6,7 +6,6 @@ import net.imyeyu.betterjava.Encode;
 import net.imyeyu.betterjava.Time;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
-import net.imyeyu.blogapi.bean.TokenData;
 import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserConfig;
 import net.imyeyu.blogapi.entity.UserData;
@@ -87,7 +86,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
-	public TokenData<UserData> register(User user) throws ServiceException {
+	public String register(User user) throws ServiceException {
 		// 校验用户名
 		testName(user.getName());
 		if (findByName(user.getName()) != null) {
@@ -123,7 +122,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
-	public TokenData<UserData> signIn(String user, String password) throws ServiceException {
+	public String signIn(String user, String password) throws ServiceException {
 		User result;
 		if (Encode.isNumber(user)) {
 			// UID 登录
@@ -153,15 +152,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 					data.setSignedInAt(System.currentTimeMillis());
 					dataService.update(data);
 					Captcha.clear("SIGNIN");
-
-					// 令牌数据
-					result.setPassword(null);
-					result.setUpdatedAt(null);
-					data.setUser(result);
-
-					TokenData<UserData> td = new TokenData<>(token);
-					td.setData(data);
-					return td;
+					return token;
 				}
 				throw new ServiceException(ReturnCode.PARAMS_BAD, "密码错误");
 			}

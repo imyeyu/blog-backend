@@ -21,10 +21,6 @@ public class Response<T> extends BlogResponse<T> {
 		super(code.getCode(), e.getMessage(), null);
 	}
 
-	public Response(ReturnCode code, String msg) {
-		super(code.getCode(), msg, null);
-	}
-
 	public Response(ReturnCode code, T data) {
 		super(code.getCode(), null, data);
 	}

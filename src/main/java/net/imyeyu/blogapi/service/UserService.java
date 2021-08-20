@@ -22,17 +22,17 @@ public interface UserService extends BaseService<User> {
 	 * @return 自动登录数据
 	 * @throws ServiceException 服务异常
 	 */
-	TokenData<UserData> register(User user) throws ServiceException;
+	String register(User user) throws ServiceException;
 
 	/**
 	 * 执行登录
 	 *
 	 * @param user     uid、邮件或用户名
 	 * @param password 明文密码
-	 * @return 该账号数据
+	 * @return 通信令牌
 	 * @throws ServiceException 服务异常
 	 */
-	TokenData<UserData> signIn(String user, String password) throws ServiceException;
+	String signIn(String user, String password) throws ServiceException;
 
 	/**
 	 * 校验该令牌是否已登录（令牌有 UID，不需要传）

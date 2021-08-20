@@ -7,7 +7,6 @@ import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.bean.SettingsKey;
-import net.imyeyu.blogapi.bean.TokenData;
 import net.imyeyu.blogapi.entity.Comment;
 import net.imyeyu.blogapi.entity.CommentReply;
 import net.imyeyu.blogapi.service.ArticleService;
@@ -20,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -73,26 +73,26 @@ public class CommentController extends BaseController {
 	/**
 	 * 提交评论，允许游客操作，令牌不是必要参数
 	 *
-	 * @param td 令牌通信对象（可能有登录用户的令牌）
+	 * @param cd 验证码对象
 	 * @return 评论结果
 	 */
 	@AOPLog
 	@QPSLimit
 	@PostMapping("")
-	public Response<?> create(@RequestBody TokenData<CaptchaData<Comment>> td) {
+	public Response<?> create(@RequestBody CaptchaData<Comment> cd, @RequestHeader("Token") String token) {
 		try {
 			// 功能状态
 			if (settingsService.not(SettingsKey.ENABLE_COMMENT)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "评论服务未启用");
 			}
-			Comment comment = td.getData().getData();
+			Comment comment = cd.getData();
 			// 评论数据
 			if (ObjectUtils.isEmpty(comment)) {
 				return new Response<>(ReturnCode.PARAMS_BAD, "无效的请求");
 			}
 			// 令牌和账号验证
-			if (!StringUtils.isEmpty(td.getToken())) {
-				if (!userService.isSignedIn(td.getToken())) {
+			if (!StringUtils.isEmpty(token)) {
+				if (!userService.isSignedIn(token)) {
 					return new Response<>(ReturnCode.REQUEST_BAD, "无效的登录令牌，请重新登录");
 				}
 				if (userService.find(comment.getUserId()).isMuting()) {
@@ -109,7 +109,7 @@ public class CommentController extends BaseController {
 			}
 			// 验证码
 			try {
-				Captcha.test(td.getData().getCaptcha(), "COMMENT");
+				Captcha.test(cd.getCaptcha(), "COMMENT");
 			} catch (ServiceException e) {
 				return new Response<>(e.getCode(), e);
 			}
@@ -126,20 +126,20 @@ public class CommentController extends BaseController {
 	/**
 	 * 提交回复，允许游客操作，令牌不是必要参数
 	 *
-	 * @param td 令牌通信对象（可能有登录用户的令牌）
+	 * @param cd 验证码对象
 	 * @return 回复结果
 	 */
 	@AOPLog
 	@QPSLimit
 	@PostMapping("/reply")
-	public Response<?> createReply(@RequestBody TokenData<CaptchaData<CommentReply>> td) {
+	public Response<?> createReply(@RequestBody CaptchaData<CommentReply> cd, @RequestHeader("Token") String token) {
 		try {
 			// 功能状态
 			if (settingsService.not(SettingsKey.ENABLE_COMMENT)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "评论服务未启用");
 			}
-			CommentReply cr = td.getData().getData();
-			if (!StringUtils.isEmpty(td.getToken()) && !userService.isSignedIn(td.getToken())) {
+			CommentReply cr = cd.getData();
+			if (!StringUtils.isEmpty(token) && !userService.isSignedIn(token)) {
 				return new Response<>(ReturnCode.REQUEST_BAD, "无效的登录令牌，请重新登录");
 			}
 			// 回复数据
@@ -156,7 +156,7 @@ public class CommentController extends BaseController {
 			}
 			// 验证码
 			try {
-				Captcha.test(td.getData().getCaptcha(), "COMMENT_REPLY");
+				Captcha.test(cd.getCaptcha(), "COMMENT_REPLY");
 			} catch (ServiceException e) {
 				return new Response<>(e.getCode(), e);
 			}

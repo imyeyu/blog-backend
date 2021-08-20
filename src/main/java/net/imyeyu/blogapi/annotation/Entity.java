@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 实体注解，Component 别名，只是为了在实体类注入服务接口
+ * 实体注解，Component 别名，只是为了在实体类注入服务接口（如果实体需要注入服务，需要这个类注解）
  *
  * <p>夜雨 创建于 2021-08-18 16:31
  */

@@ -96,7 +96,7 @@ public class MainController extends BaseController {
 			request.getSession().setAttribute(from + "_CAPTCHA", captcha.getCode().toString());
 			// 输出图像流
 			ImageIO.write(captcha.getImage(), "jpg", response.getOutputStream());
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			try {
 				ImageIO.write(Captcha.error(ReturnCode.ERROR), "jpg", response.getOutputStream());

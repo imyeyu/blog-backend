@@ -1,9 +1,7 @@
 package net.imyeyu.blogapi.service;
 
 import net.imyeyu.blogapi.bean.ServiceException;
-import net.imyeyu.blogapi.bean.TokenData;
 import net.imyeyu.blogapi.entity.User;
-import net.imyeyu.blogapi.entity.UserData;
 
 /**
  * 用户管理服务

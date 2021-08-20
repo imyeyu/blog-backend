@@ -285,7 +285,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 	 * @throws ServiceException 不通过异常
 	 */
 	private void testName(String name) throws ServiceException {
-		if (StringUtils.isEmpty(name.trim())) {
+		if (StringUtils.isEmpty(name) || StringUtils.isEmpty(name.trim())) {
 			throw new ServiceException(ReturnCode.PARAMS_MISS, "请输入用户名");
 		} else {
 			if (32 < name.length()) {
@@ -310,7 +310,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 	 * @throws ServiceException 不通过异常
 	 */
 	private void testPassowrd(String passowrd) throws ServiceException {
-		if (StringUtils.isEmpty(passowrd.trim())) {
+		if (StringUtils.isEmpty(passowrd) || StringUtils.isEmpty(passowrd.trim())) {
 			throw new ServiceException(ReturnCode.PARAMS_MISS, "请输入密码");
 		} else {
 			if (passowrd.length() < 6) {

@@ -127,10 +127,10 @@ public class UserController extends BaseController implements BetterJava {
 	}
 
 	/**
-	 * 返回该 ID 用户是否已登录
+	 * 返回令牌是否有效
 	 *
 	 * @param token 令牌
-	 * @return true 为已登录
+	 * @return true 为有效
 	 */
 	@AOPLog
 	@QPSLimit
@@ -281,6 +281,7 @@ public class UserController extends BaseController implements BetterJava {
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
+			e.printStackTrace();
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
@@ -330,6 +331,7 @@ public class UserController extends BaseController implements BetterJava {
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
+			e.printStackTrace();
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
@@ -380,6 +382,7 @@ public class UserController extends BaseController implements BetterJava {
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
+			e.printStackTrace();
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
@@ -410,6 +413,7 @@ public class UserController extends BaseController implements BetterJava {
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
+			e.printStackTrace();
 			return new Response<>(ReturnCode.ERROR, "服务异常：" + e.getMessage());
 		}
 	}
@@ -440,6 +444,7 @@ public class UserController extends BaseController implements BetterJava {
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
+			e.printStackTrace();
 			return new Response<>(ReturnCode.ERROR, "服务异常：" + e.getMessage());
 		}
 	}

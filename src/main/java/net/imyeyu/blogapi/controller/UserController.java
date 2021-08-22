@@ -228,7 +228,7 @@ public class UserController extends BaseController implements BetterJava {
 	 * @return 用户资料
 	 */
 	@AOPLog
-	@QPSLimit(400)
+	@QPSLimit(100)
 	@PostMapping("/data/{id}")
 	public Response<?> getData(@PathVariable Long id, @RequestHeader("Token") String token) {
 		if (ObjectUtils.isEmpty(id)) {

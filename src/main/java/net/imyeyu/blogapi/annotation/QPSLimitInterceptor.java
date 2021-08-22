@@ -6,6 +6,7 @@ import net.imyeyu.blogapi.bean.Response;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.util.Redis;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
@@ -47,10 +48,9 @@ public class QPSLimitInterceptor implements HandlerInterceptor {
 					// 键
 					String key = req.getRemoteAddr() + "#" + handlerMethod.getMethod().getName();
 					// 该 IP 限时内是否访问过该接口
-					long cd;
-					if (redisQPSLimit.has(key)) {
-						cd = System.currentTimeMillis() - redisQPSLimit.get(key);
-						if (cd < ms) {
+					Long cd = redisQPSLimit.get(key);
+					if (!ObjectUtils.isEmpty(cd)) {
+						if (System.currentTimeMillis() - cd < ms) {
 							log.warn("请求频率过高：" + key + ".CDMS" + (ms - cd));
 							render(resp, new Response<>(ReturnCode.REQUEST_BAD, "请求频率过高"));
 							return false;

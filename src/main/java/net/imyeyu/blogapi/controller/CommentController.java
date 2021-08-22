@@ -51,7 +51,6 @@ public class CommentController extends BaseController {
 	 * @param offset    偏移
 	 * @return 文章评论
 	 */
-	@QPSLimit
 	@RequestMapping("")
 	public Response<?> getByArticleId(Long articleId, long offset) {
 		return new Response<>(ReturnCode.SUCCESS, commentService.findMany(articleId, offset));
@@ -91,6 +90,7 @@ public class CommentController extends BaseController {
 				return new Response<>(ReturnCode.PARAMS_BAD, "无效的请求");
 			}
 			// 令牌和账号验证
+			boolean isSignedIn = false;
 			if (!StringUtils.isEmpty(token)) {
 				if (!userService.isSignedIn(token)) {
 					return new Response<>(ReturnCode.REQUEST_BAD, "无效的登录令牌，请重新登录");
@@ -98,10 +98,12 @@ public class CommentController extends BaseController {
 				if (userService.find(comment.getUserId()).isMuting()) {
 					return new Response<>(ReturnCode.REQUEST_BAD, "该账号被禁止评论");
 				}
-			}
-			// 昵称
-			if (StringUtils.isEmpty(comment.getNick().trim())) {
-				return new Response<>(ReturnCode.PARAMS_MISS, "请输入昵称");
+				isSignedIn = true;
+			} else {
+				// 昵称
+				if (StringUtils.isEmpty(comment.getNick().trim())) {
+					return new Response<>(ReturnCode.PARAMS_MISS, "请输入昵称");
+				}
 			}
 			// 内容
 			if (StringUtils.isEmpty(comment.getData().trim())) {
@@ -114,7 +116,11 @@ public class CommentController extends BaseController {
 				return new Response<>(e.getCode(), e);
 			}
 			commentService.create(comment);
-			return new Response<>(ReturnCode.SUCCESS, comment);
+			if (isSignedIn) {
+				return new Response<>(ReturnCode.SUCCESS, comment.withUser());
+			} else {
+				return new Response<>(ReturnCode.SUCCESS, comment);
+			}
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {
@@ -138,20 +144,29 @@ public class CommentController extends BaseController {
 			if (settingsService.not(SettingsKey.ENABLE_COMMENT)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "评论服务未启用");
 			}
-			CommentReply cr = cd.getData();
-			if (!StringUtils.isEmpty(token) && !userService.isSignedIn(token)) {
-				return new Response<>(ReturnCode.REQUEST_BAD, "无效的登录令牌，请重新登录");
+			CommentReply commentReply = cd.getData();
+			// 令牌和账号验证
+			boolean isSignedIn = false;
+			if (!StringUtils.isEmpty(token)) {
+				if (!userService.isSignedIn(token)) {
+					return new Response<>(ReturnCode.REQUEST_BAD, "无效的登录令牌，请重新登录");
+				}
+				if (userService.find(commentReply.getSenderId()).isMuting()) {
+					return new Response<>(ReturnCode.REQUEST_BAD, "该账号被禁止评论");
+				}
+				isSignedIn = true;
+			} else {
+				// 昵称
+				if (StringUtils.isEmpty(commentReply.getSenderNick().trim())) {
+					return new Response<>(ReturnCode.PARAMS_MISS, "请输入昵称");
+				}
 			}
 			// 回复数据
-			if (ObjectUtils.isEmpty(cr) || ObjectUtils.isEmpty(cr.getCommentId())) {
+			if (ObjectUtils.isEmpty(commentReply) || ObjectUtils.isEmpty(commentReply.getCommentId())) {
 				return new Response<>(ReturnCode.PARAMS_BAD, "无效的请求");
 			}
-			// 昵称
-			if (StringUtils.isEmpty(cr.getSenderNick().trim())) {
-				return new Response<>(ReturnCode.PARAMS_MISS, "请输入昵称");
-			}
 			// 内容
-			if (StringUtils.isEmpty(cr.getData().trim())) {
+			if (StringUtils.isEmpty(commentReply.getData().trim())) {
 				return new Response<>(ReturnCode.PARAMS_MISS, "请输入回复内容");
 			}
 			// 验证码
@@ -160,8 +175,16 @@ public class CommentController extends BaseController {
 			} catch (ServiceException e) {
 				return new Response<>(e.getCode(), e);
 			}
-			commentService.createReply(cr);
-			return new Response<>(ReturnCode.SUCCESS, cr);
+			commentService.createReply(commentReply);
+			if (isSignedIn) {
+				if (ObjectUtils.isEmpty(commentReply.getReceiverId())) {
+					return new Response<>(ReturnCode.SUCCESS, commentReply.withSender());
+				} else {
+					return new Response<>(ReturnCode.SUCCESS, commentReply.withSender().withReceiver());
+				}
+			} else {
+				return new Response<>(ReturnCode.SUCCESS, commentReply);
+			}
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {

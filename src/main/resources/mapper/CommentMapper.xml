@@ -112,6 +112,7 @@
     </select>
 	<resultMap id="findManyResult" type="net.imyeyu.blogapi.entity.Comment">
 		<id property="id" column="id"/>
+		<result property="userId" column="user_id"/>
 		<result property="nick" column="nick"/>
 		<result property="data" column="data"/>
         <result property="repliesLength" column="cr_length" />
@@ -128,7 +129,9 @@
         <collection property="replies" ofType="net.imyeyu.blogapi.entity.CommentReply">
         	<id property="id" column="cr_id" />
         	<result property="commentId" column="comment_id" />
+	        <result property="senderId" column="sender_id"/>
         	<result property="senderNick" column="sender_nick" />
+	        <result property="receiverId" column="receiver_id"/>
         	<result property="receiverNick" column="receiver_nick" />
         	<result property="data" column="cr_data" />
 			<result property="createdAt" column="cr_created_at"/>

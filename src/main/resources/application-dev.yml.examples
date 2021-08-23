@@ -13,7 +13,7 @@ setting:
     paths:
         user-avatar: /user/avatar   # 用户头像位置
         user-wrapper: /user/wrapper # 用户个人空间背景图位置
-    aes-key-hex: 11ccc2bdbd60131fd9c410d0002f3432fdbeb27affae0802fd2fdc7d35e96958 # AES 加密密钥，可使用 AESTest.test() 生成
+    aes-key-hex: 11ccc2bdbd60131fd9c410d0002f3432fdbeb27affae0802fd2fdc7d35e96958 # AES 加密密钥，可使用 AESTest.generate() 生成
     salt: # 盐值
         token: tokenSalt
         password: passwordSalt # 上线后不应再修改

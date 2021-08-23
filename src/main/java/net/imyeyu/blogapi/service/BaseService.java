@@ -73,10 +73,8 @@ public interface BaseService<T> {
 	 * 软删除
 	 *
 	 * @param id 索引
-	 * @return true 为成功删除
 	 * @throws ServiceException 服务异常
 	 */
-	default boolean delete(Long id) throws ServiceException {
-		return false;
+	default void delete(Long id) throws ServiceException {
 	}
 }

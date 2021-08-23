@@ -58,8 +58,7 @@ public interface BaseMapper<T> extends BaseService<T> {
 	 * 软删除
 	 *
 	 * @param id 索引
-	 * @return 成功删除数量
 	 */
 	@Override
-	boolean delete(Long id);
+	void delete(Long id);
 }

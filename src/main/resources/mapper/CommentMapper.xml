@@ -17,6 +17,9 @@
 			#{createdAt}
 		);
 	</insert>
+	<select id="find" parameterType="long" resultType="net.imyeyu.blogapi.entity.Comment">
+		SELECT * FROM comments WHERE id = #{id} AND deleted_at IS NULL
+	</select>
 	<!-- 获取文章评论（附带子评论） -->
     <select id="findMany" parameterType="map" resultMap="findManyResult">
 		SELECT
@@ -111,42 +114,42 @@
 			crc.crc_id = c.id
     </select>
 	<resultMap id="findManyResult" type="net.imyeyu.blogapi.entity.Comment">
-		<id property="id" column="id"/>
-		<result property="userId" column="user_id"/>
-		<result property="nick" column="nick"/>
-		<result property="data" column="data"/>
+		<id property="id" column="id" />
+		<result property="userId" column="user_id" />
+		<result property="nick" column="nick" />
+		<result property="data" column="data" />
         <result property="repliesLength" column="cr_length" />
-		<result property="createdAt" column="created_at"/>
+		<result property="createdAt" column="created_at" />
 		<!-- 发布者 -->
 		<association property="user" javaType="net.imyeyu.blogapi.entity.User">
-            <id property="id" column="user_id"/>
-			<result property="name" column="name"/>
+            <id property="id" column="user_id" />
+			<result property="name" column="name" />
 			<association property="data" javaType="net.imyeyu.blogapi.entity.UserData">
-				<result property="hasAvatar" column="user_has_avatar"/>
+				<result property="hasAvatar" column="user_has_avatar" />
 			</association>
         </association>
         <!-- 关联回复 -->
         <collection property="replies" ofType="net.imyeyu.blogapi.entity.CommentReply">
         	<id property="id" column="cr_id" />
         	<result property="commentId" column="comment_id" />
-	        <result property="senderId" column="sender_id"/>
+	        <result property="senderId" column="sender_id" />
         	<result property="senderNick" column="sender_nick" />
-	        <result property="receiverId" column="receiver_id"/>
+	        <result property="receiverId" column="receiver_id" />
         	<result property="receiverNick" column="receiver_nick" />
         	<result property="data" column="cr_data" />
-			<result property="createdAt" column="cr_created_at"/>
+			<result property="createdAt" column="cr_created_at" />
         	<!-- 回复者 -->
 			<association property="sender" javaType="net.imyeyu.blogapi.entity.User">
-	            <id property="id" column="sender_id"/>
-	            <result property="name" column="sender_name"/>
+	            <id property="id" column="sender_id" />
+	            <result property="name" column="sender_name" />
 				<association property="data" javaType="net.imyeyu.blogapi.entity.UserData">
-					<result property="hasAvatar" column="sender_has_avatar"/>
+					<result property="hasAvatar" column="sender_has_avatar" />
 				</association>
 	        </association>
 	        <!-- 被回复者 -->
 			<association property="receiver" javaType="net.imyeyu.blogapi.entity.User">
-	            <id property="id" column="receiver_id"/>
-	            <result property="name" column="receiver_name"/>
+	            <id property="id" column="receiver_id" />
+	            <result property="name" column="receiver_name" />
 	        </association>
         </collection>
 	</resultMap>
@@ -174,6 +177,9 @@
 			#{createdAt}
 		);
 	</insert>
+	<select id="findReply" parameterType="long" resultType="net.imyeyu.blogapi.entity.CommentReply">
+		SELECT * FROM comment_replies WHERE id = #{crid} AND deleted_at IS NULL
+	</select>
 	<!-- 获取文章子评论 -->
     <select id="findManyReplies" parameterType="map" resultMap="findManyRepliesResult">
 	    SELECT
@@ -212,22 +218,22 @@
 			ur.id = c.receiver_id
     </select>
 	<resultMap id="findManyRepliesResult" type="net.imyeyu.blogapi.entity.CommentReply">
-		<id property="id" column="id"/>
-		<result property="data" column="data"/>
-		<result property="senderId" column="sender_id"/>
-		<result property="senderNick" column="sender_nick"/>
-		<result property="receiverId" column="receiver_id"/>
-		<result property="receiverNick" column="receiver_nick"/>
-		<result property="createdAt" column="created_at"/>
+		<id property="id" column="id" />
+		<result property="data" column="data" />
+		<result property="senderId" column="sender_id" />
+		<result property="senderNick" column="sender_nick" />
+		<result property="receiverId" column="receiver_id" />
+		<result property="receiverNick" column="receiver_nick" />
+		<result property="createdAt" column="created_at" />
 		<!-- 回复者 -->
 		<association property="sender" javaType="net.imyeyu.blogapi.entity.User">
-            <id property="id" column="sender_id"/>
-            <result property="name" column="sender_name"/>
+            <id property="id" column="sender_id" />
+            <result property="name" column="sender_name" />
         </association>
 		<!-- 被回复者 -->
 		<association property="receiver" javaType="net.imyeyu.blogapi.entity.User">
-            <id property="id" column="receiver_id"/>
-            <result property="name" column="receiver_name"/>
+            <id property="id" column="receiver_id" />
+            <result property="name" column="receiver_name" />
         </association>
 	</resultMap>
 	<!-- 统计该文章的所有评论和子评论 -->
@@ -290,4 +296,103 @@
 				OR receiver_id = #{uid}
 		</if>
 	</update>
+	<!-- 用户个人空间"我的评论"查询 -->
+	<select id="findManyUserComment" resultType="net.imyeyu.blogapi.entity.UserComment">
+		SELECT
+			r.aid,
+			a.title AS aTitle,
+			a.type AS aType,
+
+			r.cid,
+			r.crid,
+			r.data,
+			r.created_at AS createdAt
+		FROM (
+			-- 评论
+			SELECT
+				c.article_id AS aid,
+
+				c.id AS cid,
+				NULL AS crid,
+				c.data,
+				c.created_at,
+
+				c.user_id AS uid
+			FROM
+				comments AS c
+			WHERE
+				c.user_id = 16
+			-- 回复
+			UNION SELECT
+				c.article_id AS aid,
+
+				c.id AS cid,
+				cr.id AS crid,
+				cr.data,
+				c.created_at,
+
+				c.user_id AS uid
+			FROM
+				comment_replies AS cr
+			LEFT JOIN
+				comments AS c
+			ON
+				c.id = cr.comment_id
+			WHERE
+				cr.sender_id = 16
+		) AS r
+		-- 关联文章
+		LEFT JOIN
+			article AS a
+		ON
+			a.id = aid
+		ORDER BY
+			r.created_at DESC
+		LIMIT
+			#{offset}, #{limit}
+	</select>
+	<!-- 用户个人空间"回复我的"查询 -->
+	<select id="findManyUserCommentReplies" resultType="net.imyeyu.blogapi.entity.UserComment">
+		SELECT
+			c.article_id AS aid,
+			a.title AS aTitle,
+			a.type AS aType,
+
+			c.id AS cid,
+			cr.id AS crid,
+			cr.data,
+			cr.created_at AS createdAt,
+
+			cr.sender_id AS uid,
+			u.name,
+			ud.has_avatar AS hasAvatar
+		FROM
+			comment_replies AS cr
+		LEFT JOIN
+			comments AS c
+		ON
+			c.id = cr.comment_id
+		-- 关联文章
+		LEFT JOIN
+			article AS a
+		ON
+			a.id = c.article_id
+		-- 关联用户
+		LEFT JOIN
+			users AS u
+		ON
+			u.id = cr.sender_id
+		-- 关联用户数据
+		LEFT JOIN
+			user_data AS ud
+		ON
+			u.id = ud.user_id
+		WHERE
+			cr.receiver_id = #{uid}
+			AND cr.sender_id != #{uid}
+		ORDER BY
+			cr.created_at DESC
+		LIMIT
+			#{offset}, #{limit}
+	</select>
 </mapper>

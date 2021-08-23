@@ -4,6 +4,7 @@ import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.Comment;
 import net.imyeyu.blogapi.entity.CommentReply;
+import net.imyeyu.blogapi.entity.UserComment;
 import net.imyeyu.blogapi.mapper.CommentMapper;
 import net.imyeyu.blogapi.service.ArticleService;
 import net.imyeyu.blogapi.service.CommentService;
@@ -27,29 +28,14 @@ public class CommentServiceImplement implements CommentService {
 	private CommentMapper mapper;
 
 	@Override
-	public int getLength(Long articleId) {
-		return mapper.getLength(articleId);
-	}
-
-	@Override
-	public void create(Comment comment) throws ServiceException {
-		if (articleService.find(comment.getArticleId()).isCanComment()) {
-			comment.setCreatedAt(System.currentTimeMillis());
-			mapper.create(comment);
-		} else {
-			throw new ServiceException(ReturnCode.RESULT_BAN, "该文章已关闭评论");
-		}
-	}
-
-	@Override
-	public List<Comment> findMany(Long articleId, Long offset) {
-		return mapper.findMany(articleId, offset);
-	}
-
-	@Override
 	public void createReply(CommentReply commentReply) {
 		commentReply.setCreatedAt(System.currentTimeMillis());
 		mapper.createReply(commentReply);
+	}
+
+	@Override
+	public CommentReply findReply(Long crid) {
+		return mapper.findReply(crid);
 	}
 
 	@Override
@@ -58,12 +44,18 @@ public class CommentServiceImplement implements CommentService {
 	}
 
 	@Override
-	public boolean delete(Long id) throws ServiceException {
-		List<CommentReply> replies = mapper.findAllRepliesByCID(id);
-		for (int i = 0; i < replies.size(); i++) {
-			deleteReply(replies.get(i).getId());
-		}
-		return mapper.delete(id);
+	public List<UserComment> findManyUserComment(Long uid, Long offset, int limit) {
+		return mapper.findManyUserComment(uid, offset, limit);
+	}
+
+	@Override
+	public List<UserComment> findManyUserCommentReplies(Long uid, Long offset, int limit) {
+		return mapper.findManyUserCommentReplies(uid, offset, limit);
+	}
+
+	@Override
+	public int getLength(Long articleId) {
+		return mapper.getLength(articleId);
 	}
 
 	@Override
@@ -83,5 +75,34 @@ public class CommentServiceImplement implements CommentService {
 	@Override
 	public void deleteReplyByUID(Long uid) throws ServiceException {
 		mapper.deleteReplyByUID(uid);
+	}
+
+	@Override
+	public void create(Comment comment) throws ServiceException {
+		if (articleService.find(comment.getArticleId()).isCanComment()) {
+			comment.setCreatedAt(System.currentTimeMillis());
+			mapper.create(comment);
+		} else {
+			throw new ServiceException(ReturnCode.RESULT_BAN, "该文章已关闭评论");
+		}
+	}
+
+	@Override
+	public Comment find(Long id) throws ServiceException {
+		return mapper.find(id);
+	}
+
+	@Override
+	public List<Comment> findMany(Long articleId, Long offset) {
+		return mapper.findMany(articleId, offset);
+	}
+
+	@Override
+	public void delete(Long id) throws ServiceException {
+		List<CommentReply> replies = mapper.findAllRepliesByCID(id);
+		for (int i = 0; i < replies.size(); i++) {
+			deleteReply(replies.get(i).getId());
+		}
+		mapper.delete(id);
 	}
 }

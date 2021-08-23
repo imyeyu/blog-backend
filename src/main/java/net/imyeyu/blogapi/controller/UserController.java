@@ -13,6 +13,7 @@ import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserConfig;
 import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.entity.UserPrivacy;
+import net.imyeyu.blogapi.service.CommentService;
 import net.imyeyu.blogapi.service.SettingsService;
 import net.imyeyu.blogapi.service.UserConfigService;
 import net.imyeyu.blogapi.service.UserDataService;
@@ -57,6 +58,9 @@ public class UserController extends BaseController implements BetterJava {
 
 	@Autowired
 	private SettingsService settingsService;
+
+	@Autowired
+	private CommentService commentService;
 
 	/**
 	 * 注册用户
@@ -169,7 +173,7 @@ public class UserController extends BaseController implements BetterJava {
 	/**
 	 * 修改密码（会清除登录会话）
 	 *
-	 * @param params oldPW 旧密码，newPW 新密码，token 令牌
+	 * @param params oldPW 旧密码，newPW 新密码
 	 * @return true 为修改成功
 	 */
 	@AOPLog
@@ -378,6 +382,94 @@ public class UserController extends BaseController implements BetterJava {
 			}
 			// 更新资料
 			settingService.update(config);
+			return new Response<>(ReturnCode.SUCCESS, true);
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(ReturnCode.ERROR, e);
+		}
+	}
+
+	/**
+	 * 获取用户评论（包括回复）
+	 *
+	 * @param id     用户 ID
+	 * @param offset 偏移
+	 * @param token  令牌
+	 * @return 用户评论列表
+	 */
+	@AOPLog
+	@QPSLimit
+	@RequiredToken
+	@PostMapping("/comment/{id}")
+	public Response<?> getComments(@PathVariable Long id, @RequestParam Long offset, @RequestHeader("Token") String token) {
+		try {
+			if (!token2UID(token).equals(id)) {
+				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
+			}
+			return new Response<>(ReturnCode.SUCCESS, commentService.findManyUserComment(id, offset, 12));
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(ReturnCode.ERROR, e);
+		}
+	}
+
+	/**
+	 * 获取用户被回复的评论
+	 *
+	 * @param id     用户 ID
+	 * @param offset 偏移
+	 * @param token  令牌
+	 * @return 用户评论列表
+	 */
+	@AOPLog
+	@QPSLimit
+	@RequiredToken
+	@PostMapping("/comment/reply/{id}")
+	public Response<?> getCommentReplies(@PathVariable Long id, @RequestParam Long offset, @RequestHeader("Token") String token) {
+		try {
+			if (!token2UID(token).equals(id)) {
+				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
+			}
+			return new Response<>(ReturnCode.SUCCESS, commentService.findManyUserCommentReplies(id, offset, 12));
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(ReturnCode.ERROR, e);
+		}
+	}
+
+	/**
+	 * 删除评论或回复（由"我的评论"调用）
+	 *
+	 * @param params 含 cid 和 crid
+	 * @param token  令牌
+	 * @return true 为删除成功
+	 */
+	@AOPLog
+	@QPSLimit
+	@RequiredToken
+	@PostMapping("/comment/del")
+	public Response<?> delComment(@RequestBody Map<String, String> params, @RequestHeader("Token") String token) {
+		try {
+			Long uid = token2UID(token);
+			if (ObjectUtils.isEmpty(params.get("crid"))) {
+				Long cid = Long.parseLong(params.get("cid"));
+				if (!commentService.find(cid).getUserId().equals(uid)) {
+					return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
+				}
+				commentService.delete(cid);
+			} else {
+				Long crid = Long.parseLong(params.get("crid"));
+				if (!commentService.findReply(crid).getSenderId().equals(uid)) {
+					return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
+				}
+				commentService.deleteReply(crid);
+			}
 			return new Response<>(ReturnCode.SUCCESS, true);
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());

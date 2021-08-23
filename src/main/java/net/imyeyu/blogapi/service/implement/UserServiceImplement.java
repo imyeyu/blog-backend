@@ -274,8 +274,8 @@ public class UserServiceImplement extends AbstractService implements UserService
 	}
 
 	@Override
-	public boolean delete(Long id) throws ServiceException {
-		return mapper.delete(id);
+	public void delete(Long id) throws ServiceException {
+		mapper.delete(id);
 	}
 
 	/**

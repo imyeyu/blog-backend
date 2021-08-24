@@ -46,6 +46,14 @@ public interface ArticleService extends BaseService<Article> {
 	List<ArticleRanking> getRanking() throws ServiceException;
 
 	/**
+	 * 统计该文章的评论数量
+	 *
+	 * @param articleId 文章 ID
+	 * @return 评论数量
+	 */
+	int getCommentsLength(Long articleId);
+
+	/**
 	 * 更新阅读计数，包括触发每周热门排行统计，同一 IP 3 小时内访问多次的文章只计一次
 	 *
 	 * @param ip      访问者 IP

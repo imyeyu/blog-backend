@@ -1,6 +1,9 @@
 package net.imyeyu.blogapi.mapper;
 
 import net.imyeyu.blogapi.entity.User;
+import net.imyeyu.blogapi.entity.UserComment;
+
+import java.util.List;
 
 /**
  * 用户
@@ -14,4 +17,8 @@ public interface UserMapper extends BaseMapper<User> {
 	User findByEmail(String email);
 
 	void updatePassword(Long id, String password);
+
+	List<UserComment> findManyUserComment(Long uid, Long offset, int limit);
+
+	List<UserComment> findManyUserCommentReplies(Long uid, Long offset, int limit);
 }

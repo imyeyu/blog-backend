@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="net.imyeyu.blogapi.mapper.CommentMapper">
+	<!-- 根据用户获取所有评论 -->
+	<select id="findAllByUID" resultType="net.imyeyu.blogapi.entity.Comment">
+		SELECT * FROM comments WHERE user_id = #{uid} AND deleted_at IS NULL
+	</select>
 	<!-- 新增评论 -->
 	<insert id="create" parameterType="net.imyeyu.blogapi.entity.Comment" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
 		INSERT INTO comments (
@@ -17,6 +21,7 @@
 			#{createdAt}
 		);
 	</insert>
+	<!-- 查询评论 -->
 	<select id="find" parameterType="long" resultType="net.imyeyu.blogapi.entity.Comment">
 		SELECT * FROM comments WHERE id = #{id} AND deleted_at IS NULL
 	</select>
@@ -57,12 +62,12 @@
 			ON
 				usd.user_id = c.user_id
 			WHERE
-				c.article_id = #{articleId}
+				c.article_id = #{aid}
 				AND c.deleted_at IS NULL
 			ORDER BY
 				c.created_at DESC
 			LIMIT
-	            #{offset}, 10
+	            #{offset}, #{limit}
 			) AS c
 		LEFT JOIN
 			users AS uc
@@ -153,109 +158,6 @@
 	        </association>
         </collection>
 	</resultMap>
-	<!-- 根据用户获取所有评论 -->
-	<select id="findAllByUID" resultType="net.imyeyu.blogapi.entity.Comment">
-		SELECT * FROM comments WHERE user_id = #{uid} AND deleted_at IS NULL
-	</select>
-	<!-- 新增子评论 -->
-	<insert id="createReply" parameterType="net.imyeyu.blogapi.entity.CommentReply" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-		INSERT INTO comment_replies (
-			comment_id,
-			sender_id,
-			receiver_id,
-			sender_nick,
-			receiver_nick,
-			data,
-			created_at
-		) VALUES (
-			#{commentId},
-			#{senderId},
-			#{receiverId},
-			#{senderNick},
-			#{receiverNick},
-			#{data},
-			#{createdAt}
-		);
-	</insert>
-	<select id="findReply" parameterType="long" resultType="net.imyeyu.blogapi.entity.CommentReply">
-		SELECT * FROM comment_replies WHERE id = #{crid} AND deleted_at IS NULL
-	</select>
-	<!-- 获取文章子评论 -->
-    <select id="findManyReplies" parameterType="map" resultMap="findManyRepliesResult">
-	    SELECT
-			c.id,
-			sender_id,
-			us.name AS sender_name,
-			receiver_id,
-			ur.name AS receiver_name,
-			sender_nick,
-			receiver_nick,
-			data,
-			c.created_at
-		FROM (
-			SELECT
-				id,
-				sender_id,
-				receiver_id,
-				sender_nick,
-				receiver_nick,
-				data,
-				created_at
-			FROM
-				comment_replies AS c
-			WHERE
-				comment_id = #{commentId}
-				AND deleted_at IS NULL
-			LIMIT #{offset}, 6
-		) AS c
-		LEFT JOIN
-			users AS us
-		ON
-			us.id = c.sender_id
-		LEFT JOIN
-			users AS ur
-		ON
-			ur.id = c.receiver_id
-    </select>
-	<resultMap id="findManyRepliesResult" type="net.imyeyu.blogapi.entity.CommentReply">
-		<id property="id" column="id" />
-		<result property="data" column="data" />
-		<result property="senderId" column="sender_id" />
-		<result property="senderNick" column="sender_nick" />
-		<result property="receiverId" column="receiver_id" />
-		<result property="receiverNick" column="receiver_nick" />
-		<result property="createdAt" column="created_at" />
-		<!-- 回复者 -->
-		<association property="sender" javaType="net.imyeyu.blogapi.entity.User">
-            <id property="id" column="sender_id" />
-            <result property="name" column="sender_name" />
-        </association>
-		<!-- 被回复者 -->
-		<association property="receiver" javaType="net.imyeyu.blogapi.entity.User">
-            <id property="id" column="receiver_id" />
-            <result property="name" column="receiver_name" />
-        </association>
-	</resultMap>
-	<!-- 统计该文章的所有评论和子评论 -->
-	<select id="getLength" parameterType="long" resultType="int">
-		SELECT
-			SUM(r.cc + r.crc)
-		FROM (
-			SELECT
-				COUNT(DISTINCT c.id) AS cc,
-				COUNT(cr.comment_id) AS crc
-			FROM
-				comments AS c
-			LEFT JOIN
-				comment_replies AS cr
-			ON
-				cr.comment_id = c.id
-			WHERE
-				c.article_id = #{aid}
-				AND c.deleted_at IS NULL
-				AND cr.deleted_at IS NULL
-		) AS r
-	</select>
 	<!-- 删除 -->
 	<update id="delete">
 		<if test="id != null">
@@ -275,124 +177,4 @@
 			WHERE user_id = #{uid}
 		</if>
 	</update>
-	<!-- 删除回复 -->
-	<update id="deleteReply">
-		<if test="id != null">
-			UPDATE comment_replies
-			<set>
-				deleted_at = FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000)
-			</set>
-			WHERE id = #{id}
-		</if>
-	</update>
-	<update id="deleteReplyByUID">
-		<if test="id != null">
-			UPDATE comment_replies
-			<set>
-				deleted_at = FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000)
-			</set>
-			WHERE
-				sender_id = #{uid}
-				OR receiver_id = #{uid}
-		</if>
-	</update>
-	<!-- 用户个人空间"我的评论"查询 -->
-	<select id="findManyUserComment" resultType="net.imyeyu.blogapi.entity.UserComment">
-		SELECT
-			r.aid,
-			a.title AS aTitle,
-			a.type AS aType,
-
-			r.cid,
-			r.crid,
-			r.data,
-			r.created_at AS createdAt
-		FROM (
-			-- 评论
-			SELECT
-				c.article_id AS aid,
-
-				c.id AS cid,
-				NULL AS crid,
-				c.data,
-				c.created_at,
-
-				c.user_id AS uid
-			FROM
-				comments AS c
-			WHERE
-				c.user_id = 16
-			-- 回复
-			UNION SELECT
-				c.article_id AS aid,
-
-				c.id AS cid,
-				cr.id AS crid,
-				cr.data,
-				c.created_at,
-
-				c.user_id AS uid
-			FROM
-				comment_replies AS cr
-			LEFT JOIN
-				comments AS c
-			ON
-				c.id = cr.comment_id
-			WHERE
-				cr.sender_id = 16
-		) AS r
-		-- 关联文章
-		LEFT JOIN
-			article AS a
-		ON
-			a.id = aid
-		ORDER BY
-			r.created_at DESC
-		LIMIT
-			#{offset}, #{limit}
-	</select>
-	<!-- 用户个人空间"回复我的"查询 -->
-	<select id="findManyUserCommentReplies" resultType="net.imyeyu.blogapi.entity.UserComment">
-		SELECT
-			c.article_id AS aid,
-			a.title AS aTitle,
-			a.type AS aType,
-
-			c.id AS cid,
-			cr.id AS crid,
-			cr.data,
-			cr.created_at AS createdAt,
-
-			cr.sender_id AS uid,
-			u.name,
-			ud.has_avatar AS hasAvatar
-		FROM
-			comment_replies AS cr
-		LEFT JOIN
-			comments AS c
-		ON
-			c.id = cr.comment_id
-		-- 关联文章
-		LEFT JOIN
-			article AS a
-		ON
-			a.id = c.article_id
-		-- 关联用户
-		LEFT JOIN
-			users AS u
-		ON
-			u.id = cr.sender_id
-		-- 关联用户数据
-		LEFT JOIN
-			user_data AS ud
-		ON
-			u.id = ud.user_id
-		WHERE
-			cr.receiver_id = #{uid}
-			AND cr.sender_id != #{uid}
-		ORDER BY
-			cr.created_at DESC
-		LIMIT
-			#{offset}, #{limit}
-	</select>
 </mapper>

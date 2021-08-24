@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="net.imyeyu.blogapi.mapper.CommentReplyMapper">
+	<!-- 根据 用户 ID 删除回复（包括回复和被回复） -->
+	<update id="deleteByUID">
+		<if test="id != null">
+			UPDATE comment_replies
+			<set>
+				deleted_at = FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000)
+			</set>
+			WHERE
+			sender_id = #{uid}
+			OR receiver_id = #{uid}
+		</if>
+	</update>
+	<!-- 根据 评论 ID 删除回复 -->
+	<update id="deleteByCID">
+		<if test="id != null">
+			UPDATE comment_replies
+			<set>
+				deleted_at = FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000)
+			</set>
+			WHERE
+				comment_id = #{cid}
+		</if>
+	</update>
+	<!-- 根据 用户 ID 删除回复 -->
+	<update id="deleteBySenderID">
+		<if test="id != null">
+			UPDATE comment_replies
+			<set>
+				deleted_at = FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000)
+			</set>
+			WHERE
+				sender_id = #{uid}
+		</if>
+	</update>
+	<!-- 新增评论 -->
+	<insert id="create" parameterType="net.imyeyu.blogapi.entity.CommentReply" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO comment_replies (
+			comment_id,
+			sender_id,
+			receiver_id,
+			sender_nick,
+			receiver_nick,
+			data,
+			created_at
+		) VALUES (
+			#{commentId},
+			#{senderId},
+			#{receiverId},
+			#{senderNick},
+			#{receiverNick},
+			#{data},
+			#{createdAt}
+		);
+	</insert>
+	<select id="find" parameterType="long" resultType="net.imyeyu.blogapi.entity.CommentReply">
+		SELECT * FROM comment_replies WHERE id = #{crid} AND deleted_at IS NULL
+	</select>
+	<!-- 获取文章子评论 -->
+    <select id="findMany" parameterType="map" resultMap="findManyResult">
+	    SELECT
+			c.id,
+			sender_id,
+			us.name AS sender_name,
+			receiver_id,
+			ur.name AS receiver_name,
+			sender_nick,
+			receiver_nick,
+			data,
+			c.created_at
+		FROM (
+			SELECT
+				id,
+				sender_id,
+				receiver_id,
+				sender_nick,
+				receiver_nick,
+				data,
+				created_at
+			FROM
+				comment_replies AS c
+			WHERE
+				comment_id = #{commentId}
+				AND deleted_at IS NULL
+			LIMIT #{offset}, #{limit}
+		) AS c
+		LEFT JOIN
+			users AS us
+		ON
+			us.id = c.sender_id
+		LEFT JOIN
+			users AS ur
+		ON
+			ur.id = c.receiver_id
+    </select>
+	<resultMap id="findManyResult" type="net.imyeyu.blogapi.entity.CommentReply">
+		<id property="id" column="id" />
+		<result property="data" column="data" />
+		<result property="senderId" column="sender_id" />
+		<result property="senderNick" column="sender_nick" />
+		<result property="receiverId" column="receiver_id" />
+		<result property="receiverNick" column="receiver_nick" />
+		<result property="createdAt" column="created_at" />
+		<!-- 回复者 -->
+		<association property="sender" javaType="net.imyeyu.blogapi.entity.User">
+            <id property="id" column="sender_id" />
+            <result property="name" column="sender_name" />
+        </association>
+		<!-- 被回复者 -->
+		<association property="receiver" javaType="net.imyeyu.blogapi.entity.User">
+            <id property="id" column="receiver_id" />
+            <result property="name" column="receiver_name" />
+        </association>
+	</resultMap>
+	<!-- 删除 -->
+	<update id="delete">
+		<if test="id != null">
+			UPDATE comment_replies
+			<set>
+				deleted_at = FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000)
+			</set>
+			WHERE id = #{id}
+		</if>
+	</update>
+</mapper>

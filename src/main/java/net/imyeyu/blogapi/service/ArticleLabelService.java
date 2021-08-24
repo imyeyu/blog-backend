@@ -25,5 +25,5 @@ public interface ArticleLabelService extends BaseService<ArticleLabel>{
 	 * @param aid 文章 ID
 	 * @return 标签列表
 	 */
-	List<ArticleLabel> findManyByArticleId(long aid);
+	List<ArticleLabel> findManyByAId(long aid);
 }

@@ -10,6 +10,7 @@ import net.imyeyu.blogapi.bean.SettingsKey;
 import net.imyeyu.blogapi.entity.Comment;
 import net.imyeyu.blogapi.entity.CommentReply;
 import net.imyeyu.blogapi.service.ArticleService;
+import net.imyeyu.blogapi.service.CommentReplyService;
 import net.imyeyu.blogapi.service.CommentService;
 import net.imyeyu.blogapi.service.SettingsService;
 import net.imyeyu.blogapi.service.UserService;
@@ -42,6 +43,9 @@ public class CommentController extends BaseController {
 	private CommentService commentService;
 
 	@Autowired
+	private CommentReplyService commentReplyService;
+
+	@Autowired
 	private SettingsService settingsService;
 
 	/**
@@ -53,11 +57,18 @@ public class CommentController extends BaseController {
 	 */
 	@RequestMapping("")
 	public Response<?> getByArticleId(Long articleId, long offset) {
-		return new Response<>(ReturnCode.SUCCESS, commentService.findMany(articleId, offset));
+		try {
+			return new Response<>(ReturnCode.SUCCESS, commentService.findMany(articleId, offset, 12));
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(ReturnCode.ERROR, e);
+		}
 	}
 
 	/**
-	 * 获取子评论
+	 * 获取回复
 	 *
 	 * @param commentId 评论 ID
 	 * @param offset    偏移
@@ -66,7 +77,14 @@ public class CommentController extends BaseController {
 	@QPSLimit
 	@RequestMapping("/reply")
 	public Response<?> getRepliesByCommentId(Long commentId, Long offset) {
-		return new Response<>(ReturnCode.SUCCESS, commentService.findManyReplies(commentId, offset));
+		try {
+			return new Response<>(ReturnCode.SUCCESS, commentReplyService.findMany(commentId, offset, 6));
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(ReturnCode.ERROR, e);
+		}
 	}
 
 	/**
@@ -125,7 +143,7 @@ public class CommentController extends BaseController {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new Response<>(ReturnCode.ERROR, "服务异常：" + e);
+			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
 
@@ -175,7 +193,7 @@ public class CommentController extends BaseController {
 			} catch (ServiceException e) {
 				return new Response<>(e.getCode(), e);
 			}
-			commentService.createReply(commentReply);
+			commentReplyService.create(commentReply);
 			if (isSignedIn) {
 				if (ObjectUtils.isEmpty(commentReply.getReceiverId())) {
 					return new Response<>(ReturnCode.SUCCESS, commentReply.withSender());

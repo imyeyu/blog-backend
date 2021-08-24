@@ -37,7 +37,7 @@ public class ArticleLabelServiceImplement implements ArticleLabelService {
 	}
 
 	@Override
-	public List<ArticleLabel> findManyByArticleId(long aid) {
-		return mapper.findManyByArticleId(aid);
+	public List<ArticleLabel> findManyByAId(long aid) {
+		return mapper.findManyByAId(aid);
 	}
 }

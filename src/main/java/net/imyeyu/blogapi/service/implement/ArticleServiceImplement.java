@@ -42,18 +42,6 @@ public class ArticleServiceImplement implements ArticleService {
 	private ArticleLabelService labelService;
 
 	@Override
-	public Article find(Long id) throws ServiceException {
-		Article article = mapper.find(id);
-		if (article != null) {
-			article.setLabels(labelService.findManyByArticleId(id));
-			article.setComments(commentService.getLength(id));
-			return article;
-		} else {
-			throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该文章");
-		}
-	}
-
-	@Override
 	public List<Article> findMany(Long offset, int limit) throws ServiceException {
 		return mapper.findMany(offset, limit);
 	}
@@ -69,11 +57,6 @@ public class ArticleServiceImplement implements ArticleService {
 	}
 
 	@Override
-	public void update(Article article) throws ServiceException {
-		mapper.update(article);
-	}
-
-	@Override
 	public List<ArticleRanking> getRanking() throws ServiceException {
 		try {
 			List<ArticleRanking> acs = redisArticleRanking.values();
@@ -84,6 +67,11 @@ public class ArticleServiceImplement implements ArticleService {
 			e.printStackTrace();
 			throw new ServiceException(ReturnCode.ERROR, e.getMessage());
 		}
+	}
+
+	@Override
+	public int getCommentsLength(Long aid) {
+		return mapper.getCommentsLength(aid);
 	}
 
 	@Override
@@ -117,5 +105,22 @@ public class ArticleServiceImplement implements ArticleService {
 		article.like();
 		update(article);
 		return article.getLikes();
+	}
+
+	@Override
+	public Article find(Long id) throws ServiceException {
+		Article article = mapper.find(id);
+		if (article != null) {
+			article.setLabels(labelService.findManyByAId(id));
+			article.setComments(getCommentsLength(id));
+			return article;
+		} else {
+			throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该文章");
+		}
+	}
+
+	@Override
+	public void update(Article article) throws ServiceException {
+		mapper.update(article);
 	}
 }

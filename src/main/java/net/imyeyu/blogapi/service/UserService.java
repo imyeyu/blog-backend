@@ -2,6 +2,9 @@ package net.imyeyu.blogapi.service;
 
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.User;
+import net.imyeyu.blogapi.entity.UserComment;
+
+import java.util.List;
 
 /**
  * 用户管理服务
@@ -96,4 +99,25 @@ public interface UserService extends BaseService<User> {
 	 * @throws ServiceException 服务异常
 	 */
 	boolean cancel(Long id, String password) throws ServiceException;
+
+	/**
+	 * 根据用户 ID 获取相关评论，包括评论、回复和被回复数据
+	 *
+	 * @param uid    用户 ID
+	 * @param offset 偏移
+	 * @param limit  数量
+	 * @return 用户评论列表
+	 */
+	List<UserComment> findManyUserComment(Long uid, Long offset, int limit);
+
+	/**
+	 * 根据用户 ID 获取相关回复数据
+	 *
+	 *
+	 * @param uid    用户 ID
+	 * @param offset 偏移
+	 * @param limit  数量
+	 * @return 用户评论列表
+	 */
+	List<UserComment> findManyUserCommentReplies(Long uid, Long offset, int limit);
 }

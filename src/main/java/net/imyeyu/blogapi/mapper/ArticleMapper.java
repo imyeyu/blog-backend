@@ -14,4 +14,6 @@ public interface ArticleMapper extends BaseMapper<Article> {
 	List<Article> findManyByClass(Long cid, Long offset, int limit);
 
 	List<Article> findManyByLabel(Long lid, Long offset, int limit);
+
+	int getCommentsLength(Long articleId);
 }

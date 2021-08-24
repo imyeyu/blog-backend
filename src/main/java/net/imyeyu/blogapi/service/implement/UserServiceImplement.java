@@ -7,11 +7,13 @@ import net.imyeyu.betterjava.Time;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.User;
+import net.imyeyu.blogapi.entity.UserComment;
 import net.imyeyu.blogapi.entity.UserConfig;
 import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.entity.UserPrivacy;
 import net.imyeyu.blogapi.mapper.UserMapper;
 import net.imyeyu.blogapi.service.AbstractService;
+import net.imyeyu.blogapi.service.CommentReplyService;
 import net.imyeyu.blogapi.service.CommentService;
 import net.imyeyu.blogapi.service.UserConfigService;
 import net.imyeyu.blogapi.service.UserDataService;
@@ -27,6 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * 用户管理服务实现
@@ -48,9 +52,6 @@ public class UserServiceImplement extends AbstractService implements UserService
 	private AES aes;
 
 	@Autowired
-	private CommentService commentService;
-
-	@Autowired
 	private UserDataService dataService;
 
 	@Autowired
@@ -58,6 +59,12 @@ public class UserServiceImplement extends AbstractService implements UserService
 
 	@Autowired
 	private UserConfigService configService;
+
+	@Autowired
+	private CommentService commentService;
+
+	@Autowired
+	private CommentReplyService commentReplyService;
 
 	@Autowired
 	private UserMapper mapper;
@@ -196,46 +203,56 @@ public class UserServiceImplement extends AbstractService implements UserService
 
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
-	public boolean updatePassword(Long id, String oldPassword, String newPassword) throws ServiceException {
-		User user = find(id);
+	public boolean updatePassword(Long userId, String oldPassword, String newPassword) throws ServiceException {
+		User user = find(userId);
 		// 校验旧密码
 		if (user.getPassword().equals(generatePasswordDigest(user.getCreatedAt(), oldPassword))) {
 			// 校验新密码
 			testPassowrd(newPassword);
 			// 更新密码
-			mapper.updatePassword(id, generatePasswordDigest(user.getCreatedAt(), newPassword));
+			mapper.updatePassword(userId, generatePasswordDigest(user.getCreatedAt(), newPassword));
 			// 清除登录会话
-			return token.clear(id);
+			return token.clear(userId);
 		} else {
 			throw new ServiceException(ReturnCode.PARAMS_BAD, "旧密码错误");
-		}
-	}
-
-	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
-	@Override
-	public boolean cancel(Long id, String password) throws ServiceException {
-		User user = mapper.find(id);
-		if (user == null) {
-			throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该 UID 用户：" + id);
-		}
-		// 校验密码
-		if (user.getPassword().equals(generatePasswordDigest(user.getCreatedAt(), password))) {
-			// 删除评论
-			commentService.deleteByUID(user.getId());
-			// 删除回复
-			commentService.deleteReplyByUID(user.getId());
-			// 删除账号
-			delete(user.getId());
-			// 清除登录会话
-			return token.clear(id);
-		} else {
-			throw new ServiceException(ReturnCode.PARAMS_BAD, "密码错误");
 		}
 	}
 
 	@Override
 	public void exist(Long id) throws ServiceException {
 		find(id);
+	}
+
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
+	@Override
+	public boolean cancel(Long userId, String password) throws ServiceException {
+		User user = mapper.find(userId);
+		if (user == null) {
+			throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该 UID 用户：" + userId);
+		}
+		// 校验密码
+		if (user.getPassword().equals(generatePasswordDigest(user.getCreatedAt(), password))) {
+			// 删除评论
+			commentService.deleteByUID(user.getId());
+			// 删除回复
+			commentReplyService.deleteByUID(user.getId());
+			// 删除账号
+			delete(user.getId());
+			// 清除登录会话
+			return token.clear(userId);
+		} else {
+			throw new ServiceException(ReturnCode.PARAMS_BAD, "密码错误");
+		}
+	}
+
+	@Override
+	public List<UserComment> findManyUserComment(Long userId, Long offset, int limit) {
+		return mapper.findManyUserComment(userId, offset, limit);
+	}
+
+	@Override
+	public List<UserComment> findManyUserCommentReplies(Long userId, Long offset, int limit) {
+		return mapper.findManyUserCommentReplies(userId, offset, limit);
 	}
 
 	@Override

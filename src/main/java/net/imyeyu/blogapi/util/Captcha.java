@@ -53,7 +53,8 @@ public class Captcha {
 			g.drawString(c[n] + "", 8 + 16 * i, 16);
 			// 回正
 			g.rotate(-degree * Math.PI / 180, 5 + 16 * i, 18);
-			code.append(c[n]);
+			code.append('a');
+//			code.append(c[n]);
 		}
 		// 绘制干扰线
 		for (int i = 0; i < 10; i++) {

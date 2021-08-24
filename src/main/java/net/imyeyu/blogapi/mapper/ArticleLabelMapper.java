@@ -13,5 +13,5 @@ public interface ArticleLabelMapper extends BaseMapper<ArticleLabel> {
 
 	ArticleLabel findByName(String name);
 
-	List<ArticleLabel> findManyByArticleId(long aid);
+	List<ArticleLabel> findManyByAId(long aid);
 }

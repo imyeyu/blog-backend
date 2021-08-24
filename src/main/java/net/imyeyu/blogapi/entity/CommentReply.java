@@ -7,6 +7,7 @@ import net.imyeyu.blogapi.annotation.Entity;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.annotation.Transient;
 
 import java.io.Serializable;
 
@@ -21,6 +22,7 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = true)
 public class CommentReply extends BaseEntity implements Serializable {
 
+	@Transient
 	private transient static UserService userService;
 
 	private Long commentId;

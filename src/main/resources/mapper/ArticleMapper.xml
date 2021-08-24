@@ -1,6 +1,48 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="net.imyeyu.blogapi.mapper.ArticleMapper">
+	<!-- 根据分类获取部分 -->
+	<select id="findManyByClass" resultMap="findManyResult">
+		SELECT
+			a.id,
+			a.type,
+			a.title,
+			a.digest,
+			a.likes,
+			a.reads,
+			a.created_at,
+			a.updated_at
+		FROM
+			article AS a
+		WHERE
+			1 &lt; a.id
+			AND a.class_id = #{cid}
+			AND a.deleted_at IS NULL
+		ORDER BY
+			COALESCE(a.updated_at, a.created_at) DESC
+		LIMIT
+			#{offset}, #{limit}
+	</select>
+	<!-- 统计该文章的所有评论和子评论 -->
+	<select id="getCommentsLength" parameterType="long" resultType="int">
+		SELECT
+			SUM(r.cc + r.crc)
+		FROM (
+			SELECT
+				COUNT(DISTINCT c.id) AS cc,
+				COUNT(cr.comment_id) AS crc
+			FROM
+				comments AS c
+			LEFT JOIN
+				comment_replies AS cr
+			ON
+				cr.comment_id = c.id
+			WHERE
+				c.article_id = #{aid}
+				AND c.deleted_at IS NULL
+				AND cr.deleted_at IS NULL
+		) AS r
+	</select>
 	<!-- 获取 -->
 	<select id="find" resultMap="findResult" parameterType="long">
 		SELECT
@@ -54,28 +96,6 @@
 			article AS a
 		WHERE
 			1 &lt; a.id
-			AND a.deleted_at IS NULL
-		ORDER BY
-			COALESCE(a.updated_at, a.created_at) DESC
-		LIMIT
-			#{offset}, #{limit}
-	</select>
-	<!-- 根据分类获取部分 -->
-	<select id="findManyByClass" resultMap="findManyResult">
-		SELECT
-			a.id,
-			a.type,
-			a.title,
-			a.digest,
-			a.likes,
-			a.reads,
-			a.created_at,
-			a.updated_at
-		FROM
-			article AS a
-		WHERE
-			1 &lt; a.id
-			AND a.class_id = #{cid}
 			AND a.deleted_at IS NULL
 		ORDER BY
 			COALESCE(a.updated_at, a.created_at) DESC

@@ -13,6 +13,7 @@ import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserConfig;
 import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.entity.UserPrivacy;
+import net.imyeyu.blogapi.service.CommentReplyService;
 import net.imyeyu.blogapi.service.CommentService;
 import net.imyeyu.blogapi.service.SettingsService;
 import net.imyeyu.blogapi.service.UserConfigService;
@@ -61,6 +62,9 @@ public class UserController extends BaseController implements BetterJava {
 
 	@Autowired
 	private CommentService commentService;
+
+	@Autowired
+	private CommentReplyService commentReplyService;
 
 	/**
 	 * 注册用户
@@ -408,7 +412,7 @@ public class UserController extends BaseController implements BetterJava {
 			if (!token2UID(token).equals(id)) {
 				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
 			}
-			return new Response<>(ReturnCode.SUCCESS, commentService.findManyUserComment(id, offset, 12));
+			return new Response<>(ReturnCode.SUCCESS, service.findManyUserComment(id, offset, 12));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
@@ -434,7 +438,7 @@ public class UserController extends BaseController implements BetterJava {
 			if (!token2UID(token).equals(id)) {
 				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
 			}
-			return new Response<>(ReturnCode.SUCCESS, commentService.findManyUserCommentReplies(id, offset, 12));
+			return new Response<>(ReturnCode.SUCCESS, service.findManyUserCommentReplies(id, offset, 12));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
@@ -465,10 +469,10 @@ public class UserController extends BaseController implements BetterJava {
 				commentService.delete(cid);
 			} else {
 				Long crid = Long.parseLong(params.get("crid"));
-				if (!commentService.findReply(crid).getSenderId().equals(uid)) {
+				if (!commentReplyService.find(crid).getSenderId().equals(uid)) {
 					return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
 				}
-				commentService.deleteReply(crid);
+				commentReplyService.find(crid);
 			}
 			return new Response<>(ReturnCode.SUCCESS, true);
 		} catch (ServiceException e) {

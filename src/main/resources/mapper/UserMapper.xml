@@ -1,6 +1,120 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="net.imyeyu.blogapi.mapper.UserMapper">
+	<!-- 根据用户名获取 -->
+	<select id="findByName" resultType="net.imyeyu.blogapi.entity.User" parameterType="String">
+		SELECT * FROM `users` WHERE `name` = #{name} AND `deleted_at` IS NULL LIMIT 1
+	</select>
+	<!-- 根据邮箱获取 -->
+	<select id="findByEmail" resultType="net.imyeyu.blogapi.entity.User" parameterType="String">
+		SELECT * FROM `users` WHERE `email` = #{email} AND `deleted_at` IS NULL LIMIT 1
+	</select>
+	<!-- 用户个人空间"我的评论"查询 -->
+	<select id="findManyUserComment" resultType="net.imyeyu.blogapi.entity.UserComment">
+		SELECT
+			r.aid,
+			a.title AS aTitle,
+			a.type AS aType,
+
+			r.cid,
+			r.crid,
+			r.data,
+			r.created_at AS createdAt
+		FROM (
+			-- 评论
+			SELECT
+				c.article_id AS aid,
+
+				c.id AS cid,
+				NULL AS crid,
+				c.data,
+				c.created_at,
+
+				c.user_id AS uid
+			FROM
+				comments AS c
+			WHERE
+				c.user_id = #{uid}
+				AND c.deleted_at IS NULL
+			-- 回复
+			UNION SELECT
+				c.article_id AS aid,
+
+				c.id AS cid,
+				cr.id AS crid,
+				cr.data,
+				cr.created_at,
+
+				c.user_id AS uid
+			FROM
+				comment_replies AS cr
+			LEFT JOIN
+				comments AS c
+			ON
+				c.id = cr.comment_id
+			WHERE
+				cr.sender_id = #{uid}
+				AND cr.deleted_at IS NULL
+		) AS r
+		-- 关联文章
+		LEFT JOIN
+			article AS a
+		ON
+			a.id = aid
+		ORDER BY
+			r.created_at DESC
+		LIMIT
+			#{offset}, #{limit}
+	</select>
+	<!-- 用户个人空间"回复我的"查询 -->
+	<select id="findManyUserCommentReplies" resultType="net.imyeyu.blogapi.entity.UserComment">
+		SELECT
+			c.article_id AS aid,
+			a.title AS aTitle,
+			a.type AS aType,
+
+			c.id AS cid,
+			cr.id AS crid,
+			cr.data,
+			cr.created_at AS createdAt,
+
+			cr.sender_id AS uid,
+			u.name,
+			ud.has_avatar AS hasAvatar
+		FROM
+			comment_replies AS cr
+		LEFT JOIN
+			comments AS c
+		ON
+			c.id = cr.comment_id
+		-- 关联文章
+		LEFT JOIN
+			article AS a
+		ON
+			a.id = c.article_id
+		-- 关联用户
+		LEFT JOIN
+			users AS u
+		ON
+			u.id = cr.sender_id
+		-- 关联用户数据
+		LEFT JOIN
+			user_data AS ud
+		ON
+			u.id = ud.user_id
+		WHERE
+			cr.receiver_id = #{uid}
+			AND cr.sender_id != #{uid}
+			AND cr.deleted_at IS NULL
+		ORDER BY
+			cr.created_at DESC
+		LIMIT
+			#{offset}, #{limit}
+	</select>
+	<!-- 更新密码 -->
+	<update id="updatePassword">
+		UPDATE users SET password = #{password}, updated_at = FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000) WHERE id = #{id}
+	</update>
 	<!-- 新增 -->
 	<insert id="create" parameterType="net.imyeyu.blogapi.entity.User" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
 		INSERT INTO `users` (
@@ -19,14 +133,6 @@
 	<select id="find" resultType="net.imyeyu.blogapi.entity.User" parameterType="long">
 		SELECT * FROM `users` WHERE `id` = #{id} AND `deleted_at` IS NULL LIMIT 1
 	</select>
-	<!-- 根据用户名获取 -->
-	<select id="findByName" resultType="net.imyeyu.blogapi.entity.User" parameterType="String">
-		SELECT * FROM `users` WHERE `name` = #{name} AND `deleted_at` IS NULL LIMIT 1
-	</select>
-	<!-- 根据邮箱获取 -->
-	<select id="findByEmail" resultType="net.imyeyu.blogapi.entity.User" parameterType="String">
-		SELECT * FROM `users` WHERE `email` = #{email} AND `deleted_at` IS NULL LIMIT 1
-	</select>
 	<!-- 更新 -->
 	<update id="update" parameterType="net.imyeyu.blogapi.entity.User">
 		<if test="id != null">
@@ -38,10 +144,6 @@
 			</set>
 			WHERE `id` = #{id}
 		</if>
-	</update>
-	<!-- 更新密码 -->
-	<update id="updatePassword">
-		UPDATE users SET password = #{password}, updated_at = FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000) WHERE id = #{id}
 	</update>
 	<!-- 删除 -->
 	<update id="delete">

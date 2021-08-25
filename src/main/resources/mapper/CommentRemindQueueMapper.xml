@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="net.imyeyu.blogapi.mapper.CommentRemindQueueMapper">
+	<!-- 根据用户获取 -->
+	<select id="findManyByUID" resultType="net.imyeyu.blogapi.entity.CommentRemindQueue">
+		SELECT * FROM comment_remind_queue WHERE user_id = #{uid}
+	</select>
+	<!-- 添加 -->
+	<insert id="create" parameterType="net.imyeyu.blogapi.entity.CommentRemindQueue" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO comment_remind_queue (
+			uuid,
+			user_id,
+			reply_id
+		) VALUES (
+			#{UUID},
+			#{userId},
+			#{replyId}
+		)
+	</insert>
+	<!-- 删除 -->
+	<delete id="deleteByUID" parameterType="long">
+		DELETE FROM comment_remind_queue WHERE user_id = #{uid}
+	</delete>
+</mapper>

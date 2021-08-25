@@ -6,6 +6,7 @@ import net.imyeyu.blogapi.mapper.UserPrivacyMapper;
 import net.imyeyu.blogapi.service.UserPrivacyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 用户隐私控制服务实现
@@ -28,6 +29,7 @@ public class UserPrivacyServiceImplement implements UserPrivacyService {
 		return mapper.findByUID(uid);
 	}
 
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public void update(UserPrivacy userPrivacy) throws ServiceException {
 		mapper.update(userPrivacy);

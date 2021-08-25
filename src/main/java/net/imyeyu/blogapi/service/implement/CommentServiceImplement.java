@@ -9,6 +9,7 @@ import net.imyeyu.blogapi.service.CommentReplyService;
 import net.imyeyu.blogapi.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -29,6 +30,7 @@ public class CommentServiceImplement implements CommentService {
 	@Autowired
 	private CommentMapper mapper;
 
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public void deleteByUID(Long uid) throws ServiceException {
 		List<Comment> comments = mapper.findAllByUID(uid);
@@ -38,6 +40,7 @@ public class CommentServiceImplement implements CommentService {
 		mapper.deleteByUID(uid);
 	}
 
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public void create(Comment comment) throws ServiceException {
 		if (articleService.find(comment.getArticleId()).isCanComment()) {
@@ -58,6 +61,7 @@ public class CommentServiceImplement implements CommentService {
 		return mapper.findMany(aid, offset, limit);
 	}
 
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public void delete(Long id) throws ServiceException {
 		commentReplyService.deleteByCID(id);

@@ -6,6 +6,7 @@ import net.imyeyu.blogapi.mapper.UserConfigMapper;
 import net.imyeyu.blogapi.service.UserConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 用户设置服务实现
@@ -28,6 +29,7 @@ public class UserConfigServiceImplement implements UserConfigService {
 		return mapper.findByUID(uid);
 	}
 
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public void update(UserConfig userConfig) throws ServiceException {
 		mapper.update(userConfig);

@@ -13,6 +13,7 @@ import net.imyeyu.blogapi.service.CommentService;
 import net.imyeyu.blogapi.util.Redis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.Comparator;
@@ -40,6 +41,11 @@ public class ArticleServiceImplement implements ArticleService {
 
 	@Autowired
 	private ArticleLabelService labelService;
+
+	@Override
+	public Article findSimple(Long id) throws ServiceException {
+		return mapper.findSimple(id);
+	}
 
 	@Override
 	public List<Article> findMany(Long offset, int limit) throws ServiceException {
@@ -74,6 +80,7 @@ public class ArticleServiceImplement implements ArticleService {
 		return mapper.getCommentsLength(aid);
 	}
 
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public void read(String ip, Article article) throws ServiceException {
 		if (!redisArticleRead.contains(ip, article.getId())) {
@@ -99,6 +106,7 @@ public class ArticleServiceImplement implements ArticleService {
 		}
 	}
 
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public int like(Long aid) throws ServiceException {
 		Article article = mapper.find(aid);

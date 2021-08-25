@@ -10,7 +10,7 @@
 		SELECT * FROM `labels` WHERE `name` = #{name}
 	</select>
 	<!-- 根据文章 ID 获取 -->
-	<select id="findManyByArticleId" resultType="net.imyeyu.blogapi.entity.ArticleLabel" parameterType="long">
+	<select id="findManyByAId" resultType="net.imyeyu.blogapi.entity.ArticleLabel" parameterType="long">
 		SELECT
 			*
 		FROM

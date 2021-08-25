@@ -23,31 +23,31 @@ public class ArticleTypeHandler extends BaseTypeHandler<ArticleType> {
 
 	@Override
 	public ArticleType getNullableResult(ResultSet rs, String columnName) throws SQLException {
-		String expenseType = rs.getString(columnName);
-		if (rs.wasNull() || expenseType == null) {
+		String type = rs.getString(columnName);
+		if (rs.wasNull() || type == null) {
 			return null;
 		} else {
-			return ArticleType.valueOf(expenseType);
+			return ArticleType.valueOf(type);
 		}
 	}
 
 	@Override
 	public ArticleType getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-		String expenseType = rs.getString(columnIndex);
-		if (rs.wasNull() || expenseType == null) {
+		String type = rs.getString(columnIndex);
+		if (rs.wasNull() || type == null) {
 			return null;
 		} else {
-			return ArticleType.valueOf(expenseType);
+			return ArticleType.valueOf(type);
 		}
 	}
 
 	@Override
 	public ArticleType getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-		String expenseType = cs.getString(columnIndex);
-		if (cs.wasNull() || expenseType == null) {
+		String type = cs.getString(columnIndex);
+		if (cs.wasNull() || type == null) {
 			return null;
 		} else {
-			return ArticleType.valueOf(expenseType);
+			return ArticleType.valueOf(type);
 		}
 	}
 }

@@ -11,6 +11,8 @@ import java.util.List;
  */
 public interface ArticleMapper extends BaseMapper<Article> {
 
+	Article findSimple(Long id);
+
 	List<Article> findManyByClass(Long cid, Long offset, int limit);
 
 	List<Article> findManyByLabel(Long lid, Long offset, int limit);

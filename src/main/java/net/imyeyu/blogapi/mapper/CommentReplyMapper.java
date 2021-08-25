@@ -5,6 +5,8 @@ import net.imyeyu.blogapi.entity.CommentReply;
 import java.util.List;
 
 /**
+ * 评论回复
+ *
  * <p>夜雨 创建于 2021-08-24 10:36
  */
 public interface CommentReplyMapper extends BaseMapper<CommentReply> {

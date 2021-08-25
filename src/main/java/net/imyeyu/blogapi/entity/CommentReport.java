@@ -7,6 +7,7 @@ import net.imyeyu.blogapi.annotation.Entity;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.service.CommentReplyService;
 import net.imyeyu.blogapi.service.CommentService;
+import net.imyeyu.blogapi.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Transient;
 
@@ -24,23 +25,41 @@ import java.io.Serializable;
 public class CommentReport extends BaseEntity implements Serializable {
 
 	@Transient
+	private transient static UserService userService;
+
+	@Transient
 	private transient static CommentService commentService;
 
 	@Transient
 	private transient static CommentReplyService commentReplyService;
 
+	private Long reporterId;
 	private Long commentId;
 	private Long commentReplyId;
 
 	private String commentData;
 	private String commentReplyData;
+
+	private User reporter;
 	private Comment comment;
 	private CommentReply commentReply;
 
 	@Autowired
-	public CommentReport(CommentService commentService, CommentReplyService commentReplyService) {
+	public CommentReport(UserService userService, CommentService commentService, CommentReplyService commentReplyService) {
+		CommentReport.userService = userService;
 		CommentReport.commentService = commentService;
 		CommentReport.commentReplyService = commentReplyService;
+	}
+
+	/**
+	 * 携带举报方
+	 *
+	 * @return 本实体
+	 * @throws ServiceException 服务异常
+	 */
+	public CommentReport withReporter() throws ServiceException {
+		reporter = userService.find(reporterId);
+		return this;
 	}
 
 	/**

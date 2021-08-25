@@ -16,6 +16,15 @@ import java.util.List;
 public interface ArticleService extends BaseService<Article> {
 
 	/**
+	 * 简单查找文章，只携带 ID、类型、标题
+	 *
+	 * @param id 文章 ID
+	 * @return 文章
+	 * @throws ServiceException 服务异常
+	 */
+	Article findSimple(Long id) throws ServiceException;
+
+	/**
 	 * 根据分类获取文章
 	 *
 	 * @param clazz  分类

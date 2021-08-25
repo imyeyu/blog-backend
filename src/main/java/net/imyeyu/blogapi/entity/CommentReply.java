@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import net.imyeyu.blogapi.annotation.Entity;
 import net.imyeyu.blogapi.bean.ServiceException;
+import net.imyeyu.blogapi.service.CommentService;
 import net.imyeyu.blogapi.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Transient;
@@ -25,6 +26,9 @@ public class CommentReply extends BaseEntity implements Serializable {
 	@Transient
 	private transient static UserService userService;
 
+	@Transient
+	private transient static CommentService commentService;
+
 	private Long commentId;
 	private Long senderId;
 	private Long receiverId;
@@ -33,10 +37,23 @@ public class CommentReply extends BaseEntity implements Serializable {
 	private String data;
 
 	private User sender, receiver;
+	private Comment comment;
 
 	@Autowired
-	public CommentReply(UserService userService) {
+	public CommentReply(UserService userService, CommentService commentService) {
 		CommentReply.userService = userService;
+		CommentReply.commentService = commentService;
+	}
+
+	/**
+	 * 携带评论数据
+	 *
+	 * @return 本实体
+	 * @throws ServiceException 服务异常
+	 */
+	public CommentReply withComment() throws ServiceException {
+		comment = commentService.find(commentId);
+		return this;
 	}
 
 	/**

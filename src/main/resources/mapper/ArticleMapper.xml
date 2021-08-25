@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="net.imyeyu.blogapi.mapper.ArticleMapper">
+	<!-- 简单获取 -->
+	<select id="findSimple" resultMap="findResult" parameterType="long">
+		SELECT
+			id,
+			type,
+			title
+		FROM
+			article
+		WHERE
+			id = #{id}
+			AND deleted_at IS NULL
+		LIMIT 1
+	</select>
 	<!-- 根据分类获取部分 -->
 	<select id="findManyByClass" resultMap="findManyResult">
 		SELECT

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="net.imyeyu.blogapi.mapper.EmailQueueMapper">
+	<!-- 添加日志 -->
+	<insert id="addLog" parameterType="net.imyeyu.blogapi.entity.EmailQueueLog" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO email_queue_log (
+			uuid,
+			type,
+			data_id,
+			send_to,
+			send_at,
+			is_sent,
+			exception_msg
+		) VALUES (
+			#{UUID},
+			#{type},
+			#{dataId},
+			#{sendTo},
+			#{sendAt},
+			#{isSent},
+			#{exceptionMsg}
+		)
+	</insert>
+	<select id="find" resultType="net.imyeyu.blogapi.entity.EmailQueue">
+		SELECT * FROM email_queue WHERE type = #{type} AND data_id = #{dataId}
+	</select>
+	<!-- 推送队列 -->
+	<select id="findAll" resultType="net.imyeyu.blogapi.entity.EmailQueue">
+		SELECT * FROM email_queue
+	</select>
+	<!-- 添加 -->
+	<insert id="create" parameterType="net.imyeyu.blogapi.entity.EmailQueue" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO email_queue (
+			uuid,
+			type,
+			data_id,
+			send_at
+		) VALUES (
+			#{UUID},
+			#{type},
+			#{dataId},
+			#{sendAt}
+		)
+	</insert>
+	<!-- 删除 -->
+	<delete id="delete" parameterType="String">
+		DELETE FROM email_queue WHERE uuid = #{UUID}
+	</delete>
+</mapper>

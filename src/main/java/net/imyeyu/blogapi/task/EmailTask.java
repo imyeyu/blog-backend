@@ -77,7 +77,8 @@ public class EmailTask {
 			if (0 < emailQueueList.size()) {
 				for (EmailQueue emailQueue : emailQueueList) {
 					if (emailQueue.getSendAt() < System.currentTimeMillis()) {
-						log.info(emailQueue.getType() + "邮件推送：" + emailQueue.getDataId());
+						log.info(emailQueue.getUUID() + " 邮件推送：" + emailQueue.getType() + "." +emailQueue.getDataId());
+						long start = System.currentTimeMillis();
 
 						EmailQueueLog emailQueueLog = new EmailQueueLog();
 						emailQueueLog.setUUID(emailQueue.getUUID());
@@ -89,8 +90,12 @@ public class EmailTask {
 								case REPLY_REMINAD ->  emailQueueLog.setSendTo(sendEmail4ReplyRemind(emailQueue));
 								case RESET_PASSWORD -> emailQueueLog.setSendTo(sendEmail4ResetPassword(emailQueue));
 							}
+							emailQueueLog.setIsSent(true);
+							emailQueueLog.setCreatedAt(System.currentTimeMillis());
+							log.info(emailQueue.getUUID() + " 邮件推送成功：" + (emailQueueLog.getCreatedAt() - start) + " ms");
 						} catch (Exception e) {
-							log.error("邮件推送失败", e);
+							emailQueueLog.setIsSent(false);
+							log.error(emailQueue.getUUID() + " 邮件推送异常", e);
 							emailQueueLog.setExceptionMsg(e.getMessage());
 						}
 						service.addLog(emailQueueLog);
@@ -131,7 +136,6 @@ public class EmailTask {
 	 * @throws Exception 服务异常
 	 */
 	private String sendEmail4ReplyRemind(EmailQueue emailQueue) throws Exception {
-		long now = System.currentTimeMillis();
 		User user = userService.find(emailQueue.getDataId()).withData();
 		List<CommentRemindQueue> reminds = commentRemindQueueService.findManyByUID(emailQueue.getDataId());
 		// 回查数据
@@ -142,12 +146,7 @@ public class EmailTask {
 				// 发送者
 				remind.getReply().withSender();
 			}
-			// 父级评论
-			remind.getReply().withComment();
-			// 所属文章
-			remind.getReply().getComment().withSimpleArticle();
 		}
-		System.out.println("查询耗时 " + (System.currentTimeMillis() - now));
 
 		Map<String, Object> model = new HashMap<>();
 		model.put("user", user);
@@ -157,7 +156,7 @@ public class EmailTask {
 		Template template = freeMarkerConfigurer.getConfiguration().getTemplate("EmailReplyRemind.ftl");
 		String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
 
-		sendEmail(user.getEmail(), "回复提醒", html);
+		sendEmail(user.getEmail(), "Hey! 你在 夜雨博客 的评论收到新回复", html);
 		// 移除回复提醒队列
 		commentRemindQueueService.deleteByUID(emailQueue.getDataId());
 		return user.getEmail();

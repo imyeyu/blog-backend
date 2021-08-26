@@ -20,6 +20,18 @@ setting:
 
 # Spring
 spring:
+    mail:       # 邮件配置
+        host: smtp.qq.com
+        username: imyeyu@qq.com
+        password: saodifhaposjfoas
+        properties:
+            mail:
+                smtp:
+                    auth: true
+                    starttls:
+                        enable: true
+                        required: true
+        default-encoding: UTF-8
     mvc:
         converters:
             preferred-json-mapper: gson # 返回 JSON 序列化使用 GSON

@@ -13,6 +13,10 @@ public interface CommentReplyMapper extends BaseMapper<CommentReply> {
 
 	List<CommentReply> findMany(Long commentId, Long offset, int limit);
 
+	List<CommentReply> findAllByUID(Long uid);
+
+	List<CommentReply> findAllByCID(Long cid);
+
 	void deleteByUID(Long uid);
 
 	void deleteByCID(Long cid);

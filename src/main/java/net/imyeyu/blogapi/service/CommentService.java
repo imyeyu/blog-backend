@@ -2,8 +2,6 @@ package net.imyeyu.blogapi.service;
 
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.Comment;
-import net.imyeyu.blogapi.entity.CommentReply;
-import net.imyeyu.blogapi.entity.UserComment;
 
 import java.util.List;
 

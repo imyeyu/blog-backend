@@ -14,4 +14,6 @@ public interface CommentRemindQueueMapper extends BaseMapper<CommentRemindQueue>
 	List<CommentRemindQueue> findManyByUID(Long uid);
 
 	void deleteByUID(Long uid);
+
+	void deleteByRID(Long uid);
 }

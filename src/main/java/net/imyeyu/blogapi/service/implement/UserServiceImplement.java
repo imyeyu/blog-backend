@@ -251,11 +251,6 @@ public class UserServiceImplement extends AbstractService implements UserService
 	}
 
 	@Override
-	public List<UserComment> findManyUserCommentReplies(Long userId, Long offset, int limit) {
-		return mapper.findManyUserCommentReplies(userId, offset, limit);
-	}
-
-	@Override
 	public void create(User user) throws ServiceException {
 		mapper.create(user);
 	}

@@ -43,7 +43,11 @@ public class UserDataServiceImplement implements UserDataService {
 
 	@Override
 	public UserData findByUID(Long uid) throws ServiceException {
-		return mapper.findByUID(uid);
+		UserData userData = mapper.findByUID(uid);
+		if (userData != null) {
+			return userData;
+		}
+		throw new ServiceException(ReturnCode.RESULT_NULL, "找不到该 UID 用户：" + uid);
 	}
 
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})

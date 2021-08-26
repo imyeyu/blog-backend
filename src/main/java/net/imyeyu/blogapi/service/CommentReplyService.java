@@ -24,6 +24,24 @@ public interface CommentReplyService extends BaseService<CommentReply> {
 	List<CommentReply> findMany(Long cid, Long offset, int limit) throws ServiceException;
 
 	/**
+	 * 获取该用户的所有回复
+	 *
+	 * @param uid 用户 ID
+	 * @return 该评论的所有回复
+	 * @throws ServiceException 服务异常
+	 */
+	List<CommentReply> findAllByUID(Long uid) throws ServiceException;
+
+	/**
+	 * 获取该评论的所有回复
+	 *
+	 * @param cid 评论 ID
+	 * @return 该评论的所有回复
+	 * @throws ServiceException 服务异常
+	 */
+	List<CommentReply> findAllByCID(Long cid) throws ServiceException;
+
+	/**
 	 * 删除该用户所有回复和被回复（账号注销调用）
 	 *
 	 * @param uid 用户 ID

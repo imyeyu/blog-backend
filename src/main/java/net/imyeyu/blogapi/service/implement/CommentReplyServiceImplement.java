@@ -5,11 +5,14 @@ import net.imyeyu.blogapi.bean.EmailType;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.CommentRemindQueue;
 import net.imyeyu.blogapi.entity.CommentReply;
+import net.imyeyu.blogapi.entity.CommentReplyRecord;
 import net.imyeyu.blogapi.entity.EmailQueue;
 import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.mapper.CommentReplyMapper;
 import net.imyeyu.blogapi.service.CommentRemindQueueService;
+import net.imyeyu.blogapi.service.CommentReplyRecordService;
 import net.imyeyu.blogapi.service.CommentReplyService;
+import net.imyeyu.blogapi.service.CommentService;
 import net.imyeyu.blogapi.service.EmailQueueService;
 import net.imyeyu.blogapi.service.UserConfigService;
 import net.imyeyu.blogapi.service.UserService;
@@ -37,7 +40,13 @@ public class CommentReplyServiceImplement implements CommentReplyService {
 	private UserConfigService userConfigService;
 
 	@Autowired
+	private CommentService commentService;
+
+	@Autowired
 	private CommentRemindQueueService commentRemindQueueService;
+
+	@Autowired
+	private CommentReplyRecordService commentReplyRecordService;
 
 	@Autowired
 	private EmailQueueService emailQueueService;
@@ -45,16 +54,42 @@ public class CommentReplyServiceImplement implements CommentReplyService {
 	@Autowired
 	private CommentReplyMapper mapper;
 
+	@Override
+	public List<CommentReply> findMany(Long cid, Long offset, int limit) throws ServiceException {
+		return mapper.findMany(cid, offset, limit);
+	}
+
+	@Override
+	public List<CommentReply> findAllByUID(Long uid) throws ServiceException {
+		return mapper.findAllByUID(uid);
+	}
+
+	@Override
+	public List<CommentReply> findAllByCID(Long cid) throws ServiceException {
+		return mapper.findAllByCID(cid);
+	}
+
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public void deleteByUID(Long uid) throws ServiceException {
+		List<CommentReply> replies = findAllByUID(uid);
+		for (int i = 0; i < replies.size(); i++) {
+			// 删除回复的被回复者的记录
+			commentReplyRecordService.deleteByRID(replies.get(i).getId());
+		}
 		mapper.deleteByUID(uid);
 	}
 
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public void deleteByCID(Long cid) throws ServiceException {
+		List<CommentReply> replies = findAllByCID(cid);
+		for (int i = 0; i < replies.size(); i++) {
+			// 删除回复的被回复者的记录
+			commentReplyRecordService.deleteByRID(replies.get(i).getId());
+		}
 		mapper.deleteByCID(cid);
+
 	}
 
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
@@ -62,28 +97,36 @@ public class CommentReplyServiceImplement implements CommentReplyService {
 	public void create(CommentReply commentReply) throws ServiceException {
 		commentReply.setCreatedAt(System.currentTimeMillis());
 		mapper.create(commentReply);
+
+		Long receiverId = commentReply.getReceiverId();
 		// 被回复者是注册用户
-		if (!ObjectUtils.isEmpty(commentReply.getReceiverId())) {
+		if (!ObjectUtils.isEmpty(receiverId)) {
 			// 回复和被回复不是同一对象
-			if (!commentReply.getReceiverId().equals(commentReply.getSenderId())) {
-				User user = userService.find(commentReply.getReceiverId()).withConfig();
+			if (!receiverId.equals(commentReply.getSenderId())) {
+				long now = System.currentTimeMillis();
+				// 被回复记录
+				CommentReplyRecord commentReplyRecord = new CommentReplyRecord();
+				commentReplyRecord.setUserId(receiverId);
+				commentReplyRecord.setReplyId(commentReply.getId());
+				commentReplyRecord.setCreatedAt(now);
+				commentReplyRecordService.create(commentReplyRecord);
 				// 被回复允许推送邮件
+				User user = userService.find(receiverId).withConfig();
 				if (!StringUtils.isEmpty(user.getEmail()) && user.getConfig().getEmailNotifyReply()) {
 					// 添加提醒队列
 					CommentRemindQueue remindQueue = new CommentRemindQueue();
 					remindQueue.setUUID(UUID.randomUUID().toString());
-					remindQueue.setUserId(commentReply.getReceiverId());
+					remindQueue.setUserId(receiverId);
 					remindQueue.setReplyId(commentReply.getId());
 					commentRemindQueueService.create(remindQueue);
 					// 邮件队列
-					EmailQueue emailQueue = emailQueueService.find(EmailType.REPLY_REMINAD, commentReply.getReceiverId());
+					EmailQueue emailQueue = emailQueueService.find(EmailType.REPLY_REMINAD, receiverId);
 					if (emailQueue == null) {
 						emailQueue = new EmailQueue();
 						emailQueue.setUUID(UUID.randomUUID().toString());
 						emailQueue.setType(EmailType.REPLY_REMINAD);
-						emailQueue.setDataId(commentReply.getReceiverId());
+						emailQueue.setDataId(receiverId);
 
-						long now = System.currentTimeMillis();
 						long H10 = Time.H * 10;
 						if (now < Time.today() + H10) {
 							emailQueue.setSendAt(Time.today() + H10);
@@ -102,14 +145,10 @@ public class CommentReplyServiceImplement implements CommentReplyService {
 		return mapper.find(id);
 	}
 
-	@Override
-	public List<CommentReply> findMany(Long cid, Long offset, int limit) throws ServiceException {
-		return mapper.findMany(cid, offset, limit);
-	}
-
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public void delete(Long id) throws ServiceException {
 		mapper.delete(id);
+		commentReplyRecordService.deleteByRID(id);
 	}
 }

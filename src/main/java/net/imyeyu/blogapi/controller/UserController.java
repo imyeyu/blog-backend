@@ -13,6 +13,7 @@ import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserConfig;
 import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.entity.UserPrivacy;
+import net.imyeyu.blogapi.service.CommentReplyRecordService;
 import net.imyeyu.blogapi.service.CommentReplyService;
 import net.imyeyu.blogapi.service.CommentService;
 import net.imyeyu.blogapi.service.SettingsService;
@@ -65,6 +66,9 @@ public class UserController extends BaseController implements BetterJava {
 
 	@Autowired
 	private CommentReplyService commentReplyService;
+
+	@Autowired
+	private CommentReplyRecordService commentReplyRecordService;
 
 	/**
 	 * 注册用户
@@ -433,12 +437,12 @@ public class UserController extends BaseController implements BetterJava {
 	@QPSLimit
 	@RequiredToken
 	@PostMapping("/comment/reply/{id}")
-	public Response<?> getCommentReplies(@PathVariable Long id, @RequestParam Long offset, @RequestHeader("Token") String token) {
+	public Response<?> getCommentReply(@PathVariable Long id, @RequestParam Long offset, @RequestHeader("Token") String token) {
 		try {
 			if (!token2UID(token).equals(id)) {
 				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
 			}
-			return new Response<>(ReturnCode.SUCCESS, service.findManyUserCommentReplies(id, offset, 12));
+			return new Response<>(ReturnCode.SUCCESS, commentReplyRecordService.findManyByUID(id, offset, 12));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
@@ -472,7 +476,7 @@ public class UserController extends BaseController implements BetterJava {
 				if (!commentReplyService.find(crid).getSenderId().equals(uid)) {
 					return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
 				}
-				commentReplyService.find(crid);
+				commentReplyService.delete(crid);
 			}
 			return new Response<>(ReturnCode.SUCCESS, true);
 		} catch (ServiceException e) {

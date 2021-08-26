@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="net.imyeyu.blogapi.mapper.CommentReplyRecordMapper">
+	<!-- 根据用户获取 -->
+	<select id="findManyByUID" resultType="net.imyeyu.blogapi.entity.UserComment">
+		SELECT
+			a.id AS aid,
+			a.title AS aTitle,
+			a.type AS aType,
+
+			c.id AS cid,
+			cr.id AS crid,
+			cr.data,
+			cr.created_at,
+
+			u.id AS uid,
+			u.name,
+			ud.has_avatar
+		FROM
+			comment_reply_record AS crr
+		LEFT JOIN
+			comment_replies AS cr
+		ON
+			crr.reply_id = cr.id
+		LEFT JOIN
+			comments AS c
+		ON
+			c.id = cr.comment_id
+		LEFT JOIN
+			article AS a
+		ON
+			a.id = c.article_id
+		LEFT JOIN
+			users AS u
+		ON
+			u.id = cr.receiver_id
+		LEFT JOIN
+			user_data AS ud
+		ON
+			u.id = ud.user_id
+		WHERE
+			crr.user_id = #{uid}
+		ORDER BY
+			cr.created_at DESC
+		LIMIT
+			#{offset}, #{limit}
+	</select>
+	<!-- 添加 -->
+	<insert id="create" parameterType="net.imyeyu.blogapi.entity.CommentReplyRecord" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO comment_reply_record (
+			user_id,
+			reply_id,
+			created_at
+		) VALUES (
+			#{userId},
+			#{replyId},
+			#{createdAt}
+		)
+	</insert>
+	<!-- 删除 -->
+	<delete id="delete">
+		DELETE FROM comment_reply_record WHERE user_id = #{uid} AND reply_id = #{rid}
+	</delete>
+</mapper>

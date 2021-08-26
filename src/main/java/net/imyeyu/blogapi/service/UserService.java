@@ -101,7 +101,7 @@ public interface UserService extends BaseService<User> {
 	boolean cancel(Long id, String password) throws ServiceException;
 
 	/**
-	 * 根据用户 ID 获取相关评论，包括评论、回复和被回复数据
+	 * 根据用户 ID 获取评论和回复数据（被回复记录独立在 CommentReplyRecordService）
 	 *
 	 * @param uid    用户 ID
 	 * @param offset 偏移
@@ -109,15 +109,4 @@ public interface UserService extends BaseService<User> {
 	 * @return 用户评论列表
 	 */
 	List<UserComment> findManyUserComment(Long uid, Long offset, int limit);
-
-	/**
-	 * 根据用户 ID 获取相关回复数据
-	 *
-	 *
-	 * @param uid    用户 ID
-	 * @param offset 偏移
-	 * @param limit  数量
-	 * @return 用户评论列表
-	 */
-	List<UserComment> findManyUserCommentReplies(Long uid, Long offset, int limit);
 }

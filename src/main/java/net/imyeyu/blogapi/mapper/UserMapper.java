@@ -19,6 +19,4 @@ public interface UserMapper extends BaseMapper<User> {
 	void updatePassword(Long id, String password);
 
 	List<UserComment> findManyUserComment(Long uid, Long offset, int limit);
-
-	List<UserComment> findManyUserCommentReplies(Long uid, Long offset, int limit);
 }

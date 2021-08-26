@@ -31,6 +31,11 @@ public class CommentRemindQueueServiceImplement implements CommentRemindQueueSer
 	}
 
 	@Override
+	public void deleteByRID(Long rid) throws ServiceException {
+		mapper.deleteByRID(rid);
+	}
+
+	@Override
 	public void create(CommentRemindQueue commentRemindQueue) throws ServiceException {
 		mapper.create(commentRemindQueue);
 	}

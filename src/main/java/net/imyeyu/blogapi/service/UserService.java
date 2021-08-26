@@ -54,17 +54,6 @@ public interface UserService extends BaseService<User> {
 	boolean signOut(String token) throws ServiceException;
 
 	/**
-	 * 修改密码
-	 *
-	 * @param id          用户 ID
-	 * @param oldPassword 旧密码
-	 * @param newPassword 新密码
-	 * @return true 为修改成功
-	 * @throws ServiceException 服务异常
-	 */
-	boolean updatePassword(Long id, String oldPassword, String newPassword) throws ServiceException;
-
-	/**
 	 * 根据用户名查找
 	 *
 	 * @param name 用户名
@@ -91,6 +80,46 @@ public interface UserService extends BaseService<User> {
 	void exist(Long id) throws ServiceException;
 
 	/**
+	 * 根据用户 ID 获取评论和回复数据（被回复记录独立在 CommentReplyRecordService）
+	 *
+	 * @param uid    用户 ID
+	 * @param offset 偏移
+	 * @param limit  数量
+	 * @return 用户评论列表
+	 */
+	List<UserComment> findManyUserComment(Long uid, Long offset, int limit) throws ServiceException;
+
+	/**
+	 * 发送邮箱验证邮件
+	 *
+	 * @param uid 用户 ID
+	 * @return true 为添加队列成功
+	 * @throws ServiceException 服务异常
+	 */
+	boolean sendEmailVerify(Long uid) throws ServiceException;
+
+	/**
+	 * 邮箱验证回调
+	 *
+	 * @param uid 用户 ID
+	 * @param key 邮件密钥（非登录令牌）
+	 * @return true 为验证成功
+	 * @throws ServiceException 服务异常
+	 */
+	boolean emailVerifyCallback(Long uid, String key) throws ServiceException;
+
+	/**
+	 * 修改密码
+	 *
+	 * @param id          用户 ID
+	 * @param oldPassword 旧密码
+	 * @param newPassword 新密码
+	 * @return true 为修改成功
+	 * @throws ServiceException 服务异常
+	 */
+	boolean updatePassword(Long id, String oldPassword, String newPassword) throws ServiceException;
+
+	/**
 	 * 注销
 	 *
 	 * @param id       用户 ID
@@ -99,14 +128,4 @@ public interface UserService extends BaseService<User> {
 	 * @throws ServiceException 服务异常
 	 */
 	boolean cancel(Long id, String password) throws ServiceException;
-
-	/**
-	 * 根据用户 ID 获取评论和回复数据（被回复记录独立在 CommentReplyRecordService）
-	 *
-	 * @param uid    用户 ID
-	 * @param offset 偏移
-	 * @param limit  数量
-	 * @return 用户评论列表
-	 */
-	List<UserComment> findManyUserComment(Long uid, Long offset, int limit);
 }

@@ -1,5 +1,6 @@
 package net.imyeyu.blogapi.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import net.imyeyu.betterjava.BetterJava;
 import net.imyeyu.blogapi.annotation.AOPLog;
 import net.imyeyu.blogapi.annotation.QPSLimit;
@@ -42,6 +43,7 @@ import java.util.Map;
  *
  * <p>夜雨 创建于 2021-02-23 21:38
  */
+@Slf4j
 @RestController
 @RequestMapping("/user")
 public class UserController extends BaseController implements BetterJava {
@@ -56,7 +58,7 @@ public class UserController extends BaseController implements BetterJava {
 	private UserPrivacyService privacyService;
 
 	@Autowired
-	private UserConfigService settingService;
+	private UserConfigService configService;
 
 	@Autowired
 	private SettingsService settingsService;
@@ -97,7 +99,7 @@ public class UserController extends BaseController implements BetterJava {
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("UserController.register", e);
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
@@ -133,7 +135,7 @@ public class UserController extends BaseController implements BetterJava {
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("UserController.signIn", e);
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
@@ -173,7 +175,53 @@ public class UserController extends BaseController implements BetterJava {
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("UserController.signOut", e);
+			return new Response<>(ReturnCode.ERROR, e);
+		}
+	}
+
+	/**
+	 * 发送邮箱验证邮件
+	 *
+	 * @param token 令牌
+	 * @return true 为添加队列成功
+	 */
+	@AOPLog
+	@QPSLimit(5000)
+	@RequiredToken
+	@PostMapping("/email/verify")
+	public Response<?> sendEmailVerify(@RequestHeader("Token") String token) {
+		try {
+			return new Response<>(ReturnCode.SUCCESS, service.sendEmailVerify(token2UID(token)));
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e.getMessage());
+		} catch (Exception e) {
+			log.error("UserController.sendEmailVerify", e);
+			return new Response<>(ReturnCode.ERROR, e);
+		}
+	}
+
+	/**
+	 * 邮箱验证回调（用户点击邮件的验证，但由前端调用）
+	 *
+	 * @param params 含 key 邮箱验证密钥（非登录令牌）
+	 * @param token  令牌
+	 * @return true 为添加队列成功
+	 */
+	@AOPLog
+	@QPSLimit(6000)
+	@RequiredToken
+	@PostMapping("/email/verify/callback")
+	public Response<?> emailVerifyCallback(@RequestBody Map<String, String> params, @RequestHeader("Token") String token) {
+		try {
+			if (StringUtils.isEmpty(params.get("key"))) {
+				return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：key");
+			}
+			return new Response<>(ReturnCode.SUCCESS, service.emailVerifyCallback(token2UID(token), params.get("key")));
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e.getMessage());
+		} catch (Exception e) {
+			log.error("UserController.sendEmailVerify", e);
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
@@ -202,7 +250,7 @@ public class UserController extends BaseController implements BetterJava {
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("UserController.updatePassword", e);
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
@@ -226,7 +274,7 @@ public class UserController extends BaseController implements BetterJava {
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("UserController.cancel", e);
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
@@ -260,7 +308,7 @@ public class UserController extends BaseController implements BetterJava {
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("UserController.getData", e);
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
@@ -281,10 +329,9 @@ public class UserController extends BaseController implements BetterJava {
 			if (settingsService.not(SettingsKey.ENABLE_USER_UPDATE)) {
 				return new Response<>(ReturnCode.ERROR_OFF_SERVICE, "用户资料更新服务未启用");
 			}
-			Long tokenUID = token2UID(token);
-			if (!tokenUID.equals(data.getUserId()) || !tokenUID.equals(data.getUser().getId())) {
-				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
-			}
+			Long uid = token2UID(token);
+			data.setUserId(uid);
+			data.getUser().setId(uid);
 			// 更新账号
 			service.update(data.getUser());
 			// 更新资料
@@ -292,8 +339,10 @@ public class UserController extends BaseController implements BetterJava {
 			return new Response<>(ReturnCode.SUCCESS, true);
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
+		} catch (NullPointerException e) {
+			return new Response<>(ReturnCode.REQUEST_BAD, "无效的请求");
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("UserController.updateData", e);
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
@@ -301,23 +350,19 @@ public class UserController extends BaseController implements BetterJava {
 	/**
 	 * 获取用户隐私控制
 	 *
-	 * @param id 用户 ID
 	 * @return 用户资料
 	 */
 	@AOPLog
 	@QPSLimit
 	@RequiredToken
-	@PostMapping("/privacy/{id}")
-	public Response<?> getPrivacy(@PathVariable Long id, @RequestHeader("Token") String token) {
+	@PostMapping("/privacy")
+	public Response<?> getPrivacy(@RequestHeader("Token") String token) {
 		try {
-			if (!token2UID(token).equals(id)) {
-				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
-			}
-			return new Response<>(ReturnCode.SUCCESS, privacyService.findByUID(id));
+			return new Response<>(ReturnCode.SUCCESS, privacyService.findByUID(token2UID(token)));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("UserController.getPrivacy", e);
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
@@ -334,16 +379,13 @@ public class UserController extends BaseController implements BetterJava {
 	@PostMapping("/privacy/update")
 	public Response<?> updatePrivacy(@RequestBody UserPrivacy privacy, @RequestHeader("Token") String token) {
 		try {
-			if (!token2UID(token).equals(privacy.getUserId())) {
-				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
-			}
-			// 更新资料
+			privacy.setUserId(token2UID(token));
 			privacyService.update(privacy);
 			return new Response<>(ReturnCode.SUCCESS, true);
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("UserController.updatePrivacy", e);
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
@@ -351,23 +393,19 @@ public class UserController extends BaseController implements BetterJava {
 	/**
 	 * 获取用户设置
 	 *
-	 * @param id 用户 ID
 	 * @return 用户设置
 	 */
 	@AOPLog
 	@QPSLimit
 	@RequiredToken
-	@PostMapping("/setting/{id}")
-	public Response<?> getSetting(@PathVariable Long id, @RequestHeader("Token") String token) {
+	@PostMapping("/config")
+	public Response<?> getConfig(@RequestHeader("Token") String token) {
 		try {
-			if (!token2UID(token).equals(id)) {
-				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
-			}
-			return new Response<>(ReturnCode.SUCCESS, settingService.findByUID(id));
+			return new Response<>(ReturnCode.SUCCESS, configService.findByUID(token2UID(token)));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("UserController.getSetting", e);
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
@@ -382,19 +420,16 @@ public class UserController extends BaseController implements BetterJava {
 	@AOPLog
 	@QPSLimit
 	@RequiredToken
-	@PostMapping("/setting/update")
-	public Response<?> updateSetting(@RequestBody UserConfig config, @RequestHeader("Token") String token) {
+	@PostMapping("/config/update")
+	public Response<?> updateConfig(@RequestBody UserConfig config, @RequestHeader("Token") String token) {
 		try {
-			if (!token2UID(token).equals(config.getUserId())) {
-				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
-			}
-			// 更新资料
-			settingService.update(config);
+			config.setUserId(token2UID(token));
+			configService.update(config);
 			return new Response<>(ReturnCode.SUCCESS, true);
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("UserController.updateSetting", e);
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
@@ -402,7 +437,6 @@ public class UserController extends BaseController implements BetterJava {
 	/**
 	 * 获取用户评论（包括回复）
 	 *
-	 * @param id     用户 ID
 	 * @param offset 偏移
 	 * @param token  令牌
 	 * @return 用户评论列表
@@ -410,17 +444,14 @@ public class UserController extends BaseController implements BetterJava {
 	@AOPLog
 	@QPSLimit
 	@RequiredToken
-	@PostMapping("/comment/{id}")
-	public Response<?> getComments(@PathVariable Long id, @RequestParam Long offset, @RequestHeader("Token") String token) {
+	@PostMapping("/comment")
+	public Response<?> getComments(@RequestParam Long offset, @RequestHeader("Token") String token) {
 		try {
-			if (!token2UID(token).equals(id)) {
-				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
-			}
-			return new Response<>(ReturnCode.SUCCESS, service.findManyUserComment(id, offset, 12));
+			return new Response<>(ReturnCode.SUCCESS, service.findManyUserComment(token2UID(token), offset, 12));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("UserController.getComments", e);
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
@@ -428,7 +459,6 @@ public class UserController extends BaseController implements BetterJava {
 	/**
 	 * 获取用户被回复的评论
 	 *
-	 * @param id     用户 ID
 	 * @param offset 偏移
 	 * @param token  令牌
 	 * @return 用户评论列表
@@ -436,17 +466,14 @@ public class UserController extends BaseController implements BetterJava {
 	@AOPLog
 	@QPSLimit
 	@RequiredToken
-	@PostMapping("/comment/reply/{id}")
-	public Response<?> getCommentReply(@PathVariable Long id, @RequestParam Long offset, @RequestHeader("Token") String token) {
+	@PostMapping("/comment/reply")
+	public Response<?> getCommentReply(@RequestParam Long offset, @RequestHeader("Token") String token) {
 		try {
-			if (!token2UID(token).equals(id)) {
-				return new Response<>(ReturnCode.PERMISSION_ERROR, "无效的令牌，无权限操作");
-			}
-			return new Response<>(ReturnCode.SUCCESS, commentReplyRecordService.findManyByUID(id, offset, 12));
+			return new Response<>(ReturnCode.SUCCESS, commentReplyRecordService.findManyByUID(token2UID(token), offset, 12));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("UserController.getCommentReply", e);
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
@@ -454,7 +481,7 @@ public class UserController extends BaseController implements BetterJava {
 	/**
 	 * 删除评论或回复（由"我的评论"调用）
 	 *
-	 * @param params 含 cid 和 crid
+	 * @param params 含 cid 或 crid
 	 * @param token  令牌
 	 * @return true 为删除成功
 	 */
@@ -482,7 +509,33 @@ public class UserController extends BaseController implements BetterJava {
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("UserController.delComment", e);
+			return new Response<>(ReturnCode.ERROR, e);
+		}
+	}
+
+	/**
+	 * 删除被回复通知
+	 *
+	 * @param params 含 crid
+	 * @param token  令牌
+	 * @return true 为删除成功
+	 */
+	@AOPLog
+	@QPSLimit
+	@RequiredToken
+	@PostMapping("/reply/del")
+	public Response<?> delReplyRecord(@RequestBody Map<String, String> params, @RequestHeader("Token") String token) {
+		try {
+			if (StringUtils.isEmpty(params.get("crid"))) {
+				return new Response<>(ReturnCode.PARAMS_MISS, "缺少参数：crid");
+			}
+			commentReplyRecordService.deleteByRIDwithUID(token2UID(token), Long.parseLong(params.get("crid")));
+			return new Response<>(ReturnCode.SUCCESS, true);
+		} catch (ServiceException e) {
+			return new Response<>(e.getCode(), e.getMessage());
+		} catch (Exception e) {
+			log.error("UserController.delReplyRecord", e);
 			return new Response<>(ReturnCode.ERROR, e);
 		}
 	}
@@ -513,7 +566,7 @@ public class UserController extends BaseController implements BetterJava {
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("UserController.updateAvatar", e);
 			return new Response<>(ReturnCode.ERROR, "服务异常：" + e.getMessage());
 		}
 	}
@@ -544,7 +597,7 @@ public class UserController extends BaseController implements BetterJava {
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("UserController.updateWrapper", e);
 			return new Response<>(ReturnCode.ERROR, "服务异常：" + e.getMessage());
 		}
 	}

@@ -2,7 +2,7 @@ package net.imyeyu.blogapi.task;
 
 import freemarker.template.Template;
 import lombok.extern.slf4j.Slf4j;
-import net.imyeyu.betterjava.Time;
+import net.imyeyu.betterjava.Encode;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.entity.CommentRemindQueue;
 import net.imyeyu.blogapi.entity.EmailQueue;
@@ -14,6 +14,9 @@ import net.imyeyu.blogapi.service.CommentReplyService;
 import net.imyeyu.blogapi.service.CommentService;
 import net.imyeyu.blogapi.service.EmailQueueService;
 import net.imyeyu.blogapi.service.UserService;
+import net.imyeyu.blogapi.util.AES;
+import net.imyeyu.blogapi.util.Redis;
+import net.imyeyu.blogapi.util.Token;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +30,7 @@ import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 
 import javax.mail.internet.MimeMessage;
-import java.util.Date;
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +55,9 @@ public class EmailTask {
 	private String sendUser;
 
 	@Autowired
+	private AES aes;
+
+	@Autowired
 	private EmailQueueService service;
 
 	@Autowired
@@ -69,16 +75,22 @@ public class EmailTask {
 	@Autowired
 	private CommentReplyService commentReplyService;
 
-	@Scheduled(fixedRate = 20000)
+	@Autowired
+	private Token token;
+
+	@Autowired
+	private Redis<Long, String> userEmailVerify;
+
+	@Scheduled(fixedRate = 12000)
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	private void traverseQueue() {
 		try {
 			List<EmailQueue> emailQueueList = service.findAll();
 			if (0 < emailQueueList.size()) {
+				long now = System.currentTimeMillis();
 				for (EmailQueue emailQueue : emailQueueList) {
-					if (emailQueue.getSendAt() < System.currentTimeMillis()) {
+					if (emailQueue.getSendAt() < now) {
 						log.info(emailQueue.getUUID() + " 邮件推送：" + emailQueue.getType() + "." +emailQueue.getDataId());
-						long start = System.currentTimeMillis();
 
 						EmailQueueLog emailQueueLog = new EmailQueueLog();
 						emailQueueLog.setUUID(emailQueue.getUUID());
@@ -87,12 +99,13 @@ public class EmailTask {
 						emailQueueLog.setSendAt(emailQueue.getSendAt());
 						try {
 							switch (emailQueue.getType()) {
-								case REPLY_REMINAD ->  emailQueueLog.setSendTo(sendEmail4ReplyRemind(emailQueue));
+								case REPLY_REMINAD  -> emailQueueLog.setSendTo(sendEmail4ReplyRemind(emailQueue));
+								case EMAIL_VERIFY   -> emailQueueLog.setSendTo(sendEmail4EmailVerify(emailQueue));
 								case RESET_PASSWORD -> emailQueueLog.setSendTo(sendEmail4ResetPassword(emailQueue));
 							}
 							emailQueueLog.setIsSent(true);
 							emailQueueLog.setCreatedAt(System.currentTimeMillis());
-							log.info(emailQueue.getUUID() + " 邮件推送成功：" + (emailQueueLog.getCreatedAt() - start) + " ms");
+							log.info(emailQueue.getUUID() + " 邮件推送成功：" + (emailQueueLog.getCreatedAt() - now) + " ms");
 						} catch (Exception e) {
 							emailQueueLog.setIsSent(false);
 							log.error(emailQueue.getUUID() + " 邮件推送异常", e);
@@ -129,6 +142,30 @@ public class EmailTask {
 	}
 
 	/**
+	 * 邮箱验证
+	 *
+	 * @param emailQueue 邮件队列
+	 * @return 发送目标
+	 * @throws Exception 服务异常
+	 */
+	private String sendEmail4EmailVerify(EmailQueue emailQueue) throws Exception {
+		User user = userService.find(emailQueue.getDataId()).withData();
+
+		String key = Encode.md5(aes.encrypt(new SecureRandom().nextLong() + user.getEmail()));
+		userEmailVerify.set(user.getId(), key, 600L);
+
+		Map<String, Object> model = new HashMap<>();
+		model.put("user", user);
+		model.put("url", "https://www.imyeyu.net/user/space/" + user.getId() + "?action=EMAIL_VERIFY&key=" + key);
+
+		Template template = freeMarkerConfigurer.getConfiguration().getTemplate("EmailVerify.ftl");
+		String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
+
+		sendEmail(user.getEmail(), "Hey! 请继续完成 夜雨博客 的邮箱验证!", html);
+		return user.getEmail();
+	}
+
+	/**
 	 * 回复提醒邮件
 	 *
 	 * @param emailQueue 邮件队列
@@ -151,9 +188,8 @@ public class EmailTask {
 		Map<String, Object> model = new HashMap<>();
 		model.put("user", user);
 		model.put("reminds", reminds);
-		model.put("yyyy", Time.yearFormatFull.format(new Date()));
 
-		Template template = freeMarkerConfigurer.getConfiguration().getTemplate("EmailReplyRemind.ftl");
+		Template template = freeMarkerConfigurer.getConfiguration().getTemplate("ReplyRemind.ftl");
 		String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
 
 		sendEmail(user.getEmail(), "Hey! 你在 夜雨博客 的评论收到新回复", html);
@@ -166,7 +202,7 @@ public class EmailTask {
 		User user = userService.find(emailQueue.getDataId());
 
 		Map<String, Object> model = new HashMap<>();
-		Template template = freeMarkerConfigurer.getConfiguration().getTemplate("EmailResetPassword.ftl");
+		Template template = freeMarkerConfigurer.getConfiguration().getTemplate("ResetPassword.ftl");
 		String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
 		sendEmail(user.getEmail(), "重置密码", html);
 		return user.getEmail();

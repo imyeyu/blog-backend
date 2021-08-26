@@ -93,8 +93,9 @@
 		<if test="id != null">
 			UPDATE `users`
 			<set>
-				`email`      = #{email},
-				`name`       = #{name},
+				`email`        = #{email},
+				`email_verify` = #{emailVerify},
+				`name`         = #{name},
 				`updated_at` = #{updatedAt}
 			</set>
 			WHERE `id` = #{id}

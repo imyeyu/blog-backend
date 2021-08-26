@@ -112,7 +112,7 @@ public class CommentReplyServiceImplement implements CommentReplyService {
 				commentReplyRecordService.create(commentReplyRecord);
 				// 被回复允许推送邮件
 				User user = userService.find(receiverId).withConfig();
-				if (!StringUtils.isEmpty(user.getEmail()) && user.getConfig().getEmailNotifyReply()) {
+				if (!StringUtils.isEmpty(user.getEmail()) && user.getEmailVerify() && user.getConfig().getEmailReplyRemind()) {
 					// 添加提醒队列
 					CommentRemindQueue remindQueue = new CommentRemindQueue();
 					remindQueue.setUUID(UUID.randomUUID().toString());
@@ -123,7 +123,6 @@ public class CommentReplyServiceImplement implements CommentReplyService {
 					EmailQueue emailQueue = emailQueueService.find(EmailType.REPLY_REMINAD, receiverId);
 					if (emailQueue == null) {
 						emailQueue = new EmailQueue();
-						emailQueue.setUUID(UUID.randomUUID().toString());
 						emailQueue.setType(EmailType.REPLY_REMINAD);
 						emailQueue.setDataId(receiverId);
 

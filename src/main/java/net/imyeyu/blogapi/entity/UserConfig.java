@@ -13,10 +13,10 @@ import lombok.EqualsAndHashCode;
 public class UserConfig extends BaseEntity {
 
 	private Long userId;
-	private Boolean emailNotifyReply;
+	private Boolean emailReplyRemind;
 
 	public UserConfig(Long userId) {
 		this.userId = userId;
-		emailNotifyReply = true;
+		emailReplyRemind = true;
 	}
 }

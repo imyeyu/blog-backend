@@ -42,6 +42,9 @@ public class RedisConfig extends CachingConfigurerSupport {
 	@Value("${spring.redis.database.user-exp-flag}")
 	private int userExpFlagDB;
 
+	@Value("${spring.redis.database.user-email-verify}")
+	private int userEmailVerifyDB;
+
 	@Value("${spring.redis.database.qps-limit}")
 	private int qpsLimitDB;
 
@@ -139,13 +142,23 @@ public class RedisConfig extends CachingConfigurerSupport {
 	}
 
 	/**
-	 * 用户登录经验标记，暂时没有值，数据死亡时间为次日零时
+	 * 用户登录经验标记，UID: NULL，暂时没有值，数据死亡时间为次日零时
 	 *
 	 * @return RedisTemplate
 	 */
 	@Bean("userExpFlag")
 	public Redis<Long, String> getUserExpFlagTemplate() {
 		return getRedis(userExpFlagDB, LONG_SERIALIZER);
+	}
+
+	/**
+	 * 用户邮箱验证令牌缓存，UID: 令牌
+	 *
+	 * @return RedisTemplate
+	 */
+	@Bean("userEmailVerify")
+	public Redis<Long, String> getUserEmailVerifyTemplate() {
+		return getRedis(userEmailVerifyDB, LONG_SERIALIZER);
 	}
 
 	/**

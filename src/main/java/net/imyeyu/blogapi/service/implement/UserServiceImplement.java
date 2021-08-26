@@ -4,8 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import net.imyeyu.betterjava.BetterJava;
 import net.imyeyu.betterjava.Encode;
 import net.imyeyu.betterjava.Time;
+import net.imyeyu.blogapi.bean.EmailType;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
+import net.imyeyu.blogapi.entity.EmailQueue;
 import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserComment;
 import net.imyeyu.blogapi.entity.UserConfig;
@@ -15,6 +17,7 @@ import net.imyeyu.blogapi.mapper.UserMapper;
 import net.imyeyu.blogapi.service.AbstractService;
 import net.imyeyu.blogapi.service.CommentReplyService;
 import net.imyeyu.blogapi.service.CommentService;
+import net.imyeyu.blogapi.service.EmailQueueService;
 import net.imyeyu.blogapi.service.UserConfigService;
 import net.imyeyu.blogapi.service.UserDataService;
 import net.imyeyu.blogapi.service.UserPrivacyService;
@@ -67,6 +70,9 @@ public class UserServiceImplement extends AbstractService implements UserService
 	private CommentReplyService commentReplyService;
 
 	@Autowired
+	private EmailQueueService emailQueueService;
+
+	@Autowired
 	private UserMapper mapper;
 
 	@Autowired
@@ -74,6 +80,9 @@ public class UserServiceImplement extends AbstractService implements UserService
 
 	@Autowired
 	private Redis<Long, String> userExpFlag;
+
+	@Autowired
+	private Redis<Long, String> userEmailVerify;
 
 	/**
 	 * 生成密码摘要（与 Token 并不同，Token 用于与前端交流，在 doSignIn 执行成功后才会生成 Token 回推前端）
@@ -201,6 +210,48 @@ public class UserServiceImplement extends AbstractService implements UserService
 		return mapper.findByEmail(email);
 	}
 
+	@Override
+	public void exist(Long id) throws ServiceException {
+		find(id);
+	}
+
+	@Override
+	public List<UserComment> findManyUserComment(Long userId, Long offset, int limit) throws ServiceException {
+		return mapper.findManyUserComment(userId, offset, limit);
+	}
+
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
+	@Override
+	public boolean sendEmailVerify(Long uid) throws ServiceException {
+		User user = find(uid);
+		if (!user.getEmailVerify()) {
+			EmailQueue emailQueue = new EmailQueue();
+			emailQueue.setType(EmailType.EMAIL_VERIFY);
+			emailQueue.setDataId(uid);
+			emailQueue.setSendAt(System.currentTimeMillis());
+			emailQueueService.create(emailQueue);
+			return true;
+		} else {
+			throw new ServiceException(ReturnCode.DATA_EXIST, "邮箱已完成验证");
+		}
+	}
+
+	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
+	@Override
+	public boolean emailVerifyCallback(Long uid, String key) throws ServiceException {
+		if (userEmailVerify.has(uid)) {
+			String cacheKey = userEmailVerify.getString(uid);
+			if (cacheKey.equals(key)) {
+				User user = find(uid);
+				user.setEmailVerify(true);
+				update(user);
+				userEmailVerify.destroy(uid);
+				return true;
+			}
+		}
+		throw new ServiceException(ReturnCode.PARAMS_BAD, "无效的令牌");
+	}
+
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public boolean updatePassword(Long userId, String oldPassword, String newPassword) throws ServiceException {
@@ -216,11 +267,6 @@ public class UserServiceImplement extends AbstractService implements UserService
 		} else {
 			throw new ServiceException(ReturnCode.PARAMS_BAD, "旧密码错误");
 		}
-	}
-
-	@Override
-	public void exist(Long id) throws ServiceException {
-		find(id);
 	}
 
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
@@ -243,11 +289,6 @@ public class UserServiceImplement extends AbstractService implements UserService
 		} else {
 			throw new ServiceException(ReturnCode.PARAMS_BAD, "密码错误");
 		}
-	}
-
-	@Override
-	public List<UserComment> findManyUserComment(Long userId, Long offset, int limit) {
-		return mapper.findManyUserComment(userId, offset, limit);
 	}
 
 	@Override

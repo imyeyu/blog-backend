@@ -47,7 +47,7 @@ p {
 	margin: 4px 12px;
 }
 
-.tips {
+.footer {
 	color: #555;
 	padding: 12px 0;
 	margin-top: 32px;

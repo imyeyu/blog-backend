@@ -15,4 +15,8 @@ public class EmailQueue {
 	private EmailType type;
 	private Long dataId;
 	private Long sendAt;
+
+	public EmailQueue() {
+		UUID = java.util.UUID.randomUUID().toString();
+	}
 }

@@ -30,6 +30,7 @@ public class User extends BaseEntity implements Serializable {
 	private transient static UserConfigService configService;
 
 	private String email;
+	private Boolean emailVerify;
 	private String name;
 	private String password;
 	private Long unmuteAt;

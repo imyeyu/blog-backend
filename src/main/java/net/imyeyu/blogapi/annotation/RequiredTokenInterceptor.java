@@ -49,7 +49,7 @@ public class RequiredTokenInterceptor implements HandlerInterceptor {
 						return false;
 					}
 					if (!this.token.isValid(token)) {
-						render(resp, new Response<>(ReturnCode.PERMISSION_MISS, "未登录，无权限操作"));
+						render(resp, new Response<>(ReturnCode.PERMISSION_MISS, "无效的令牌，无权限操作"));
 						return false;
 					}
 				} catch (ServiceException e) {

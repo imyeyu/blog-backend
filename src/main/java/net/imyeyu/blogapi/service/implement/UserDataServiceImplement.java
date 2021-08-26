@@ -3,6 +3,7 @@ package net.imyeyu.blogapi.service.implement;
 import net.imyeyu.blogapi.bean.ResourceFile;
 import net.imyeyu.blogapi.bean.ReturnCode;
 import net.imyeyu.blogapi.bean.ServiceException;
+import net.imyeyu.blogapi.entity.User;
 import net.imyeyu.blogapi.entity.UserData;
 import net.imyeyu.blogapi.mapper.UserDataMapper;
 import net.imyeyu.blogapi.service.FileService;
@@ -53,6 +54,11 @@ public class UserDataServiceImplement implements UserDataService {
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public void updateData(UserData data) throws ServiceException {
+		User user = userService.find(data.getUserId());
+		if (!user.getEmail().equals(data.getUser().getEmail())) {
+			// 修改了邮箱，强制重新验证
+			data.getUser().setEmailVerify(false);
+		}
 		data.setUpdatedAt(System.currentTimeMillis());
 		mapper.updateData(data);
 	}

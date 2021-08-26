@@ -23,7 +23,7 @@
 				`created_at`   = #{createdAt},
 				`updated_at`   = #{updatedAt}
 			</set>
-			WHERE `id` = #{id}
+			WHERE `user_id` = #{userId}
 		</if>
 	</update>
 </mapper>

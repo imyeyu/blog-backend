@@ -8,5 +8,6 @@ package net.imyeyu.blogapi.bean;
 public enum EmailType {
 
 	REPLY_REMINAD, // 回复提醒
+	EMAIL_VERIFY,  // 邮箱验证
 	RESET_PASSWORD // 重置密码
 }

@@ -187,7 +187,7 @@ public class UserController extends BaseController implements BetterJava {
 	 * @return true 为添加队列成功
 	 */
 	@AOPLog
-	@QPSLimit(5000)
+	@QPSLimit(50000)
 	@RequiredToken
 	@PostMapping("/email/verify")
 	public Response<?> sendEmailVerify(@RequestHeader("Token") String token) {
@@ -202,14 +202,14 @@ public class UserController extends BaseController implements BetterJava {
 	}
 
 	/**
-	 * 邮箱验证回调（用户点击邮件的验证，但由前端调用）
+	 * 邮箱验证回调（用户点击邮件的验证跳转前端，再由前端调用）
 	 *
 	 * @param params 含 key 邮箱验证密钥（非登录令牌）
 	 * @param token  令牌
 	 * @return true 为添加队列成功
 	 */
 	@AOPLog
-	@QPSLimit(6000)
+	@QPSLimit(10000)
 	@RequiredToken
 	@PostMapping("/email/verify/callback")
 	public Response<?> emailVerifyCallback(@RequestBody Map<String, String> params, @RequestHeader("Token") String token) {

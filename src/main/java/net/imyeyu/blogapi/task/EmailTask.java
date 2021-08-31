@@ -79,6 +79,9 @@ public class EmailTask {
 	private Token token;
 
 	@Autowired
+	private Redis<Long, String> redisToken;
+
+	@Autowired
 	private Redis<Long, String> userEmailVerify;
 
 	@Scheduled(fixedRate = 12000)
@@ -87,8 +90,8 @@ public class EmailTask {
 		try {
 			List<EmailQueue> emailQueueList = service.findAll();
 			if (0 < emailQueueList.size()) {
-				long now = System.currentTimeMillis();
 				for (EmailQueue emailQueue : emailQueueList) {
+					long now = System.currentTimeMillis();
 					if (emailQueue.getSendAt() < now) {
 						log.info(emailQueue.getUUID() + " 邮件推送：" + emailQueue.getType() + "." +emailQueue.getDataId());
 
@@ -111,6 +114,7 @@ public class EmailTask {
 							log.error(emailQueue.getUUID() + " 邮件推送异常", e);
 							emailQueueLog.setExceptionMsg(e.getMessage());
 						}
+						emailQueueLog.setCreatedAt(now);
 						service.addLog(emailQueueLog);
 						service.delete(emailQueue.getUUID());
 					}
@@ -151,12 +155,13 @@ public class EmailTask {
 	private String sendEmail4EmailVerify(EmailQueue emailQueue) throws Exception {
 		User user = userService.find(emailQueue.getDataId()).withData();
 
+		String token = redisToken.get(user.getId());
 		String key = Encode.md5(aes.encrypt(new SecureRandom().nextLong() + user.getEmail()));
 		userEmailVerify.set(user.getId(), key, 600L);
 
 		Map<String, Object> model = new HashMap<>();
 		model.put("user", user);
-		model.put("url", "https://www.imyeyu.net/user/space/" + user.getId() + "?action=EMAIL_VERIFY&key=" + key);
+		model.put("url", "https://www.imyeyu.net/user/space/" + user.getId() + "?action=EMAIL_VERIFY" + "&token=" + token + "&key=" + key);
 
 		Template template = freeMarkerConfigurer.getConfiguration().getTemplate("EmailVerify.ftl");
 		String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);

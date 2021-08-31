@@ -24,8 +24,9 @@ public enum ReturnCode {
 	DATA_EXIST         (40301, "数据已存在"),
 	// 404 资源异常
 	RESULT_NULL        (40400, "无数据"),
-	RESULT_BAN         (40401, "禁用的数据"),
-	RESULT_TIMEOUT     (40402, "上游服务器连接超时"),
+	RESULT_BAD         (40401, "返回数据异常"),
+	RESULT_BAN         (40402, "禁用的数据"),
+	RESULT_TIMEOUT     (40403, "上游服务器连接超时"),
 	// 500 致命异常
 	ERROR              (50000, "服务异常"),
 	ERROR_NPE_METHOD   (50001, "服务异常"),

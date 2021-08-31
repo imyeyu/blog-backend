@@ -146,6 +146,9 @@ public class UserServiceImplement extends AbstractService implements UserService
 		} else if (user.contains("@")) {
 			// 邮箱登录
 			result = findByEmail(user);
+			if (!result.getEmailVerify()) {
+				throw new ServiceException(ReturnCode.RESULT_BAD, "该账号邮箱未完成验证，请使用其他方式登录");
+			}
 		} else {
 			// 用户名登陆
 			result = findByName(user);
@@ -182,7 +185,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 	@Override
 	public boolean isSignedIn(String token) throws ServiceException {
 		if (this.token.isValid(token)) {
-			Long uid = Long.parseLong(token.substring(0, token.indexOf("#")));
+			Long uid = Long.parseLong(token.substring(0, token.indexOf("_")));
 			if (!userExpFlag.has(uid)) {
 				// 当天无登录标记，加经验
 				UserData data = dataService.findByUID(uid);
@@ -239,17 +242,21 @@ public class UserServiceImplement extends AbstractService implements UserService
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public boolean emailVerifyCallback(Long uid, String key) throws ServiceException {
-		if (userEmailVerify.has(uid)) {
-			String cacheKey = userEmailVerify.getString(uid);
-			if (cacheKey.equals(key)) {
-				User user = find(uid);
-				user.setEmailVerify(true);
-				update(user);
-				userEmailVerify.destroy(uid);
-				return true;
+		User user = find(uid);
+		if (!user.getEmailVerify()) {
+			if (userEmailVerify.has(uid)) {
+				String cacheKey = userEmailVerify.getString(uid);
+				if (cacheKey.equals(key)) {
+					user.setEmailVerify(true);
+					update(user);
+					userEmailVerify.destroy(uid);
+					return true;
+				}
 			}
+			throw new ServiceException(ReturnCode.PARAMS_BAD, "邮箱验证失败，无效的令牌");
+		} else {
+			throw new ServiceException(ReturnCode.RESULT_BAD, "该邮箱已通过验证");
 		}
-		throw new ServiceException(ReturnCode.PARAMS_BAD, "无效的令牌");
 	}
 
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})

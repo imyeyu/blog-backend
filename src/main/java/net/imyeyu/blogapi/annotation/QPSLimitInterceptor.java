@@ -46,7 +46,7 @@ public class QPSLimitInterceptor implements HandlerInterceptor {
 			if (0 < ms) {
 				try {
 					// 键
-					String key = req.getRemoteAddr() + "#" + handlerMethod.getMethod().getName();
+					String key = req.getRemoteAddr() + "_" + handlerMethod.getMethod().getName();
 					// 该 IP 限时内是否访问过该接口
 					Long cd = redisQPSLimit.get(key);
 					if (!ObjectUtils.isEmpty(cd)) {

@@ -49,7 +49,7 @@ public class Token {
 	public boolean isValid(String token) throws ServiceException {
 		try {
 			// 截取 UID
-			Long uid = Long.parseLong(token.substring(0, token.indexOf("#")));
+			Long uid = Long.parseLong(token.substring(0, token.indexOf("_")));
 			final String flag = "user." + uid;
 			ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 			if (sra != null) {
@@ -83,7 +83,7 @@ public class Token {
 	 */
 	public boolean clear(String token) throws ServiceException {
 		try {
-			return clear(Long.parseLong(token.substring(0, token.indexOf("#"))));
+			return clear(Long.parseLong(token.substring(0, token.indexOf("_"))));
 		} catch (Exception e) {
 			throw new ServiceException(ReturnCode.PARAMS_BAD, "无效的令牌");
 		}
@@ -114,14 +114,14 @@ public class Token {
 	
 	/**
 	 * 随机生成令牌
-	 * <p>结果示例：32#69290ea91da44cd76a595af2a447a7d8
+	 * <p>结果示例：32_69290ea91da44cd76a595af2a447a7d8
 	 *
 	 * @param user 用户（含 ID、用户名）
 	 * @return 令牌
 	 */
 	public String generate(User user) throws ServiceException {
 		try {
-			return user.getId() + "#" + Encode.md5(aes.encrypt(user.getName() + salt + new SecureRandom().nextLong()));
+			return user.getId() + "_" + Encode.md5(aes.encrypt(user.getName() + salt + new SecureRandom().nextLong()));
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new ServiceException(ReturnCode.ERROR, "编码错误");

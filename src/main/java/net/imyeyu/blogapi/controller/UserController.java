@@ -611,7 +611,7 @@ public class UserController extends BaseController implements BetterJava {
 	 */
 	private Long token2UID(String token) throws ServiceException {
 		try {
-			return Long.parseLong(token.substring(0, token.indexOf("#")));
+			return Long.parseLong(token.substring(0, token.indexOf("_")));
 		} catch (Exception e) {
 			throw new ServiceException(ReturnCode.PARAMS_BAD, "无效的令牌");
 		}

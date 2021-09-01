@@ -3,6 +3,6 @@
 <mapper namespace="net.imyeyu.blogapi.mapper.VersionMapper">
 	<!-- 根据程序名获取最新版本信息 -->
 	<select id="findByName" resultType="net.imyeyu.blogapi.entity.Version" parameterType="String">
-		SELECT * FROM `versions` WHERE `name` = #{name}
+		SELECT * FROM versions WHERE name = #{name}
 	</select>
 </mapper>

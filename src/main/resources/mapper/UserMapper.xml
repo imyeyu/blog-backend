@@ -3,11 +3,11 @@
 <mapper namespace="net.imyeyu.blogapi.mapper.UserMapper">
 	<!-- 根据用户名获取 -->
 	<select id="findByName" resultType="net.imyeyu.blogapi.entity.User" parameterType="String">
-		SELECT * FROM `users` WHERE `name` = #{name} AND `deleted_at` IS NULL LIMIT 1
+		SELECT * FROM users WHERE name = #{name} AND deleted_at IS NULL LIMIT 1
 	</select>
 	<!-- 根据邮箱获取 -->
 	<select id="findByEmail" resultType="net.imyeyu.blogapi.entity.User" parameterType="String">
-		SELECT * FROM `users` WHERE `email` = #{email} AND `deleted_at` IS NULL LIMIT 1
+		SELECT * FROM users WHERE email = #{email} AND deleted_at IS NULL LIMIT 1
 	</select>
 	<!-- 用户个人空间"我的评论"查询 -->
 	<select id="findManyUserComment" resultType="net.imyeyu.blogapi.entity.UserComment">
@@ -72,11 +72,11 @@
 	</update>
 	<!-- 新增 -->
 	<insert id="create" parameterType="net.imyeyu.blogapi.entity.User" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-		INSERT INTO `users` (
-			`email`,
-			`name`,
-			`password`,
-			`created_at`
+		INSERT INTO users (
+			email,
+			name,
+			password,
+			created_at
 		) VALUES (
 			#{email},
 			#{name},
@@ -86,29 +86,29 @@
 	</insert>
 	<!-- 根据 ID 获取 -->
 	<select id="find" resultType="net.imyeyu.blogapi.entity.User" parameterType="long">
-		SELECT * FROM `users` WHERE `id` = #{id} AND `deleted_at` IS NULL LIMIT 1
+		SELECT * FROM users WHERE id = #{id} AND deleted_at IS NULL LIMIT 1
 	</select>
 	<!-- 更新 -->
 	<update id="update" parameterType="net.imyeyu.blogapi.entity.User">
 		<if test="id != null">
-			UPDATE `users`
+			UPDATE users
 			<set>
-				`email`        = #{email},
-				`email_verify` = #{emailVerify},
-				`name`         = #{name},
-				`updated_at` = #{updatedAt}
+				email        = #{email},
+				email_verify = #{emailVerify},
+				name         = #{name},
+				updated_at   = #{updatedAt}
 			</set>
-			WHERE `id` = #{id}
+			WHERE id = #{id}
 		</if>
 	</update>
 	<!-- 删除 -->
 	<update id="delete">
 		<if test="id != null">
-			UPDATE `users`
+			UPDATE users
 			<set>
-				`deleted_at` = FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000)
+				deleted_at = FLOOR(UNIX_TIMESTAMP(NOW(3)) * 1000)
 			</set>
-			WHERE `id` = #{id}
+			WHERE id = #{id}
 		</if>
 	</update>
 </mapper>

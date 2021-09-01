@@ -3,6 +3,6 @@
 <mapper namespace="net.imyeyu.blogapi.mapper.DynamicDataMapper">
 	<!-- 根据程序名获取 -->
 	<select id="findByKey" resultType="net.imyeyu.blogapi.entity.DynamicData" parameterType="String">
-		SELECT * FROM `dynamic_data` WHERE `key` = #{key}
+		SELECT * FROM dynamic_data WHERE key = #{key}
 	</select>
 </mapper>

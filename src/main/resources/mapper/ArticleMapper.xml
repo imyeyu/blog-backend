@@ -119,12 +119,12 @@
 	<!-- 更新 -->
 	<update id="update" parameterType="net.imyeyu.blogapi.entity.Article">
 		<if test="id != null">
-			UPDATE `article`
+			UPDATE article
 			<set>
-				`reads`       = #{reads},
-				`likes`       = #{likes}
+				reads = #{reads},
+				likes = #{likes}
 			</set>
-			WHERE `id` = #{id}
+			WHERE id = #{id}
 		</if>
 	</update>
 </mapper>

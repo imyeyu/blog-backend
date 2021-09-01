@@ -3,20 +3,20 @@
 <mapper namespace="net.imyeyu.blogapi.mapper.ArticleLabelMapper">
 	<!-- 获取 -->
 	<select id="find" resultType="net.imyeyu.blogapi.entity.ArticleLabel" parameterType="long">
-		SELECT * FROM `labels` WHERE `id` = #{id}
+		SELECT * FROM labels WHERE id = #{id}
 	</select>
 	<!-- 根据标签名获取 -->
 	<select id="findByName" resultType="net.imyeyu.blogapi.entity.ArticleLabel" parameterType="String">
-		SELECT * FROM `labels` WHERE `name` = #{name}
+		SELECT * FROM labels WHERE name = #{name}
 	</select>
 	<!-- 根据文章 ID 获取 -->
 	<select id="findManyByAId" resultType="net.imyeyu.blogapi.entity.ArticleLabel" parameterType="long">
 		SELECT
 			*
 		FROM
-			`labels` AS l
+			labels AS l
 		LEFT JOIN
-			`article_label` AS al
+			article_label AS al
 		ON
 			l.id = al.label_id
 		WHERE

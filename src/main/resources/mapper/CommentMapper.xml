@@ -29,6 +29,7 @@
     <select id="findMany" parameterType="map" resultMap="findManyResult">
 		SELECT
 	        -- 主评论
+
 			c.id,
 			c.article_id,
 			c.user_id,
@@ -37,6 +38,7 @@
 			c.nick,
 			c.data,
 			c.created_at,
+
 	        -- 回复
 			cr.id AS cr_id,
 			cr.comment_id,

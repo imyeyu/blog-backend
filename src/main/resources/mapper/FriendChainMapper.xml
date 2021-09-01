@@ -3,6 +3,6 @@
 <mapper namespace="net.imyeyu.blogapi.mapper.FriendChainMapper">
 	<!-- 获取所有 -->
 	<select id="findAll" resultType="net.imyeyu.blogapi.entity.FriendChain">
-		SELECT * FROM `friend_chain` WHERE `deleted_at` IS NULL
+		SELECT * FROM friend_chain WHERE deleted_at IS NULL
 	</select>
 </mapper>

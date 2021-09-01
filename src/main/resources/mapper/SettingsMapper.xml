@@ -3,10 +3,10 @@
 <mapper namespace="net.imyeyu.blogapi.mapper.SettingsMapper">
 	<!-- 根据键获取 -->
 	<select id="findByKey" resultType="net.imyeyu.blogapi.entity.Settings" parameterType="String">
-		SELECT * FROM `settings` WHERE `key` = #{key} AND `deleted_at` IS NULL
+		SELECT * FROM settings WHERE key = #{key} AND deleted_at IS NULL
 	</select>
 	<!-- 获取所有 -->
 	<select id="findAll" resultType="net.imyeyu.blogapi.entity.Settings">
-		SELECT * FROM `settings` WHERE `deleted_at` IS NULL
+		SELECT * FROM settings WHERE deleted_at IS NULL
 	</select>
 </mapper>

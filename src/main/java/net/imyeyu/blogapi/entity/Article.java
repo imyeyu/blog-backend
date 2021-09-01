@@ -36,5 +36,7 @@ public class Article extends BaseEntity implements Serializable {
 	}
 
 	/** 喜欢一次 */
-	public void like() { likes++; }
+	public void like() {
+		likes++;
+	}
 }

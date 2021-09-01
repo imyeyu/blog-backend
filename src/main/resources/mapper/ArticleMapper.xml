@@ -121,8 +121,8 @@
 		<if test="id != null">
 			UPDATE article
 			<set>
-				reads = #{reads},
-				likes = #{likes}
+				`reads` = #{reads},
+				`likes` = #{likes}
 			</set>
 			WHERE id = #{id}
 		</if>

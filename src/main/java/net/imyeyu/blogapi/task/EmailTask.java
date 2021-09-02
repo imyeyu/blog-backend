@@ -84,7 +84,7 @@ public class EmailTask {
 	@Autowired
 	private Redis<Long, String> userEmailVerify;
 
-	@Scheduled(fixedRate = 12000)
+	@Scheduled(fixedRate = 8000)
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	private void traverseQueue() {
 		try {

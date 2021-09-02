@@ -2,11 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="net.imyeyu.blogapi.mapper.CommentReplyMapper">
 	<!-- 根据用户 ID 查找（包括回复和被回复） -->
-	<select id="findAllByUID" parameterType="long">
+	<select id="findAllByUID" parameterType="long" resultType="net.imyeyu.blogapi.entity.CommentReply">
 		SELECT * FROM comment_replies WHERE sender_id = #{uid} OR revicer_id = #{uid}
 	</select>
 	<!-- 根据评论 ID 查找（包括回复和被回复） -->
-	<select id="findAllByCID" parameterType="long">
+	<select id="findAllByCID" parameterType="long" resultType="net.imyeyu.blogapi.entity.CommentReply">
 		SELECT * FROM comment_replies WHERE comment_id = #{cid}
 	</select>
 	<!-- 根据用户 ID 删除回复（包括回复和被回复） -->

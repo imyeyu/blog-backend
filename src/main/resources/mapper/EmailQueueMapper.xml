@@ -42,7 +42,7 @@
 			#{sendAt}
 		)
 	</insert>
-	<!-- 删除 -->
+	<!-- 销毁 -->
 	<delete id="delete" parameterType="String">
 		DELETE FROM email_queue WHERE uuid = #{UUID}
 	</delete>

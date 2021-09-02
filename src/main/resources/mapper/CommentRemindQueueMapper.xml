@@ -17,7 +17,7 @@
 			#{replyId}
 		)
 	</insert>
-	<!-- 删除 -->
+	<!-- 销毁 -->
 	<delete id="deleteByUID" parameterType="long">
 		DELETE FROM comment_remind_queue WHERE user_id = #{uid}
 	</delete>

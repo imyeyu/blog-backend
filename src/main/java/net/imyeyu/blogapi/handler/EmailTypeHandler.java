@@ -1,7 +1,6 @@
 package net.imyeyu.blogapi.handler;
 
 import net.imyeyu.blogapi.bean.EmailType;
-import net.imyeyu.blogapi.entity.ArticleType;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 

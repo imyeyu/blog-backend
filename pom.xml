@@ -18,8 +18,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>16</maven.compiler.source>
-		<maven.compiler.target>16</maven.compiler.target>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 		<springboot.version>2.5.3</springboot.version>
 	</properties>
 
@@ -116,7 +116,7 @@
 		<!-- 更好的 Java -->
 		<dependency>
 			<groupId>net.imyeyu.betterjava</groupId>
-			<artifactId>BetterJava</artifactId>
+			<artifactId>better-java</artifactId>
 			<version>1.1.7</version>
 			<exclusions>
 				<exclusion>

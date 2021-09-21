@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -109,7 +110,7 @@ public class UserController extends BaseController implements BetterJava {
 	 * <p>user 可以是 uid、邮箱或用户名
 	 *
 	 * @param params  含 user, password 和 captcha
-	 * @return true 为登录成功
+	 * @return 通信令牌
 	 */
 	@AOPLog
 	@QPSLimit
@@ -297,7 +298,7 @@ public class UserController extends BaseController implements BetterJava {
 		try {
 			boolean needFilter = true;
 			if (!StringUtils.isEmpty(token)) {
-				// 已登录，并且获取的用户资料是自己的，不执行隐私控制过滤
+				// 未登录，并且获取的用户资料不是自己的，执行隐私控制过滤
 				needFilter = !service.isSignedIn(token) || !id.equals(token2UID(token));
 			}
 			UserData data = dataService.findByUID(id).withUser();

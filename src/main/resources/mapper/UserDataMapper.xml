@@ -9,22 +9,24 @@
 	<select id="findByUID" resultType="net.imyeyu.blogapi.entity.UserData" parameterType="long">
 		SELECT * FROM user_data WHERE user_id = #{uid} LIMIT 1
 	</select>
-	<!-- 更新 -->
+	<!-- 更新（包含系统操作字段） -->
 	<update id="update" parameterType="net.imyeyu.blogapi.entity.UserData">
 		<if test="id != null">
 			UPDATE user_data
 			<set>
-				user_id      = #{userId},
-				has_wrapper  = #{hasWrapper},
-				has_avatar   = #{hasAvatar},
-				exp          = #{exp},
-				sex          = #{sex},
-				birth        = #{birth},
-				qq           = #{qq},
-				sign         = #{sign},
-				signed_in_ip = #{signedInIp},
-				signed_in_at = #{signedInAt},
-				updated_at   = #{updatedAt}
+				user_id                 = #{userId},
+				has_wrapper             = #{hasWrapper},
+				wrapper_rendering_type  = #{wrapperRenderingType},
+				has_avatar              = #{hasAvatar},
+				avatar_rendering_type   = #{avatarRenderingType},
+				exp                     = #{exp},
+				sex                     = #{sex},
+				birth                   = #{birth},
+				qq                      = #{qq},
+				sign                    = #{sign},
+				signed_in_ip            = #{signedInIp},
+				signed_in_at            = #{signedInAt},
+				updated_at              = #{updatedAt}
 			</set>
 			WHERE id = #{id}
 		</if>
@@ -34,11 +36,13 @@
 		<if test="id != null">
 			UPDATE user_data
 			<set>
-				sex        = #{sex},
-				birth      = #{birth},
-				qq         = #{qq},
-				sign       = #{sign},
-				updated_at = #{updatedAt}
+				wrapper_rendering_type  = #{wrapperRenderingType},
+				avatar_rendering_type   = #{avatarRenderingType},
+				sex                     = #{sex},
+				birth                   = #{birth},
+				qq                      = #{qq},
+				sign                    = #{sign},
+				updated_at              = #{updatedAt}
 			</set>
 			WHERE user_id = #{userId}
 		</if>

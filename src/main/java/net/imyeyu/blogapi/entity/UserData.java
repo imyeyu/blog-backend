@@ -3,6 +3,7 @@ package net.imyeyu.blogapi.entity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.imyeyu.blogapi.annotation.Entity;
+import net.imyeyu.blogapi.bean.ImageRenderingType;
 import net.imyeyu.blogapi.bean.ServiceException;
 import net.imyeyu.blogapi.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,9 @@ public class UserData implements Serializable {
 
 	private Long userId;
 	private Boolean hasWrapper;
+	private ImageRenderingType wrapperRenderingType;
 	private Boolean hasAvatar;
+	private ImageRenderingType avatarRenderingType;
 	private Integer exp;
 	private Byte sex;
 	private Long birth;

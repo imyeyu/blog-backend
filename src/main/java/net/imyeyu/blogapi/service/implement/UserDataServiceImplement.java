@@ -15,6 +15,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
@@ -67,6 +73,11 @@ public class UserDataServiceImplement implements UserDataService {
 	@Override
 	public String updateAvatar(Long id, MultipartFile file) throws ServiceException {
 		try {
+			BufferedImage img = ImageIO.read(file.getInputStream());
+			// 前端正常裁切尺寸为 256
+			if (img.getWidth() != 256 || img.getHeight() != 256) {
+				throw new ServiceException(ReturnCode.REQUEST_BAD, "无效的请求");
+			}
 			// 处理文件
 			ResourceFile res = new ResourceFile();
 			res.setName(id + ".png");
@@ -74,7 +85,7 @@ public class UserDataServiceImplement implements UserDataService {
 			res.setInputStream(file.getInputStream());
 			fileService.upload(res);
 			// 更新数据库
-			UserData data = find(id);
+			UserData data = findByUID(id);
 			data.setHasAvatar(true);
 			mapper.update(data);
 			return res.getFullPath();
@@ -87,14 +98,45 @@ public class UserDataServiceImplement implements UserDataService {
 	@Override
 	public String updateWrapper(Long id, MultipartFile file) throws ServiceException {
 		try {
-			// 处理文件
+			// 字节数据
+			byte[] bytes = file.getInputStream().readAllBytes();
+			// 原图
 			ResourceFile res = new ResourceFile();
 			res.setName(id + ".png");
 			res.setPath(pathWrapper);
-			res.setInputStream(file.getInputStream());
+			res.setInputStream(new ByteArrayInputStream(bytes));
+			fileService.upload(res);
+			// 资料卡缩略图（375 x 100）
+			UserData userData = mapper.findByUID(id);
+			// 根据选择算法缩放
+			BufferedImage imgSrc = ImageIO.read(new ByteArrayInputStream(bytes));
+			final double scale = 375D / imgSrc.getWidth();
+			final int width = 375;
+			final int height = (int) (width * scale);
+			BufferedImage imgResult = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g = imgResult.createGraphics();
+			switch (userData.getWrapperRenderingType()) {
+				case AUTO, SMOOTH -> {
+					g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+					g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+					g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+					g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+					g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				}
+				case PIXELATED -> g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+			}
+			g.drawImage(imgSrc, 0, 0, width, height, null);
+			g.dispose();
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ImageIO.write(imgResult, "png", baos);
+
+			res = new ResourceFile();
+			res.setName(id + ".png");
+			res.setPath(pathWrapper + "_popup");
+			res.setInputStream(new ByteArrayInputStream(baos.toByteArray()));
 			fileService.upload(res);
 			// 更新数据库
-			UserData data = find(id);
+			UserData data = findByUID(id);
 			data.setHasWrapper(true);
 			mapper.update(data);
 			return res.getFullPath();
@@ -106,11 +148,6 @@ public class UserDataServiceImplement implements UserDataService {
 	@Override
 	public void create(UserData userData) throws ServiceException {
 		mapper.create(userData);
-	}
-
-	@Override
-	public UserData find(Long id) throws ServiceException {
-		return mapper.find(id);
 	}
 
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})

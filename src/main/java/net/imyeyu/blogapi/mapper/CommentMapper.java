@@ -1,8 +1,6 @@
 package net.imyeyu.blogapi.mapper;
 
 import net.imyeyu.blogapi.entity.Comment;
-import net.imyeyu.blogapi.entity.CommentReply;
-import net.imyeyu.blogapi.entity.UserComment;
 
 import java.util.List;
 
@@ -16,8 +14,6 @@ public interface CommentMapper extends BaseMapper<Comment> {
 	List<Comment> findMany(Long aid, Long offset, int limit);
 
 	List<Comment> findAllByUID(Long uid);
-
-	void createReply(CommentReply commentReply);
 
 	void deleteByUID(Long uid);
 }

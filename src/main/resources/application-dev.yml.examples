@@ -32,7 +32,7 @@ spring:
                         enable: true
                         required: true
         default-encoding: UTF-8
-    mvc:
+    mvc:        # JSON 序列化
         converters:
             preferred-json-mapper: gson # 返回 JSON 序列化使用 GSON
     datasource: # 数据库配置
@@ -54,12 +54,13 @@ spring:
         password:
         timeout: 8000
         database:
-            article-ranking: 0 #       AID: ArticleRanking  热门文章缓存
-            article-read: 1    #        IP: [AID..]         IP 阅读记录缓存
-            user-token: 2      #       UID: TOKEN           用户令牌缓存
-            user-exp-flag: 3   #       UID: NULL            用户登录经验标记，暂时没有值，数据死亡时间为次日零时
-            qps-limit: 4       # IP#method: PREV_UnixTime   接口访问频率控制
-            setting: 5         #   Setting: SettingValue    系统配置
+            article-ranking: 0   #       AID: ArticleRanking  热门文章缓存
+            article-read: 1      #        IP: [AID..]         IP 阅读记录缓存
+            user-token: 2        #       UID: TOKEN           用户令牌缓存
+            user-exp-flag: 3     #       UID: NULL            用户登录经验标记，暂时没有值，数据死亡时间为次日零时
+            user-email-verify: 4 #       UID: AES_TOKEN       邮箱验证缓存
+            qps-limit: 5         # IP#method: PREV_UnixTime   接口访问频率控制
+            setting: 6           #   Setting: SettingValue    系统配置
         lettuce: # 连接池配置
             pool:
                 max-wait: -1
@@ -73,6 +74,7 @@ mybatis:
     type-handlers-package: net.imyeyu.blogapi.handler # 类型处理器位置
     configuration:
         map-underscore-to-camel-case: true            # 映射驼峰转下划线
+#        log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 日志输出执行 SQL
 
 # CORS 跨域
 cors:

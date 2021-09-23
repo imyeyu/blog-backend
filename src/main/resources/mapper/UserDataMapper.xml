@@ -9,12 +9,11 @@
 	<select id="findByUID" resultType="net.imyeyu.blogapi.entity.UserData" parameterType="long">
 		SELECT * FROM user_data WHERE user_id = #{uid} LIMIT 1
 	</select>
-	<!-- 更新（包含系统操作字段） -->
+	<!-- 更新（包含系统操作字段，由系统主动调用） -->
 	<update id="update" parameterType="net.imyeyu.blogapi.entity.UserData">
 		<if test="id != null">
 			UPDATE user_data
 			<set>
-				user_id                 = #{userId},
 				has_wrapper             = #{hasWrapper},
 				wrapper_rendering_type  = #{wrapperRenderingType},
 				has_avatar              = #{hasAvatar},
@@ -31,12 +30,14 @@
 			WHERE id = #{id}
 		</if>
 	</update>
-	<!-- 更新（不包含系统操作字段） -->
+	<!-- 更新（不包含系统操作字段，由用户触发调用） -->
 	<update id="updateData" parameterType="net.imyeyu.blogapi.entity.UserData">
 		<if test="id != null">
 			UPDATE user_data
 			<set>
+				has_wrapper             = #{hasWrapper},
 				wrapper_rendering_type  = #{wrapperRenderingType},
+				has_avatar              = #{hasAvatar},
 				avatar_rendering_type   = #{avatarRenderingType},
 				sex                     = #{sex},
 				birth                   = #{birth},

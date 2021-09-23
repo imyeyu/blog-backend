@@ -45,12 +45,18 @@
 		<div class="root">
 			<div class="mail">
 				<#if user.data.hasWrapper>
-					<img class="wrapper" src="https://res.imyeyu.net/user/wrapper/${user.id}.png" />
+					<img
+						class="wrapper ir-${user.data.wrapperRenderingType.toLowerCase()}"
+						src="https://res.imyeyu.net/user/wrapper/${user.id}.png"
+					/>
 				<#else>
-					<img class="wrapper" src="https://res.imyeyu.net/user/wrapper/default.png" />
+					<img class="wrapper ir-pixelated" src="https://res.imyeyu.net/user/wrapper/default.png" />
 				</#if>
 				<h4 class="title">
-					<span>${user.name} 您好，您在 夜雨博客 的评论收到以下回复</span>
+					<span class="pink bold">${user.name} </span>
+					<span>您好，您在</span>
+					<span class="pink bold"> 夜雨博客 </span>
+					<span>的评论收到以下回复</span>
 					<span class="gray">(24 小时内)</span>
 				</h4>
 				<#list reminds as remind>
@@ -58,13 +64,16 @@
 						<div class="content">
 							<#if remind.reply.sender??>
 								<#if remind.reply.sender.data.hasAvatar>
-									<img class="avatar" src="https://res.imyeyu.net/user/avatar/${remind.reply.sender.id}.png" />
+									<img
+										class="avatar ir-${remind.reply.sender.data.wrapperRenderingType.toLowerCase()}"
+										src="https://res.imyeyu.net/user/avatar/${remind.reply.sender.id}.png"
+									/>
 								<#else>
-									<img class="avatar" src="https://res.imyeyu.net/user/avatar/default.png" />
+									<img class="avatar ir-pixelated" src="https://res.imyeyu.net/user/avatar/default.png" />
 								</#if>
 								<h4>${remind.reply.sender.name} 说：</h4>
 							<#else>
-								<img class="avatar" src="https://res.imyeyu.net/user/avatar/default.png" />
+								<img class="avatar ir-pixelated" src="https://res.imyeyu.net/user/avatar/default.png" />
 								<h4>${remind.reply.senderNick} 说：</h4>
 							</#if>
 							<p class="data clip-text">${remind.reply.data}</p>

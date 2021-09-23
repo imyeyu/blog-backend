@@ -1,7 +1,7 @@
 <footer class="footer font12 center">
 	<p>这是由系统自动发送的邮件，请不要回复</p>
 	<p>
-		<span>如果这封邮件打扰到您，可以登录</span>
+		<span>如果这封邮件打扰到您，请直接屏蔽本邮箱或登录</span>
 		<a href="https://www.imyeyu.net">夜雨博客</a>
 		<span>个人空间中的设置随时关闭</span>
 	</p>

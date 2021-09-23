@@ -1,14 +1,4 @@
-
-
-/*         邮件模板基本样式         */
-
-
-.clip-text {
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-}
-
+/* 基本样式 */
 .font12 {
 	font-size: 12px;
 }
@@ -17,13 +7,45 @@
 	color: #999;
 }
 
+.pink {
+	color: #FF7A9B;
+}
+
+.bold {
+	font-weight: bold;
+}
+
 .center {
 	text-align: center;
+}
+
+a {
+	cursor: pointer !important;
 }
 
 p {
 	margin: 0;
 }
+
+.clip-text {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.ir-pixelated {
+	image-rendering: pixelated;
+}
+
+.ir-auto {
+	image-rendering: auto;
+}
+
+.ir-smooth {
+	image-rendering: smooth;
+}
+
+/* 布局样式 */
 
 .root {
 	width: 42rem;

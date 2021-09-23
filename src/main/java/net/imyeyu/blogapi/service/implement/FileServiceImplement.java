@@ -45,7 +45,6 @@ public class FileServiceImplement implements FileService, BetterJava {
 			}
 			// 文件
 			File targetFile = new File(resPath + resourceFile.getPath() + SEP + resourceFile.getName());
-			System.out.println(targetFile.getAbsolutePath());
 			if (!targetFile.exists()) {
 				if (!targetFile.createNewFile()) {
 					throw new ServiceException(ReturnCode.ERROR, "无法创建目标资源文件");

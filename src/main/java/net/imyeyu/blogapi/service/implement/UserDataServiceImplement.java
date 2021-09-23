@@ -130,11 +130,11 @@ public class UserDataServiceImplement implements UserDataService {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ImageIO.write(imgResult, "png", baos);
 
-			res = new ResourceFile();
-			res.setName(id + ".png");
-			res.setPath(pathWrapper + "_popup");
-			res.setInputStream(new ByteArrayInputStream(baos.toByteArray()));
-			fileService.upload(res);
+			ResourceFile resPopup = new ResourceFile();
+			resPopup.setName(id + ".png");
+			resPopup.setPath(pathWrapper + "_popup");
+			resPopup.setInputStream(new ByteArrayInputStream(baos.toByteArray()));
+			fileService.upload(resPopup);
 			// 更新数据库
 			UserData data = findByUID(id);
 			data.setHasWrapper(true);

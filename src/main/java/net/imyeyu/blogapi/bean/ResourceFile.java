@@ -19,6 +19,6 @@ public class ResourceFile {
 	private InputStream inputStream;
 
 	public String getFullPath() {
-		return path + File.separator + name;
+		return path + "/" + name;
 	}
 }

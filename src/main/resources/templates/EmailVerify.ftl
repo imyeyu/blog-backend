@@ -15,6 +15,7 @@
 				display: block;
 				padding: 8px 24px;
 				font-size: 15px;
+				text-align: center;
 				background: #53BD93;
 				text-decoration: none !important;
 			}

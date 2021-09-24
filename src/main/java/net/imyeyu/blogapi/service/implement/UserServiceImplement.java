@@ -220,6 +220,7 @@ public class UserServiceImplement extends AbstractService implements UserService
 
 	@Override
 	public List<UserComment> findManyUserComment(Long userId, Long offset, int limit) throws ServiceException {
+		exist(userId);
 		return mapper.findManyUserComment(userId, offset, limit);
 	}
 

@@ -441,18 +441,26 @@ public class UserController extends BaseController implements BetterJava {
 
 	/**
 	 * 获取用户评论（包括回复）
+	 * <p>令牌是可选的，如果目标用户数据和令牌相同，则不考虑隐私控制，否则需要根据隐私控制判定是否返回
 	 *
+	 * @param id     目标用户 ID
 	 * @param offset 偏移
 	 * @param token  令牌
 	 * @return 用户评论列表
 	 */
 	@AOPLog
 	@QPSLimit
-	@RequiredToken
-	@PostMapping("/comment")
-	public Response<?> getComments(@RequestParam Long offset, @RequestHeader("Token") String token) {
+	@PostMapping("/comment/{id}")
+	public Response<?> getComments(@PathVariable Long id, @RequestParam Long offset, @RequestHeader("Token") String token) {
 		try {
-			return new Response<>(ReturnCode.SUCCESS, service.findManyUserComment(token2UID(token), offset, 12));
+			if (StringUtils.isEmpty(token) || !token2UID(token).equals(id)) {
+				UserPrivacy userPrivacy = privacyService.findByUID(id);
+				if (!userPrivacy.isComment()) {
+					// 不是获取自己的评论，且目标用户评论不公开
+					return new Response<>(ReturnCode.PERMISSION_ERROR, "该用户评论不公开");
+				}
+			}
+			return new Response<>(ReturnCode.SUCCESS, service.findManyUserComment(id, offset, 12));
 		} catch (ServiceException e) {
 			return new Response<>(e.getCode(), e.getMessage());
 		} catch (Exception e) {

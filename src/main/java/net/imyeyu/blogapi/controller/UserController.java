@@ -36,7 +36,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -334,6 +333,11 @@ public class UserController extends BaseController implements BetterJava {
 			data.setUserId(uid);
 			data.getUser().setId(uid);
 			// 更新账号
+			User user = service.find(uid);
+			if (!user.getEmail().equals(data.getUser().getEmail())) {
+				// 修改了邮箱，强制重新验证
+				data.getUser().setEmailVerify(false);
+			}
 			service.update(data.getUser());
 			// 更新资料
 			dataService.updateData(data);

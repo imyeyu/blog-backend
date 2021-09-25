@@ -8,6 +8,8 @@ import net.imyeyu.blogapi.mapper.UserDataMapper;
 import net.imyeyu.blogapi.service.FileService;
 import net.imyeyu.blogapi.service.UserDataService;
 import net.imyeyu.blogapi.service.UserService;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -59,6 +61,25 @@ public class UserDataServiceImplement implements UserDataService {
 	@Transactional(rollbackFor = {ServiceException.class, Throwable.class})
 	@Override
 	public void updateData(UserData data) throws ServiceException {
+		if (ObjectUtils.isNotEmpty(data.getSex())) {
+			if (data.getSex() != 0 && data.getSex() != 1) {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "请选择正确的性别");
+			}
+		}
+		if (ObjectUtils.isNotEmpty(data.getBirth())) {
+			if (data.getBirth() < 0) {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "出生日期不可小于 1970-01-01");
+			}
+			if (System.currentTimeMillis() < data.getBirth()) {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "出生日期不可超过现在");
+			}
+		}
+		if (StringUtils.isNotEmpty(data.getQq()) && !data.getQq().matches("[1-9]\\d{4,14}")) {
+			throw new ServiceException(ReturnCode.PARAMS_BAD, "请输入正确的 QQ 号码");
+		}
+		if (StringUtils.isNotEmpty(data.getSign()) && 240 < data.getSign().length()) {
+			throw new ServiceException(ReturnCode.PARAMS_BAD, "签名字数不可超过 240 个");
+		}
 		data.setUpdatedAt(System.currentTimeMillis());
 		mapper.updateData(data);
 	}
@@ -94,6 +115,9 @@ public class UserDataServiceImplement implements UserDataService {
 		try {
 			// 字节数据
 			byte[] bytes = file.getInputStream().readAllBytes();
+			if (1048576 < bytes.length) {
+				throw new ServiceException(ReturnCode.PARAMS_BAD, "限制上传文件大小 1 MB");
+			}
 			// 原图
 			ResourceFile res = new ResourceFile();
 			res.setName(id + ".png");
